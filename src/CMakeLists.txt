@@ -3,6 +3,8 @@ find_package(Qt5Widgets REQUIRED)
 
 set(SRCS
         main.cpp
+        main_window.cpp
+        main_window.hpp
 )
 
 add_executable(mdadm-qt ${SRCS})
