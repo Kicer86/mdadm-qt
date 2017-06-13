@@ -5,6 +5,8 @@ set(SRCS
         main.cpp
         main_window.cpp
         main_window.hpp
+        mdadm_controller.cpp
+        mdadm_controller.hpp
 )
 
 add_executable(mdadm-qt ${SRCS})
