@@ -20,32 +20,10 @@
 #ifndef IMDADMPROCESS_HPP
 #define IMDADMPROCESS_HPP
 
-#include <functional>
-#include <string>
-#include <vector>
-
-struct ArrayInfo
-{
-    std::string array_device;
-    std::vector<std::string> block_devices;
-    std::string array_type;
-
-    ArrayInfo(const std::string& _array_device,
-              const std::vector<std::string>& _block_devices,
-              const std::string& _type):
-        array_device(_array_device),
-        block_devices(_block_devices),
-        array_type(_type)
-    {}
-};
 
 struct IMDAdmProcess
 {
     virtual ~IMDAdmProcess() = default;
-
-    typedef std::function<void(const std::vector<ArrayInfo> &)> ListResult;
-
-    virtual bool listArrays(const ListResult &) = 0;  // list arrays asynchronicaly, call function when done
 };
 
 #endif // IMDADMPROCESS_HPP

@@ -22,6 +22,11 @@
 
 #include <QMainWindow>
 
+#include "mdadm_controller.hpp"
+#include "mdadm_process.hpp"
+
+class QListWidget;
+
 class MainWindow: public QMainWindow
 {
     public:
@@ -31,6 +36,13 @@ class MainWindow: public QMainWindow
 
         MainWindow& operator=(const MainWindow &) = delete;
         bool operator==(const MainWindow &) const = delete;
+
+    private:
+        MDAdmProcess m_mdadmProcess;
+        MDAdmController m_mdadmController;
+        QListWidget* m_arrays;
+
+        void refreshArraysList();
 };
 
 #endif // MAINWINDOW_HPP

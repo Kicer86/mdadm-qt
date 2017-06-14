@@ -20,15 +20,45 @@
 #ifndef MDADMCONTROLLER_HPP
 #define MDADMCONTROLLER_HPP
 
+#include <functional>
+#include <string>
+#include <vector>
+
+
+struct IMDAdmProcess;
+
+struct ArrayInfo
+{
+    std::string array_device;
+    std::vector<std::string> block_devices;
+    std::string array_type;
+
+    ArrayInfo(const std::string& _array_device,
+              const std::vector<std::string>& _block_devices,
+              const std::string& _type):
+        array_device(_array_device),
+        block_devices(_block_devices),
+        array_type(_type)
+    {}
+};
+
 class MDAdmController
 {
     public:
-        MDAdmController();
+        typedef std::function<void(const std::vector<ArrayInfo> &)> ListResult;
+
+        MDAdmController(IMDAdmProcess *);
         MDAdmController(const MDAdmController &) = delete;
         ~MDAdmController();
 
         MDAdmController& operator=(const MDAdmController &) = delete;
         bool operator==(const MDAdmController &) const = delete;
+
+        // operations
+        bool listArrays(const ListResult &);             // list arrays asynchronicaly, call ListResult when done
+
+    private:
+        IMDAdmProcess* m_mdadmProcess;
 };
 
 #endif // MDADMCONTROLLER_HPP

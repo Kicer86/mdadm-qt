@@ -31,6 +31,8 @@ class MDAdmProcess: public IMDAdmProcess
 
         MDAdmProcess& operator=(const MDAdmProcess &) = delete;
         bool operator==(const MDAdmProcess &) const = delete;
+
+        // overrides:
 };
 
 #endif // MDADMPROCESS_HPP

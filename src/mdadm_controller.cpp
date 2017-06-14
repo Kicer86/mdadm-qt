@@ -19,7 +19,11 @@
 
 #include "mdadm_controller.hpp"
 
-MDAdmController::MDAdmController()
+#include <QRegExp>
+#include <QProcess>
+
+
+MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess): m_mdadmProcess(mdadmProcess)
 {
 
 }
@@ -28,4 +32,29 @@ MDAdmController::MDAdmController()
 MDAdmController::~MDAdmController()
 {
 
+}
+
+
+bool MDAdmController::listArrays(const ListResult& result)
+{
+    QProcess* mdstat = new QProcess;
+
+    QObject::connect(mdstat, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
+        [result, mdstat](int exitCode, QProcess::ExitStatus exitStatus)
+    {
+        //                         arr device  status   type   devices
+        const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)");
+        while(mdstat->canReadLine())
+        {
+            const QByteArray outputLine = mdstat->readLine();
+
+
+        }
+
+        mdstat->deleteLater();
+    });
+
+    mdstat->start("cat", {"/proc/mdstat"}, QProcess::ReadOnly);
+
+    return true;
 }

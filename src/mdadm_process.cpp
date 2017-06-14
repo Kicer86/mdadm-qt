@@ -19,6 +19,9 @@
 
 #include "mdadm_process.hpp"
 
+#include <QProcess>
+
+
 MDAdmProcess::MDAdmProcess()
 {
 

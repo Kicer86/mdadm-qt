@@ -20,14 +20,30 @@
 
 #include "main_window.hpp"
 
+#include <QListWidget>
 
-MainWindow::MainWindow(): QMainWindow()
+
+MainWindow::MainWindow():
+    QMainWindow(),
+    m_mdadmProcess(),
+    m_mdadmController(&m_mdadmProcess),
+    m_arrays(nullptr)
+{
+    m_arrays = new QListWidget(this);
+
+    setCentralWidget(m_arrays);
+
+    refreshArraysList();
+}
+
+
+MainWindow::~MainWindow()
 {
 
 }
 
 
-MainWindow::~MainWindow()
+void MainWindow::refreshArraysList()
 {
 
 }
