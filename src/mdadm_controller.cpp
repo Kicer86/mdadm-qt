@@ -43,15 +43,29 @@ bool MDAdmController::listArrays(const ListResult& result)
         [result, mdstat](int exitCode, QProcess::ExitStatus exitStatus)
     {
         //                         arr device  status   type   devices
-        const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)");
+        const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)\n");
+        std::vector<ArrayInfo> results;
+
         while(mdstat->canReadLine())
         {
             const QByteArray outputLine = mdstat->readLine();
 
+            if (mdadm_info.exactMatch(outputLine))
+            {
+                const QString dev = mdadm_info.cap(1);
+                const QString status = mdadm_info.cap(2);
+                const QString type = mdadm_info.cap(3);
+                const QString devices = mdadm_info.cap(4);
 
+                const QStringList devices_list = devices.split(" ");
+
+                results.emplace_back(dev, devices_list, type);
+            }
         }
 
         mdstat->deleteLater();
+
+        result(results);
     });
 
     mdstat->start("cat", {"/proc/mdstat"}, QProcess::ReadOnly);

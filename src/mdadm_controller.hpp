@@ -21,21 +21,22 @@
 #define MDADMCONTROLLER_HPP
 
 #include <functional>
-#include <string>
 #include <vector>
+
+#include <QStringList>
 
 
 struct IMDAdmProcess;
 
 struct ArrayInfo
 {
-    std::string array_device;
-    std::vector<std::string> block_devices;
-    std::string array_type;
+    QString array_device;
+    QStringList block_devices;
+    QString array_type;
 
-    ArrayInfo(const std::string& _array_device,
-              const std::vector<std::string>& _block_devices,
-              const std::string& _type):
+    ArrayInfo(const QString& _array_device,
+              const QStringList& _block_devices,
+              const QString& _type):
         array_device(_array_device),
         block_devices(_block_devices),
         array_type(_type)
