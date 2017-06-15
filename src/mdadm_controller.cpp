@@ -40,7 +40,7 @@ bool MDAdmController::listRaids (const ListResult& result)
     QProcess* mdstat = new QProcess;
 
     QObject::connect(mdstat, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
-        [result, mdstat](int exitCode, QProcess::ExitStatus exitStatus)
+        [result, mdstat](int, QProcess::ExitStatus)
     {
         //                        raid device  status   type   devices
         const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)\n");
