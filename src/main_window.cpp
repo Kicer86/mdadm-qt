@@ -45,5 +45,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::refreshArraysList()
 {
+    m_arrays->clear();
 
+    m_mdadmController.listRaids([this](const std::vector<RaidInfo>& raids)
+    {
+        for(const RaidInfo& raid: raids)
+        {
+            const QString& raid_device = raid.raid_device;
+            m_arrays->addItem(raid_device);
+        }
+    });
 }

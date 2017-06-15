@@ -28,25 +28,25 @@
 
 struct IMDAdmProcess;
 
-struct ArrayInfo
+struct RaidInfo
 {
-    QString array_device;
+    QString raid_device;
     QStringList block_devices;
-    QString array_type;
+    QString raid_type;
 
-    ArrayInfo(const QString& _array_device,
+    RaidInfo (const QString& _raid_device,
               const QStringList& _block_devices,
               const QString& _type):
-        array_device(_array_device),
+        raid_device(_raid_device),
         block_devices(_block_devices),
-        array_type(_type)
+        raid_type (_type)
     {}
 };
 
 class MDAdmController
 {
     public:
-        typedef std::function<void(const std::vector<ArrayInfo> &)> ListResult;
+        typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
 
         MDAdmController(IMDAdmProcess *);
         MDAdmController(const MDAdmController &) = delete;
@@ -56,7 +56,7 @@ class MDAdmController
         bool operator==(const MDAdmController &) const = delete;
 
         // operations
-        bool listArrays(const ListResult &);             // list arrays asynchronicaly, call ListResult when done
+        bool listRaids(const ListResult &);             // list raids asynchronicaly, call ListResult when done
 
     private:
         IMDAdmProcess* m_mdadmProcess;
