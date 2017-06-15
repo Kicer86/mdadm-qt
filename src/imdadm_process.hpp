@@ -20,10 +20,18 @@
 #ifndef IMDADMPROCESS_HPP
 #define IMDADMPROCESS_HPP
 
+#include <functional>
+
+#include <QByteArray>
+#include <QStringList>
 
 struct IMDAdmProcess
 {
+    typedef std::function<void(const QByteArray &)> ExecutionResult;
+
     virtual ~IMDAdmProcess() = default;
+
+    virtual bool execute(const QStringList &, const ExecutionResult &) = 0;        // execute mdadm with given parameters and returns result thru ExecutionResult
 };
 
 #endif // IMDADMPROCESS_HPP

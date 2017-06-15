@@ -33,6 +33,7 @@ class MDAdmProcess: public IMDAdmProcess
         bool operator==(const MDAdmProcess &) const = delete;
 
         // overrides:
+        bool execute(const QStringList &, const ExecutionResult &) override;
 };
 
 #endif // MDADMPROCESS_HPP

@@ -32,3 +32,9 @@ MDAdmProcess::~MDAdmProcess()
 {
 
 }
+
+
+bool MDAdmProcess::execute(const QStringList&, const ExecutionResult&)
+{
+    return true;
+}
