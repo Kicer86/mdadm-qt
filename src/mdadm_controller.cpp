@@ -20,8 +20,7 @@
 #include "mdadm_controller.hpp"
 
 #include <QRegExp>
-#include <QProcess>
-
+#include <QFile>
 
 MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess): m_mdadmProcess(mdadmProcess)
 {
@@ -37,38 +36,34 @@ MDAdmController::~MDAdmController()
 
 bool MDAdmController::listRaids (const ListResult& result)
 {
-    QProcess* mdstat = new QProcess;
+    QFile mdstat("/proc/mdstat");
 
-    QObject::connect(mdstat, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
-        [result, mdstat](int, QProcess::ExitStatus)
+    if (!mdstat.exists() || !mdstat.open(QIODevice::ReadOnly |
+                                         QIODevice::Text))
+        return false;
+
+    const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)\n");
+    std::vector<RaidInfo> results;
+
+    while(!mdstat.atEnd())
     {
-        //                        raid device  status   type   devices
-        const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)\n");
-        std::vector<RaidInfo> results;
+        const QByteArray outputLine = mdstat.readLine();
 
-        while(mdstat->canReadLine())
+        if (mdadm_info.exactMatch(outputLine))
         {
-            const QByteArray outputLine = mdstat->readLine();
+            const QString dev = mdadm_info.cap(1);
+            const QString status = mdadm_info.cap(2);
+            const QString type = mdadm_info.cap(3);
+            const QString devices = mdadm_info.cap(4);
 
-            if (mdadm_info.exactMatch(outputLine))
-            {
-                const QString dev = mdadm_info.cap(1);
-                const QString status = mdadm_info.cap(2);
-                const QString type = mdadm_info.cap(3);
-                const QString devices = mdadm_info.cap(4);
+            const QStringList devices_list = devices.split(" ");
 
-                const QStringList devices_list = devices.split(" ");
-
-                results.emplace_back(dev, devices_list, type);
-            }
+            results.emplace_back(dev, devices_list, type);
         }
+    }
+    mdstat.close();
 
-        mdstat->deleteLater();
-
-        result(results);
-    });
-
-    mdstat->start("cat", {"/proc/mdstat"}, QProcess::ReadOnly);
+    result(results);
 
     return true;
 }

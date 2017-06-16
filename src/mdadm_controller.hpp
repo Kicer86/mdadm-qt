@@ -46,6 +46,7 @@ struct RaidInfo
 class MDAdmController
 {
     public:
+        // ListResult - callback function for listRaids
         typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
 
         MDAdmController(IMDAdmProcess *);
