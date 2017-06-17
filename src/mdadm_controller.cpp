@@ -21,6 +21,8 @@
 
 #include <QRegExp>
 #include <QFile>
+#include <QTextStream>
+
 
 MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess): m_mdadmProcess(mdadmProcess)
 {
@@ -38,32 +40,38 @@ bool MDAdmController::listRaids (const ListResult& result)
 {
     QFile mdstat("/proc/mdstat");
 
-    if (!mdstat.exists() || !mdstat.open(QIODevice::ReadOnly |
-                                         QIODevice::Text))
-        return false;
+    const bool open_status = mdstat.exists() && mdstat.open(QIODevice::ReadOnly |
+                                                            QIODevice::Text);
 
-    const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)\n");
-    std::vector<RaidInfo> results;
-
-    while(!mdstat.atEnd())
+    if (open_status)
     {
-        const QByteArray outputLine = mdstat.readLine();
+        //                        raid device  status   type   devices
+        const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)");
+        std::vector<RaidInfo> results;
 
-        if (mdadm_info.exactMatch(outputLine))
-        {
-            const QString dev = mdadm_info.cap(1);
-            const QString status = mdadm_info.cap(2);
-            const QString type = mdadm_info.cap(3);
-            const QString devices = mdadm_info.cap(4);
+        // simple loop with atEnd() won't work
+        // see: http://doc.qt.io/qt-5/qiodevice.html#atEnd
+        // and  http://doc.qt.io/qt-5/qfile.html#details
+        // for details
+        QTextStream mdstat_stream(&mdstat);
 
-            const QStringList devices_list = devices.split(" ");
+        for(QString outputLine = mdstat_stream.readLine(); outputLine.isNull() == false; outputLine = mdstat_stream.readLine())
+            if (mdadm_info.exactMatch(outputLine))
+            {
+                const QString dev = mdadm_info.cap(1);
+                const QString status = mdadm_info.cap(2);
+                const QString type = mdadm_info.cap(3);
+                const QString devices = mdadm_info.cap(4);
 
-            results.emplace_back(dev, devices_list, type);
-        }
+                const QStringList devices_list = devices.split(" ");
+
+                results.emplace_back(dev, devices_list, type);
+            }
+
+        mdstat.close();
+
+        result(results);
     }
-    mdstat.close();
 
-    result(results);
-
-    return true;
+    return open_status;
 }
