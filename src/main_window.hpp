@@ -21,11 +21,12 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
+#include <QStandardItemModel>
 
 #include "mdadm_controller.hpp"
 #include "mdadm_process.hpp"
 
-class QListWidget;
+class QTableView;
 
 class MainWindow: public QMainWindow
 {
@@ -40,7 +41,8 @@ class MainWindow: public QMainWindow
     private:
         MDAdmProcess m_mdadmProcess;
         MDAdmController m_mdadmController;
-        QListWidget* m_arrays;
+        QTableView* m_raidsView;
+        QStandardItemModel m_raidsModel;
 
         void refreshArraysList();
 };

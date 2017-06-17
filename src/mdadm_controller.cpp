@@ -63,7 +63,17 @@ bool MDAdmController::listRaids (const ListResult& result)
                 const QString type = mdadm_info.cap(3);
                 const QString devices = mdadm_info.cap(4);
 
-                const QStringList devices_list = devices.split(" ");
+                const QStringList devices_list_raw = devices.split(" ");
+
+                //drop role numbers (convert sda1[0] to sda1)
+                QStringList devices_list;
+                for(const QString& device_with_role: devices_list_raw)
+                {
+                    const int l = device_with_role.lastIndexOf('[');
+                    const QString device = device_with_role.left(l);
+
+                    devices_list.append(device);
+                }
 
                 results.emplace_back(dev, devices_list, type);
             }
