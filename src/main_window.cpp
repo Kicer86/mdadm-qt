@@ -30,6 +30,8 @@ MainWindow::MainWindow():
     m_raidsView(nullptr),
     m_raidsModel()
 {
+    m_raidsModel.setHorizontalHeaderLabels( { tr("raid device"), tr("type"), tr("block devices") } );
+
     m_raidsView = new QTableView(this);
     m_raidsView->setModel(&m_raidsModel);
 
@@ -47,7 +49,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::refreshArraysList()
 {
-    m_raidsModel.clear();
+    const int rows = m_raidsModel.rowCount();
+    m_raidsModel.removeRows(0, rows);     // .clear() would clear headers also
 
     m_mdadmController.listRaids([this](const std::vector<RaidInfo>& raids)
     {
