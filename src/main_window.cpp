@@ -20,18 +20,20 @@
 
 #include "main_window.hpp"
 
-#include <QListWidget>
+#include <QTableView>
 
 
 MainWindow::MainWindow():
     QMainWindow(),
     m_mdadmProcess(),
     m_mdadmController(&m_mdadmProcess),
-    m_arrays(nullptr)
+    m_raidsView(nullptr),
+    m_raidsModel()
 {
-    m_arrays = new QListWidget(this);
+    m_raidsView = new QTableView(this);
+    m_raidsView->setModel(&m_raidsModel);
 
-    setCentralWidget(m_arrays);
+    setCentralWidget(m_raidsView);
 
     refreshArraysList();
 }
@@ -45,14 +47,18 @@ MainWindow::~MainWindow()
 
 void MainWindow::refreshArraysList()
 {
-    m_arrays->clear();
+    m_raidsModel.clear();
 
     m_mdadmController.listRaids([this](const std::vector<RaidInfo>& raids)
     {
         for(const RaidInfo& raid: raids)
         {
-            const QString& raid_device = raid.raid_device;
-            m_arrays->addItem(raid_device);
+            QStandardItem* raid_device_item = new QStandardItem(raid.raid_device);
+            QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
+            QStandardItem* raid_blk_devices_item = new QStandardItem(raid.block_devices.join(", "));
+
+            const QList<QStandardItem *> row = { raid_device_item, raid_type_item, raid_blk_devices_item };
+            m_raidsModel.appendRow(row);
         }
     });
 }
