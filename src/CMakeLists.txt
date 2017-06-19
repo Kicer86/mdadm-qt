@@ -1,6 +1,9 @@
 
 find_package(Qt5Widgets REQUIRED)
 
+find_package(GMock)
+find_package(GTest)
+
 set(SRCS
         imdadm_process.hpp
         main.cpp
@@ -23,3 +26,32 @@ target_include_directories(mdadm-qt
 target_link_libraries(mdadm-qt
                         Qt5::Widgets
 )
+
+
+# unit tests
+
+if(GMOCK_FOUND)
+
+    find_package(Threads REQUIRED)
+
+    add_executable(mdadm_controller_tests
+                        mdadm_controller_tests.cpp
+                        mdadm_controller.cpp
+    )
+
+    target_include_directories(mdadm_controller_tests
+                                    SYSTEM PRIVATE
+                                        ${GMOCK_INCLUDE_DIRS}
+                                        ${GTEST_INCLUDE_DIRS}
+                                        ${Qt5Core_INCLUDE_DIRS}
+    )
+
+    target_link_libraries(mdadm_controller_tests
+                            PRIVATE
+                                ${GMOCK_MAIN_LIBRARY}
+                                ${GMOCK_LIBRARY}
+                                ${CMAKE_THREAD_LIBS_INIT}
+                                Qt5::Core
+    )
+
+endif()
