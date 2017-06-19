@@ -1,9 +1,6 @@
 
 find_package(Qt5Widgets REQUIRED)
 
-find_package(GMock)
-find_package(GTest)
-
 set(SRCS
         imdadm_process.hpp
         main.cpp
@@ -29,8 +26,10 @@ target_link_libraries(mdadm-qt
 
 
 # unit tests
+find_package(GMock)
+find_package(GTest)
 
-if(GMOCK_FOUND)
+if(GMOCK_FOUND AND GTEST_FOUND)
 
     find_package(Threads REQUIRED)
 
