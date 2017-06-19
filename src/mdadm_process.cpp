@@ -34,7 +34,20 @@ MDAdmProcess::~MDAdmProcess()
 }
 
 
-bool MDAdmProcess::execute(const QStringList&, const ExecutionResult&)
+bool MDAdmProcess::execute(const QStringList& args, const ExecutionResult& result)
 {
+    QProcess* mdadm = new QProcess;
+
+    QObject::connect(mdadm, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
+        [result, mdadm](int, QProcess::ExitStatus)
+    {
+        const QByteArray output = mdadm->readAll();
+
+        mdadm->deleteLater();
+    });
+
+    // TODO: find path to mdadm
+    mdadm->start("mdadm", args, QProcess::ReadOnly);
+
     return true;
 }
