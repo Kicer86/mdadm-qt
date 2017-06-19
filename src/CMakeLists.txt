@@ -26,3 +26,16 @@ target_include_directories(mdadm-qt
 target_link_libraries(mdadm-qt
                         Qt5::Widgets
 )
+
+
+# unit tests
+
+if(GMOCK_FOUND)
+
+    find_package(Threads REQUIRED)
+
+    add_executable(mdadm_controller_tests mdadm_controller_tests.cpp)
+
+    target_link_libraries(mdadm_controller_tests ${GMOCK_MAIN_LIBRARY} ${GMOCK_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+
+endif()
