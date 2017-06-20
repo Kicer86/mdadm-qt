@@ -45,6 +45,7 @@ class MainWindow: public QMainWindow
         QStandardItemModel m_raidsModel;
 
         void refreshArraysList();
+        void createRaid();
 };
 
 #endif // MAINWINDOW_HPP

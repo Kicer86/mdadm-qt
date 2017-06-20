@@ -21,7 +21,7 @@
 #include "main_window.hpp"
 
 #include <QTableView>
-
+#include <QMenuBar>
 
 MainWindow::MainWindow():
     QMainWindow(),
@@ -34,6 +34,28 @@ MainWindow::MainWindow():
 
     m_raidsView = new QTableView(this);
     m_raidsView->setModel(&m_raidsModel);
+
+    auto raidMenu = menuBar()->addMenu(tr("&Raid"));
+    QAction *actionCreate = new QAction(tr("&New"));
+    QAction *actionQuit = new QAction(tr("&Quit"));
+
+    actionCreate->setShortcut(Qt::CTRL + Qt::Key_N);
+    actionQuit->setShortcut(Qt::CTRL + Qt::Key_Q);
+
+    connect(actionCreate, &QAction::triggered, this, &MainWindow::createRaid);
+    connect(actionQuit, &QAction::triggered, this, &QMainWindow::close);
+
+    raidMenu->addAction(actionCreate);
+    raidMenu->addAction(actionQuit);
+
+    auto viewMenu = menuBar()->addMenu(tr("&View"));
+    QAction *actionReload = new QAction(tr("&Reload"));
+
+    actionReload->setShortcut(Qt::Key_F5);
+
+    connect(actionReload, &QAction::triggered, this, &MainWindow::refreshArraysList);
+
+    viewMenu->addAction(actionReload);
 
     setCentralWidget(m_raidsView);
 
@@ -64,4 +86,8 @@ void MainWindow::refreshArraysList()
             m_raidsModel.appendRow(row);
         }
     });
+}
+
+void MainWindow::createRaid() {
+
 }
