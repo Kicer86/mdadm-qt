@@ -53,7 +53,6 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid1Creation)
 }
 
 
-
 TEST(MDAdmControllerTest, usesRightParametersForRaid4Creation)
 {
     IMDAdmProcessMock mdadm_process;
@@ -67,7 +66,6 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid4Creation)
 }
 
 
-
 TEST(MDAdmControllerTest, usesRightParametersForRaid5Creation)
 {
     IMDAdmProcessMock mdadm_process;
@@ -79,8 +77,6 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid5Creation)
     MDAdmController controller(&mdadm_process);
     controller.createRaid("/dev/md3", MDAdmController::Type::Raid5, QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc"}) );
 }
-
-
 
 
 TEST(MDAdmControllerTest, usesRightParametersForRaid6Creation)
