@@ -128,7 +128,7 @@ bool MDAdmController::createRaid(const QString& raid_device, MDAdmController::Ty
 
     mdadm_args << "--create" << "--verbose" << raid_device;
     mdadm_args << "--level" << levelName(type);
-    mdadm_args << "--raid-devices=" + block_devices.size() << block_devices;
+    mdadm_args << QString("--raid-devices=%1").arg(block_devices.size()) << block_devices;
 
     m_mdadmProcess->execute(mdadm_args, [](const QByteArray& output)
     {
