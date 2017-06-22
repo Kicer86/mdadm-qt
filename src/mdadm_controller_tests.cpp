@@ -31,7 +31,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid0Creation)
 {
     IMDAdmProcessMock mdadm_process;
 
-    const QStringList expected_args = { "--create", "--verbose", "/dev/md0", "--level", "stripe", "raid-devices=2", "/dev/sda", "/dev/sdc" };
+    const QStringList expected_args = { "--create", "--verbose", "/dev/md0", "--level", "stripe", "--raid-devices=2", "/dev/sda", "/dev/sdc" };
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
         .WillOnce(Return(true));
 
