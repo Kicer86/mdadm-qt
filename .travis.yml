@@ -88,4 +88,4 @@ before_script:
 
 script:
   - make
-  - ctest -V
+  - pushd src && ctest -V && popd
