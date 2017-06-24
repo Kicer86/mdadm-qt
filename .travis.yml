@@ -29,30 +29,6 @@ matrix:
           # use compiler which has c++14 support
           env: COMPILER=g++-5
 
-        - compiler: gcc
-          addons:
-            apt:
-             packages:
-               - libboost-all-dev
-               - g++-5
-               - gcc-5
-             sources:
-               - ubuntu-toolchain-r-test
-          # use compiler which has c++14 support
-          env: COMPILER=g++-5
-
-        - compiler: clang
-          addons:
-            apt:
-             packages:
-               - libboost-all-dev
-               - clang-3.6
-             sources:
-               - ubuntu-toolchain-r-test
-               - llvm-toolchain-precise-3.6
-          # use compiler which has c++14 support
-          env: COMPILER=clang++-3.6
-
         - compiler: clang
           addons:
             apt:
