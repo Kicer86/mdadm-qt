@@ -10,6 +10,10 @@ set(SRCS
         mdadm_controller.hpp
         mdadm_process.cpp
         mdadm_process.hpp
+        disk.cpp
+        disk.hpp
+        disk_controller.cpp
+        disk_controller.hpp
 )
 
 add_executable(mdadm-qt ${SRCS})
