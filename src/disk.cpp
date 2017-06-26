@@ -1,15 +1,12 @@
-#include <QFile>
-#include <QDir>
-#include <QTextStream>
-
 #include "disk.hpp"
+#include "utils.hpp"
 
 Disk::Disk(const QString& name) :
     m_name(name),
     m_model("N/A"),
     m_serial("N/A"),
-    m_logical_block_size(getLogicalBlockSize(name)),
-    m_size(getSize(name))
+    m_logical_block_size(getLogicalBlockSize()),
+    m_size(getSize())
 {
 }
 
@@ -22,30 +19,15 @@ Disk::Disk(Disk&& other) :
 {
 }
 
-template <typename T>
-T Disk::readFromSysfs(const QString &path)
+size_t Disk::getSize()
 {
-    QFile file(path);
-    T value {};
-
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream file_stream(&file);
-        file_stream >> value;
-        file.close();
-    }
-
-    return value;
+    return utils::readValueFromFile<size_t>("/sys/block/" + m_name + "/size");
 }
 
-size_t Disk::getSize(const QString& name)
+unsigned Disk::getLogicalBlockSize()
 {
-    return readFromSysfs<size_t>("/sys/block/" + name + "/size");
-}
-
-unsigned Disk::getLogicalBlockSize(const QString& name)
-{
-    return readFromSysfs<unsigned>("/sys/block/" + name
-                                   + "/queue/logical_block_size");
+    return utils::readValueFromFile<unsigned>("/sys/block/" + m_name
+                                              + "/queue/logical_block_size");
 }
 
 bool Disk::operator==(const Disk& other) const

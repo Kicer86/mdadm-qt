@@ -12,11 +12,8 @@ private:
     const unsigned m_logical_block_size;
     const size_t m_size;
 
-    //move this somewhere else
-    template <typename T>
-    static T readFromSysfs(const QString&);
-    static size_t getSize(const QString&);
-    static unsigned getLogicalBlockSize(const QString &);
+    size_t getSize();
+    unsigned getLogicalBlockSize();
 
     Disk(const Disk&) = delete;
     Disk& operator=(const Disk&) = delete;

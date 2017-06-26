@@ -10,6 +10,7 @@ set(SRCS
         mdadm_controller.hpp
         mdadm_process.cpp
         mdadm_process.hpp
+        utils.hpp
         disk.cpp
         disk.hpp
         disk_controller.cpp
