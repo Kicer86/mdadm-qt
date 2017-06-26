@@ -12,12 +12,9 @@ class DiskController
     DiskController& operator=(const DiskController&) = delete;
     bool operator==(const DiskController&) = delete;
 public:
-    // ListResult - callback function for listDisks
-    typedef std::function<void(const std::vector<Disk> &)> ListResult;
-
     DiskController();
 
-    bool listDisks(const ListResult &);
+    std::vector<Disk> listDisks();
 
 };
 
