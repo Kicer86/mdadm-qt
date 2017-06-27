@@ -19,6 +19,7 @@
 
 
 #include "main_window.hpp"
+#include "create_raid_dialog.hpp"
 
 #include <QTableView>
 #include <QMenuBar>
@@ -89,5 +90,6 @@ void MainWindow::refreshArraysList()
 }
 
 void MainWindow::createRaid() {
-
+    CreateRaidDialog rd(this);
+    rd.exec();
 }

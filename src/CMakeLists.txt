@@ -15,6 +15,8 @@ set(SRCS
         disk.hpp
         disk_controller.cpp
         disk_controller.hpp
+        create_raid_dialog.cpp
+        create_raid_dialog.hpp
 )
 
 add_executable(mdadm-qt ${SRCS})

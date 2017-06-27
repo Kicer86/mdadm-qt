@@ -38,6 +38,10 @@ public:
         return m_model;
     }
 
+    const QString& name() const {
+        return m_name;
+    }
+
     QString toString() const;
 };
 
