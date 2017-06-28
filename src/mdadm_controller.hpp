@@ -49,6 +49,15 @@ class MDAdmController
         // ListResult - callback function for listRaids
         typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
 
+        enum class Type
+        {
+            Raid0,
+            Raid1,
+            Raid4,
+            Raid5,
+            Raid6,
+        };
+
         MDAdmController(IMDAdmProcess *);
         MDAdmController(const MDAdmController &) = delete;
         ~MDAdmController();
@@ -58,6 +67,7 @@ class MDAdmController
 
         // operations
         bool listRaids(const ListResult &);             // list raids asynchronicaly, call ListResult when done
+        bool createRaid(const QString& raid_device, Type, const QStringList& block_devices);
 
     private:
         IMDAdmProcess* m_mdadmProcess;

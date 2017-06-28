@@ -41,6 +41,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
     find_package(Threads REQUIRED)
 
     add_executable(mdadm_controller_tests
+                        imdadm_process_mock.hpp
                         mdadm_controller_tests.cpp
                         mdadm_controller.cpp
     )
@@ -58,6 +59,18 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                 ${GMOCK_LIBRARY}
                                 ${CMAKE_THREAD_LIBS_INIT}
                                 Qt5::Core
+    )
+
+    add_test(NAME mdadm_controller_tests
+             COMMAND mdadm_controller_tests
+    )
+
+    enable_testing()
+
+    add_custom_target(RunUnitTests ALL
+                      COMMAND ctest
+                      DEPENDS mdadm_controller_tests
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 
 endif()
