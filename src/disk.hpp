@@ -14,6 +14,7 @@ private:
 
     size_t getSize();
     unsigned getLogicalBlockSize();
+    bool isUsed() const;
 
     Disk(const Disk&) = delete;
     Disk& operator=(const Disk&) = delete;

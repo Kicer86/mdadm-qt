@@ -1,6 +1,10 @@
 #include "disk.hpp"
 #include "utils.hpp"
 
+#include "errno.h"
+#include "fcntl.h"
+#include "unistd.h"
+
 Disk::Disk(const QString& name) :
     m_name(name),
     m_model("N/A"),
@@ -28,6 +32,17 @@ unsigned Disk::getLogicalBlockSize()
 {
     return utils::readValueFromFile<unsigned>("/sys/block/" + m_name
                                               + "/queue/logical_block_size");
+}
+
+bool Disk::isUsed() const {
+    QString dev_path("/dev/" + m_name);
+    bool ret = true;
+    int fd = open(QFile::encodeName(dev_path), O_RDONLY | O_EXCL);
+    if (fd > 0) {
+        ret = false;
+        close(fd);
+    }
+    return ret;
 }
 
 bool Disk::operator==(const Disk& other) const
