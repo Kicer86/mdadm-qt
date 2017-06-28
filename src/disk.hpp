@@ -14,6 +14,7 @@ private:
 
     size_t getSize();
     unsigned getLogicalBlockSize();
+    bool isUsed() const;
 
     Disk(const Disk&) = delete;
     Disk& operator=(const Disk&) = delete;
@@ -36,6 +37,10 @@ public:
     const QString& model() const
     {
         return m_model;
+    }
+
+    const QString& name() const {
+        return m_name;
     }
 
     QString toString() const;
