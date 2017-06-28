@@ -7,7 +7,7 @@ DiskController::DiskController()
 
 }
 
-std::vector<Disk> DiskController::listDisks()
+std::vector<Disk> DiskController::listDisks(const DiskFilter& df) const
 {
     std::vector<Disk> disks;
     QDirIterator di("/sys/block", QStringList("sd*"), QDir::Dirs |
@@ -15,7 +15,9 @@ std::vector<Disk> DiskController::listDisks()
     while (di.hasNext())
     {
         di.next();
-        disks.emplace_back(di.fileName());
+        Disk disk(di.fileName());
+        if (df(disk))
+            disks.push_back(std::move(disk));
     }
 
     return disks;
