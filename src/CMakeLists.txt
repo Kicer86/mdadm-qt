@@ -15,6 +15,8 @@ set(SRCS
         disk.hpp
         disk_controller.cpp
         disk_controller.hpp
+        disk_filter.cpp
+        disk_filter.hpp
 )
 
 add_executable(mdadm-qt ${SRCS})
