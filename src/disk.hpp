@@ -14,7 +14,6 @@ private:
 
     size_t getSize();
     unsigned getLogicalBlockSize();
-    bool isUsed() const;
 
     Disk(const Disk&) = delete;
     Disk& operator=(const Disk&) = delete;
@@ -44,6 +43,8 @@ public:
     }
 
     QString toString() const;
+
+    bool isUsed() const;
 };
 
 #endif // DISK_HPP

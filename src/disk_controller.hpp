@@ -5,16 +5,18 @@
 #include <vector>
 
 #include "disk.hpp"
+#include "disk_filter.hpp"
 
 class DiskController
 {
     DiskController(const DiskController&) = delete;
     DiskController& operator=(const DiskController&) = delete;
     bool operator==(const DiskController&) = delete;
+
 public:
     DiskController();
 
-    std::vector<Disk> listDisks();
+    std::vector<Disk> listDisks(const DiskFilter& df = DiskFilter()) const;
 
 };
 
