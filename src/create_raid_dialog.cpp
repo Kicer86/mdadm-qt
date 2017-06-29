@@ -1,8 +1,3 @@
-#include "create_raid_dialog.hpp"
-#include "disk_controller.hpp"
-
-#include <QtDebug>
-
 #include <QFormLayout>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -13,13 +8,22 @@
 #include <QPushButton>
 #include <QSpinBox>
 
-CreateRaidDialog::CreateRaidDialog(QWidget *parent) :
+#include "create_raid_dialog.hpp"
+#include "disk_controller.hpp"
+#include "mdadm_controller.hpp"
+
+CreateRaidDialog::CreateRaidDialog(MDAdmController* mdadmController, QWidget* parent) :
     QDialog(parent),
     m_disksView(nullptr),
     m_selectedDisksView(nullptr),
     m_disksModel(),
     m_selectedDisksModel(),
-    m_raidTypes({"RAID0", "RAID1", "RAID4", "RAID5", "RAID6", "RAID0+1"})
+    m_mdadmController(mdadmController),
+    m_raidTypes({ {"RAID0", static_cast<int>(MDAdmController::Type::Raid0)},
+                  {"RAID1", static_cast<int>(MDAdmController::Type::Raid1)},
+                  {"RAID4", static_cast<int>(MDAdmController::Type::Raid4)},
+                  {"RAID5", static_cast<int>(MDAdmController::Type::Raid5)},
+                  {"RAID6", static_cast<int>(MDAdmController::Type::Raid6)} })
 {
     QVBoxLayout *systemDisksLayout = new QVBoxLayout;
     QVBoxLayout *buttonDiskLayout = new QVBoxLayout;
@@ -38,7 +42,11 @@ CreateRaidDialog::CreateRaidDialog(QWidget *parent) :
     QPushButton *buttonRemove = new QPushButton(tr("<-"));
 
     m_cbTypes = new QComboBox;
-    m_cbTypes->addItems(m_raidTypes);
+
+    for (auto it = m_raidTypes.constBegin(); it != m_raidTypes.constEnd();
+         ++it) {
+        m_cbTypes->addItem(it.key(), it.value());
+    }
 
     m_sbDevNumber = new QSpinBox;
 
@@ -79,11 +87,13 @@ CreateRaidDialog::CreateRaidDialog(QWidget *parent) :
     mainLayout->addLayout(buttonCreateLayout);
 
     DiskController dc;
-    auto disks = dc.listDisks();
+    DiskFilter df(DiskFilter::Filter::EXCLUDE_USED);
+
+    auto disks = dc.listDisks(df);
 
     for (const auto& disk : disks) {
         QStandardItem* item = new QStandardItem(disk.toString());
-        item->setData(disk.name());
+        item->setData(disk.devPath());
         m_disksModel.appendRow(item);
     }
 
@@ -154,6 +164,10 @@ void CreateRaidDialog::createRaid() {
             disks.append(item->data().toString());
     }
     QString type = m_cbTypes->currentText();
+    QString mdDevice = QString("/dev/md%1").arg(m_sbDevNumber->value());
 
-    qDebug() << disks << " " << type << " " << m_sbDevNumber->value();
+    m_mdadmController->createRaid(mdDevice,
+                                  static_cast<MDAdmController::Type>(
+                                      m_cbTypes->currentData().toInt()),
+                                  disks);
 }

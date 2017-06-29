@@ -42,6 +42,10 @@ public:
         return m_name;
     }
 
+    QString devPath() const {
+        return QString("/dev/") + m_name;
+    }
+
     QString toString() const;
 
     bool isUsed() const;

@@ -90,6 +90,6 @@ void MainWindow::refreshArraysList()
 }
 
 void MainWindow::createRaid() {
-    CreateRaidDialog rd(this);
+    CreateRaidDialog rd(&m_mdadmController, this);
     rd.exec();
 }
