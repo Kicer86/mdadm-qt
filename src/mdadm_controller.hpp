@@ -70,7 +70,11 @@ class MDAdmController: public QObject
 
         // operations
         bool listRaids(const ListResult &);             // list raids asynchronicaly, call ListResult when done
-        bool createRaid(const QString& raid_device, Type, const QStringList& block_devices);
+        bool listComponents(const QString& raid_device,
+                            QStringList& block_devices);
+        bool createRaid(const QString& raid_device, Type,
+                        const QStringList& block_devices);
+        bool stopRaid(const QString& raid_device);
 
     private:
         IMDAdmProcess* m_mdadmProcess;

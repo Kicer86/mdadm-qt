@@ -20,6 +20,8 @@
 #include "mdadm_controller.hpp"
 
 #include <QDebug>
+#include <QDirIterator>
+#include <QRegExp>
 #include <QFile>
 #include <QRegExp>
 #include <QTextStream>
@@ -122,6 +124,20 @@ bool MDAdmController::listRaids(const ListResult& result)
     return open_status;
 }
 
+bool MDAdmController::listComponents(const QString& raid_device,
+                                     QStringList& block_devices) {
+    QString slaves_path = "/sys/block/" + raid_device + "/slaves";
+    QDirIterator di(slaves_path, QDir::Dirs | QDir::NoDotAndDotDot);
+
+    while (di.hasNext())
+    {
+        di.next();
+        block_devices << ("/dev/" + di.fileName());
+    }
+
+    return !block_devices.empty();
+}
+
 
 bool MDAdmController::createRaid(const QString& raid_device, MDAdmController::Type type, const QStringList& block_devices)
 {
@@ -148,3 +164,32 @@ bool MDAdmController::createRaid(const QString& raid_device, MDAdmController::Ty
 
     return true;
 }
+
+
+bool MDAdmController::stopRaid(const QString& raid_device)
+{
+    QStringList mdadm_args;
+    QStringList components;
+
+    mdadm_args << "--stop" << "--verbose" << raid_device;
+    if (listComponents(QFileInfo(raid_device).baseName(), components))
+    {
+        mdadm_args << "--zero-superblock" << components;
+    }
+
+    m_mdadmProcess->execute(mdadm_args, [](const QByteArray& output,
+                                           bool success, int exitCode)
+    {
+        if (success)
+        {
+            qDebug() << "mdadm exited normally with code: "
+                     << exitCode << " and output:";
+            qDebug() << output;
+        }
+        else
+            qDebug() << "mdadm crashed";
+    });
+
+    return true;
+}
+
