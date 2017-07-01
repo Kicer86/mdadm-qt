@@ -108,6 +108,8 @@ void MainWindow::createRaid()
         const auto type = createRaidDialog.getType();
         const auto mdNumber = createRaidDialog.getMDNumber();
 
+        Q_ASSERT(typeMap.contains(type));
+
         m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
                                      typeMap.value(type),
                                      disks);
