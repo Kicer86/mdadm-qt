@@ -3,12 +3,10 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
-#include <QMap>
 
 class QListView;
 class QComboBox;
 class QSpinBox;
-class MDAdmController;
 
 class CreateRaidDialog : public QDialog
 {  
@@ -20,16 +18,16 @@ class CreateRaidDialog : public QDialog
     QComboBox *m_cbTypes;
     QSpinBox *m_sbDevNumber;
 
-    MDAdmController *m_mdadmController;
-
-    const QMap<QString, int> m_raidTypes;
+    const QStringList m_raidTypes;
 
     void addElements();
     void removeElements();
-    void createRaid();
 
 public:
-    CreateRaidDialog(MDAdmController*, QWidget *parent = Q_NULLPTR);
+    CreateRaidDialog(QWidget *parent = Q_NULLPTR);
+    QStringList getSelectedDisks() const;
+    QString getType() const;
+    unsigned getMDNumber() const;
 };
 
 #endif // CREATE_RAID_DIALOG_HPP

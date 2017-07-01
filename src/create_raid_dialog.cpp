@@ -10,20 +10,18 @@
 
 #include "create_raid_dialog.hpp"
 #include "disk_controller.hpp"
-#include "mdadm_controller.hpp"
 
-CreateRaidDialog::CreateRaidDialog(MDAdmController* mdadmController, QWidget* parent) :
+CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     QDialog(parent),
     m_disksView(nullptr),
     m_selectedDisksView(nullptr),
     m_disksModel(),
     m_selectedDisksModel(),
-    m_mdadmController(mdadmController),
-    m_raidTypes({ {"RAID0", static_cast<int>(MDAdmController::Type::Raid0)},
-                  {"RAID1", static_cast<int>(MDAdmController::Type::Raid1)},
-                  {"RAID4", static_cast<int>(MDAdmController::Type::Raid4)},
-                  {"RAID5", static_cast<int>(MDAdmController::Type::Raid5)},
-                  {"RAID6", static_cast<int>(MDAdmController::Type::Raid6)} })
+    m_raidTypes({"RAID0",
+                 "RAID1",
+                 "RAID4",
+                 "RAID5",
+                 "RAID6"})
 {
     QVBoxLayout *systemDisksLayout = new QVBoxLayout;
     QVBoxLayout *buttonDiskLayout = new QVBoxLayout;
@@ -42,11 +40,7 @@ CreateRaidDialog::CreateRaidDialog(MDAdmController* mdadmController, QWidget* pa
     QPushButton *buttonRemove = new QPushButton(tr("<-"));
 
     m_cbTypes = new QComboBox;
-
-    for (auto it = m_raidTypes.constBegin(); it != m_raidTypes.constEnd();
-         ++it) {
-        m_cbTypes->addItem(it.key(), it.value());
-    }
+    m_cbTypes->addItems(m_raidTypes);
 
     m_sbDevNumber = new QSpinBox;
 
@@ -99,11 +93,15 @@ CreateRaidDialog::CreateRaidDialog(MDAdmController* mdadmController, QWidget* pa
 
     m_disksModel.sort(0);
 
-    connect(buttonAdd, &QPushButton::clicked, this, &CreateRaidDialog::addElements);
-    connect(buttonRemove, &QPushButton::clicked, this, &CreateRaidDialog::removeElements);
+    connect(buttonAdd, &QPushButton::clicked, this,
+            &CreateRaidDialog::addElements);
+    connect(buttonRemove, &QPushButton::clicked, this,
+            &CreateRaidDialog::removeElements);
 
-    connect(buttonCancel, &QPushButton::clicked, this, &CreateRaidDialog::close);
-    connect(buttonCreate, &QPushButton::clicked, this, &CreateRaidDialog::createRaid);
+    connect(buttonCancel, &QPushButton::clicked, this,
+            &CreateRaidDialog::reject);
+    connect(buttonCreate, &QPushButton::clicked, this,
+            &CreateRaidDialog::accept);
 
     m_disksView->setModel(&m_disksModel);
     m_selectedDisksView->setModel(&m_selectedDisksModel);
@@ -114,30 +112,36 @@ CreateRaidDialog::CreateRaidDialog(MDAdmController* mdadmController, QWidget* pa
     setLayout(mainLayout);
 }
 
-void CreateRaidDialog::addElements() {
+void CreateRaidDialog::addElements()
+{
     QItemSelectionModel *selectionModel = m_disksView->selectionModel();
     std::vector<QPersistentModelIndex> rows_to_delete;
 
-    for (const auto& elem : selectionModel->selectedIndexes()) {
+    for (const auto& elem : selectionModel->selectedIndexes())
+    {
         if (!elem.isValid())
             continue;
         QStandardItem* item = m_disksModel.takeItem(elem.row(), elem.column());
         m_selectedDisksModel.appendRow(item);
         rows_to_delete.emplace_back(elem);
     }
-    for (const auto& elem: rows_to_delete) {
+
+    for (const auto& elem: rows_to_delete)
+    {
         m_disksModel.removeRow(elem.row());
     }
     m_disksModel.sort(0);
     m_selectedDisksModel.sort(0);
 }
 
-void CreateRaidDialog::removeElements() {
+void CreateRaidDialog::removeElements()
+{
     QItemSelectionModel *selectionModel =
             m_selectedDisksView->selectionModel();
     std::vector<QPersistentModelIndex> rows_to_delete;
 
-    for (const auto& elem : selectionModel->selectedIndexes()) {
+    for (const auto& elem : selectionModel->selectedIndexes())
+    {
         if (!elem.isValid())
             continue;
 
@@ -147,7 +151,8 @@ void CreateRaidDialog::removeElements() {
         rows_to_delete.emplace_back(elem);
     }
 
-    for (const auto& elem : rows_to_delete) {
+    for (const auto& elem : rows_to_delete)
+    {
         m_selectedDisksModel.removeRow(elem.row());
     }
 
@@ -155,19 +160,27 @@ void CreateRaidDialog::removeElements() {
     m_disksModel.sort(0);
 }
 
-void CreateRaidDialog::createRaid() {
+QStringList CreateRaidDialog::getSelectedDisks() const
+{
     QStringList disks;
 
-    for (int row = 0; row < m_selectedDisksModel.rowCount(); ++row) {
+    for (int row = 0; row < m_selectedDisksModel.rowCount(); ++row)
+    {
         QStandardItem *item = m_selectedDisksModel.item(row, 0);
         if (item != nullptr)
             disks.append(item->data().toString());
     }
-    QString type = m_cbTypes->currentText();
-    QString mdDevice = QString("/dev/md%1").arg(m_sbDevNumber->value());
 
-    m_mdadmController->createRaid(mdDevice,
-                                  static_cast<MDAdmController::Type>(
-                                      m_cbTypes->currentData().toInt()),
-                                  disks);
+    return disks;
 }
+
+QString CreateRaidDialog::getType() const
+{
+    return m_cbTypes->currentText();
+}
+
+unsigned CreateRaidDialog::getMDNumber() const
+{
+    return static_cast<unsigned>(m_sbDevNumber->value());
+}
+

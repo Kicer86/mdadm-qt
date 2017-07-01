@@ -89,7 +89,27 @@ void MainWindow::refreshArraysList()
     });
 }
 
-void MainWindow::createRaid() {
-    CreateRaidDialog rd(&m_mdadmController, this);
-    rd.exec();
+void MainWindow::createRaid()
+{
+    CreateRaidDialog createRaidDialog(this);
+    auto ret = createRaidDialog.exec();
+
+    if (ret == QDialog::Accepted)
+    {
+        const QMap<QString, MDAdmController::Type> typeMap =
+        {
+            { "RAID0", MDAdmController::Type::Raid0 },
+            { "RAID1", MDAdmController::Type::Raid1 },
+            { "RAID4", MDAdmController::Type::Raid4 },
+            { "RAID5", MDAdmController::Type::Raid5 },
+            { "RAID6", MDAdmController::Type::Raid6 }
+        };
+        const auto disks = createRaidDialog.getSelectedDisks();
+        const auto type = createRaidDialog.getType();
+        const auto mdNumber = createRaidDialog.getMDNumber();
+
+        m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
+                                     typeMap.value(type),
+                                     disks);
+    }
 }
