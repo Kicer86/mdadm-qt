@@ -17,11 +17,11 @@ CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     m_selectedDisksView(nullptr),
     m_disksModel(),
     m_selectedDisksModel(),
-    m_raidTypes({"RAID0",
-                 "RAID1",
-                 "RAID4",
-                 "RAID5",
-                 "RAID6"})
+    m_raidTypes({{"RAID0", 1},
+                 {"RAID1", 2},
+                 {"RAID4", 3},
+                 {"RAID5", 3},
+                 {"RAID6", 4}})
 {
     QVBoxLayout *systemDisksLayout = new QVBoxLayout;
     QVBoxLayout *buttonDiskLayout = new QVBoxLayout;
@@ -40,7 +40,8 @@ CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     QPushButton *buttonRemove = new QPushButton(tr("<-"));
 
     m_cbTypes = new QComboBox;
-    m_cbTypes->addItems(m_raidTypes);
+    m_cbTypes->addItems(m_raidTypes.keys());
+    m_cbTypes->setDisabled(true);
 
     m_sbDevNumber = new QSpinBox;
 
@@ -132,6 +133,7 @@ void CreateRaidDialog::addElements()
     }
     m_disksModel.sort(0);
     m_selectedDisksModel.sort(0);
+    recalculateType(m_selectedDisksModel.rowCount());
 }
 
 void CreateRaidDialog::removeElements()
@@ -158,6 +160,31 @@ void CreateRaidDialog::removeElements()
 
     m_selectedDisksModel.sort(0);
     m_disksModel.sort(0);
+    recalculateType(m_selectedDisksModel.rowCount());
+}
+
+void CreateRaidDialog::recalculateType(int count)
+{
+    const QStandardItemModel* model =
+            qobject_cast<const QStandardItemModel*>(m_cbTypes->model());
+
+    m_cbTypes->setDisabled(count == 0);
+
+    for (int i=0; i< m_cbTypes->count(); ++i)
+    {
+        const QString &type = m_cbTypes->itemText(i);
+
+        Q_ASSERT(m_raidTypes.contains(type));
+        auto item = model->item(i);
+        if (count < m_raidTypes.value(type))
+        {
+            item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+        }
+        else
+        {
+            item->setFlags(item->flags() | Qt::ItemIsEnabled);
+        }
+    }
 }
 
 QStringList CreateRaidDialog::getSelectedDisks() const
@@ -183,4 +210,3 @@ unsigned CreateRaidDialog::getMDNumber() const
 {
     return static_cast<unsigned>(m_sbDevNumber->value());
 }
-

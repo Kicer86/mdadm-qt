@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QStandardItemModel>
+#include <QMap>
 
 class QListView;
 class QComboBox;
@@ -18,10 +19,12 @@ class CreateRaidDialog : public QDialog
     QComboBox *m_cbTypes;
     QSpinBox *m_sbDevNumber;
 
-    const QStringList m_raidTypes;
+    const QMap<QString, int> m_raidTypes;
 
     void addElements();
     void removeElements();
+
+    void recalculateType(int count);
 
 public:
     CreateRaidDialog(QWidget *parent = Q_NULLPTR);
