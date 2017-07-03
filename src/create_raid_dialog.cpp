@@ -17,6 +17,8 @@ CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     m_selectedDisksView(nullptr),
     m_disksModel(),
     m_selectedDisksModel(),
+    m_cbTypes(nullptr),
+    m_sbDevNumber(nullptr),
     m_raidTypes({{"RAID0", 1},
                  {"RAID1", 2},
                  {"RAID4", 3},
@@ -69,9 +71,9 @@ CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     disksLayout->addLayout(buttonDiskLayout);
     disksLayout->addLayout(selectedDisksLayout);
 
-    optionsLayout->addRow(new QLabel("Type:"), m_cbTypes);
+    optionsLayout->addRow(new QLabel(tr("Type:")), m_cbTypes);
     optionsLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-    optionsLayout->addRow(new QLabel("MD device:"), m_sbDevNumber);
+    optionsLayout->addRow(new QLabel(tr("MD device:")), m_sbDevNumber);
 
     buttonCreateLayout->addStretch();
     buttonCreateLayout->addWidget(buttonCancel);
