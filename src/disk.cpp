@@ -35,7 +35,7 @@ unsigned Disk::getLogicalBlockSize()
 }
 
 bool Disk::isUsed() const {
-    QString dev_path("/dev/" + m_name);
+    const QString dev_path("/dev/" + m_name);
     bool ret = true;
     int fd = open(QFile::encodeName(dev_path), O_RDONLY | O_EXCL);
     if (fd > 0) {

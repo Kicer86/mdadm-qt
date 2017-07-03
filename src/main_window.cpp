@@ -92,7 +92,7 @@ void MainWindow::refreshArraysList()
 void MainWindow::createRaid()
 {
     CreateRaidDialog createRaidDialog(this);
-    auto ret = createRaidDialog.exec();
+    const auto ret = createRaidDialog.exec();
 
     if (ret == QDialog::Accepted)
     {

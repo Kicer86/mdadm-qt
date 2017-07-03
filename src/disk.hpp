@@ -6,7 +6,7 @@
 class Disk
 {
 private:
-    QString m_name;
+    const QString m_name;
     const QString m_model;
     const QString m_serial;
     const unsigned m_logical_block_size;
