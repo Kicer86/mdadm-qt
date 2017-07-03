@@ -10,7 +10,7 @@ class QComboBox;
 class QSpinBox;
 
 class CreateRaidDialog : public QDialog
-{  
+{
     QListView* m_disksView;
     QListView* m_selectedDisksView;
     QStandardItemModel m_disksModel;
@@ -28,6 +28,9 @@ class CreateRaidDialog : public QDialog
 
 public:
     CreateRaidDialog(QWidget *parent = Q_NULLPTR);
+    CreateRaidDialog(const CreateRaidDialog &) = delete;
+    CreateRaidDialog& operator=(const CreateRaidDialog &) = delete;
+
     QStringList getSelectedDisks() const;
     QString getType() const;
     unsigned getMDNumber() const;
