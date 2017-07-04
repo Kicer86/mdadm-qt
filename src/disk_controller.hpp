@@ -5,7 +5,8 @@
 #include <vector>
 
 #include "disk.hpp"
-#include "disk_filter.hpp"
+
+class IDiskFilter;
 
 class DiskController
 {
@@ -16,7 +17,7 @@ class DiskController
 public:
     DiskController();
 
-    std::vector<Disk> listDisks(const DiskFilter& df = DiskFilter()) const;
+    std::vector<Disk> listDisks(const IDiskFilter&) const;
 
 };
 

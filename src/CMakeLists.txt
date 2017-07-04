@@ -15,8 +15,11 @@ set(SRCS
         disk.hpp
         disk_controller.cpp
         disk_controller.hpp
-        disk_filter.cpp
-        disk_filter.hpp
+        idisk_filter.hpp
+        empty_filter.cpp
+        empty_filter.hpp
+        exclude_used_filter.cpp
+        exclude_used_filter.hpp
         create_raid_dialog.cpp
         create_raid_dialog.hpp
 )

@@ -2,12 +2,14 @@
 #include <QDirIterator>
 #include <QStringList>
 
+#include "idisk_filter.hpp"
+
 DiskController::DiskController()
 {
 
 }
 
-std::vector<Disk> DiskController::listDisks(const DiskFilter& filter) const
+std::vector<Disk> DiskController::listDisks(const IDiskFilter& filter) const
 {
     std::vector<Disk> disks;
     QDirIterator di("/sys/block", QStringList("sd*"), QDir::Dirs |

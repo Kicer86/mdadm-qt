@@ -10,6 +10,7 @@
 
 #include "create_raid_dialog.hpp"
 #include "disk_controller.hpp"
+#include "exclude_used_filter.hpp"
 
 CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     QDialog(parent),
@@ -84,9 +85,9 @@ CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     mainLayout->addLayout(buttonCreateLayout);
 
     DiskController dc;
-    DiskFilter df(DiskFilter::Filter::EXCLUDE_USED);
+    ExcludeUsedFilter diskFilter;
 
-    auto disks = dc.listDisks(df);
+    auto disks = dc.listDisks(diskFilter);
 
     for (const auto& disk : disks) {
         QStandardItem* item = new QStandardItem(disk.toString());
