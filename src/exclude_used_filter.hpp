@@ -5,7 +5,8 @@
 
 class Disk;
 
-class ExcludeUsedFilter : public IDiskFilter {
+class ExcludeUsedFilter : public IDiskFilter
+{
 private:
     ExcludeUsedFilter(const ExcludeUsedFilter&) = delete;
     ExcludeUsedFilter& operator=(const ExcludeUsedFilter&) = delete;

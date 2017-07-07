@@ -5,7 +5,8 @@
 
 class Disk;
 
-class EmptyFilter : public IDiskFilter {
+class EmptyFilter : public IDiskFilter
+{
 private:
     EmptyFilter(const EmptyFilter&) = delete;
     EmptyFilter& operator=(const EmptyFilter&) = delete;
@@ -18,4 +19,4 @@ public:
 
     bool operator()(const Disk&) const;
 };
-#endif // EXCLUDE_USED_FILTER_H
+#endif // EMPTY_FILTER_H
