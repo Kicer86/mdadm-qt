@@ -19,9 +19,45 @@
 
 #include "mdadm_controller.hpp"
 
-#include <QRegExp>
+#include <QDebug>
 #include <QFile>
+#include <QRegExp>
 #include <QTextStream>
+
+#include "imdadm_process.hpp"
+
+namespace
+{
+    QString levelName(MDAdmController::Type type)
+    {
+        QString result;
+
+        switch(type)
+        {
+            case MDAdmController::Type::Raid0:
+                result = "stripe";
+                break;
+
+            case MDAdmController::Type::Raid1:
+                result = "mirror";
+                break;
+
+            case MDAdmController::Type::Raid4:
+                result = "4";
+                break;
+
+            case MDAdmController::Type::Raid5:
+                result = "5";
+                break;
+
+            case MDAdmController::Type::Raid6:
+                result = "6";
+                break;
+        }
+
+        return result;
+    }
+}
 
 
 MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess): m_mdadmProcess(mdadmProcess)
@@ -36,7 +72,7 @@ MDAdmController::~MDAdmController()
 }
 
 
-bool MDAdmController::listRaids (const ListResult& result)
+bool MDAdmController::listRaids(const ListResult& result)
 {
     QFile mdstat("/proc/mdstat");
 
@@ -84,4 +120,31 @@ bool MDAdmController::listRaids (const ListResult& result)
     }
 
     return open_status;
+}
+
+
+bool MDAdmController::createRaid(const QString& raid_device, MDAdmController::Type type, const QStringList& block_devices)
+{
+    QStringList mdadm_args;
+
+    mdadm_args << "--create" << "--verbose" << raid_device;
+    mdadm_args << "--level" << levelName(type);
+    mdadm_args << QString("--raid-devices=%1").arg(block_devices.size()) << block_devices;
+
+    qDebug() << "executing mdadm with args: " << mdadm_args;
+    
+    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output, bool success, int exitCode)
+    {
+        if (success)
+        {
+            qDebug() << "mdadm exited normally with code: " << exitCode << " and output:";
+            qDebug() << output;
+            
+            emit raidCreated();
+        }
+        else
+            qDebug() << "mdadm crashed";
+    });
+
+    return true;
 }

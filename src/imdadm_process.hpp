@@ -27,7 +27,7 @@
 
 struct IMDAdmProcess
 {
-    typedef std::function<void(const QByteArray &)> ExecutionResult;
+    typedef std::function<void(const QByteArray &, bool, int)> ExecutionResult;    // output, normal exit?, exit code
 
     virtual ~IMDAdmProcess() = default;
 

@@ -19,9 +19,10 @@
 
 
 #include "main_window.hpp"
+#include "create_raid_dialog.hpp"
 
 #include <QTableView>
-
+#include <QMenuBar>
 
 MainWindow::MainWindow():
     QMainWindow(),
@@ -35,9 +36,33 @@ MainWindow::MainWindow():
     m_raidsView = new QTableView(this);
     m_raidsView->setModel(&m_raidsModel);
 
+    auto raidMenu = menuBar()->addMenu(tr("&Raid"));
+    QAction *actionCreate = new QAction(tr("&New"));
+    QAction *actionQuit = new QAction(tr("&Quit"));
+
+    actionCreate->setShortcut(Qt::CTRL + Qt::Key_N);
+    actionQuit->setShortcut(Qt::CTRL + Qt::Key_Q);
+
+    connect(actionCreate, &QAction::triggered, this, &MainWindow::createRaid);
+    connect(actionQuit, &QAction::triggered, this, &QMainWindow::close);
+
+    raidMenu->addAction(actionCreate);
+    raidMenu->addAction(actionQuit);
+
+    auto viewMenu = menuBar()->addMenu(tr("&View"));
+    QAction *actionReload = new QAction(tr("&Reload"));
+
+    actionReload->setShortcut(Qt::Key_F5);
+
+    connect(actionReload, &QAction::triggered, this, &MainWindow::refreshArraysList);
+
+    viewMenu->addAction(actionReload);
+
     setCentralWidget(m_raidsView);
 
     refreshArraysList();
+    
+    connect(&m_mdadmController, &MDAdmController::raidCreated, this, &MainWindow::refreshArraysList);
 }
 
 
@@ -64,4 +89,31 @@ void MainWindow::refreshArraysList()
             m_raidsModel.appendRow(row);
         }
     });
+}
+
+void MainWindow::createRaid()
+{
+    CreateRaidDialog createRaidDialog(this);
+    const auto ret = createRaidDialog.exec();
+
+    if (ret == QDialog::Accepted)
+    {
+        const QMap<QString, MDAdmController::Type> typeMap =
+        {
+            { "RAID0", MDAdmController::Type::Raid0 },
+            { "RAID1", MDAdmController::Type::Raid1 },
+            { "RAID4", MDAdmController::Type::Raid4 },
+            { "RAID5", MDAdmController::Type::Raid5 },
+            { "RAID6", MDAdmController::Type::Raid6 }
+        };
+        const auto disks = createRaidDialog.getSelectedDisks();
+        const auto type = createRaidDialog.getType();
+        const auto mdNumber = createRaidDialog.getMDNumber();
+
+        Q_ASSERT(typeMap.contains(type));
+
+        m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
+                                     typeMap.value(type),
+                                     disks);
+    }
 }
