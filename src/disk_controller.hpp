@@ -2,9 +2,11 @@
 #define DISKCONTROLLER_HPP
 
 #include <functional>
+#include <memory>
 #include <vector>
 
-#include "disk.hpp"
+
+#include "iblock_device.hpp"
 
 class IDiskFilter;
 
@@ -17,7 +19,7 @@ class DiskController
 public:
     DiskController();
 
-    std::vector<Disk> listDisks(const IDiskFilter&) const;
+    std::vector<std::unique_ptr<IBlockDevice>> listDisks(const IDiskFilter&) const;
 
 };
 

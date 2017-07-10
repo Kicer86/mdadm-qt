@@ -11,8 +11,6 @@ set(SRCS
         mdadm_process.cpp
         mdadm_process.hpp
         utils.hpp
-        disk.cpp
-        disk.hpp
         disk_controller.cpp
         disk_controller.hpp
         idisk_filter.hpp
@@ -22,6 +20,12 @@ set(SRCS
         exclude_used_filter.hpp
         create_raid_dialog.cpp
         create_raid_dialog.hpp
+        #block devices
+        iblock_device.hpp
+        block_device.cpp
+        block_device.hpp
+        disk.cpp
+        disk.hpp
 )
 
 qt5_wrap_cpp(WRAPPED mdadm_controller.hpp)

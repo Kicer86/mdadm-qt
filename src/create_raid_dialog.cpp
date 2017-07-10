@@ -90,8 +90,8 @@ CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     auto disks = dc.listDisks(diskFilter);
 
     for (const auto& disk : disks) {
-        QStandardItem* item = new QStandardItem(disk.toString());
-        item->setData(disk.devPath());
+        QStandardItem* item = new QStandardItem(disk->toString());
+        item->setData(disk->devPath());
         m_disksModel.appendRow(item);
     }
 
