@@ -37,11 +37,14 @@ MDAdmProcess::~MDAdmProcess()
 bool MDAdmProcess::execute(const QStringList& args, const ExecutionResult& result)
 {
     QProcess* mdadm = new QProcess;
+    mdadm->setProcessChannelMode(QProcess::MergedChannels);
 
     QObject::connect(mdadm, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
-        [result, mdadm](int, QProcess::ExitStatus)
+        [result, mdadm](int exitCode, QProcess::ExitStatus status)
     {
         const QByteArray output = mdadm->readAll();
+        
+        result(output, status == QProcess::NormalExit, exitCode);
 
         mdadm->deleteLater();
     });
