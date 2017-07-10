@@ -46,7 +46,7 @@ find_package(GTest)
 if(GMOCK_FOUND AND GTEST_FOUND)
 
     find_package(Threads REQUIRED)
-    
+
     qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
 
     add_executable(mdadm_controller_tests
@@ -67,6 +67,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                             PRIVATE
                                 ${GMOCK_MAIN_LIBRARY}
                                 ${GMOCK_LIBRARY}
+                                ${GTEST_LIBRARY}
                                 ${CMAKE_THREAD_LIBS_INIT}
                                 Qt5::Core
     )
