@@ -72,7 +72,7 @@ MDAdmController::~MDAdmController()
 }
 
 
-bool MDAdmController::listRaids (const ListResult& result)
+bool MDAdmController::listRaids(const ListResult& result)
 {
     QFile mdstat("/proc/mdstat");
 
@@ -133,12 +133,14 @@ bool MDAdmController::createRaid(const QString& raid_device, MDAdmController::Ty
 
     qDebug() << "executing mdadm with args: " << mdadm_args;
     
-    m_mdadmProcess->execute(mdadm_args, [](const QByteArray& output, bool success, int exitCode)
+    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output, bool success, int exitCode)
     {
         if (success)
         {
             qDebug() << "mdadm exited normally with code: " << exitCode << " and output:";
             qDebug() << output;
+            
+            emit raidCreated();
         }
         else
             qDebug() << "mdadm crashed";

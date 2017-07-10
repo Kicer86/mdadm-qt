@@ -24,7 +24,9 @@ set(SRCS
         create_raid_dialog.hpp
 )
 
-add_executable(mdadm-qt ${SRCS})
+qt5_wrap_cpp(WRAPPED mdadm_controller.hpp)
+
+add_executable(mdadm-qt ${SRCS} ${WRAPPED})
 
 target_include_directories(mdadm-qt
                             SYSTEM
@@ -44,11 +46,14 @@ find_package(GTest)
 if(GMOCK_FOUND AND GTEST_FOUND)
 
     find_package(Threads REQUIRED)
+    
+    qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
 
     add_executable(mdadm_controller_tests
                         imdadm_process_mock.hpp
                         mdadm_controller_tests.cpp
                         mdadm_controller.cpp
+                        ${WRAPPED_FOR_TESTS}
     )
 
     target_include_directories(mdadm_controller_tests

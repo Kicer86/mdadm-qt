@@ -61,6 +61,8 @@ MainWindow::MainWindow():
     setCentralWidget(m_raidsView);
 
     refreshArraysList();
+    
+    connect(&m_mdadmController, &MDAdmController::raidCreated, this, &MainWindow::refreshArraysList);
 }
 
 

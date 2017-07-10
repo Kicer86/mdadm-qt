@@ -23,6 +23,7 @@
 #include <functional>
 #include <vector>
 
+#include <QObject>
 #include <QStringList>
 
 
@@ -43,8 +44,10 @@ struct RaidInfo
     {}
 };
 
-class MDAdmController
+class MDAdmController: public QObject
 {
+        Q_OBJECT
+    
     public:
         // ListResult - callback function for listRaids
         typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
@@ -71,6 +74,9 @@ class MDAdmController
 
     private:
         IMDAdmProcess* m_mdadmProcess;
+        
+    signals:
+        void raidCreated();
 };
 
 #endif // MDADMCONTROLLER_HPP
