@@ -25,7 +25,6 @@
 #include <QTableView>
 #include <QMenuBar>
 
-const QString MainWindow::CONFIRM_TEXT = tr("confirm");
 
 MainWindow::MainWindow():
     QMainWindow(),
@@ -148,8 +147,9 @@ void MainWindow::removeRaid()
 
     }
 
-    bool ok;
     /* FIXME temporary solution */
+    const QString CONFIRM_TEXT = tr("confirm");
+    bool ok;
     QString text = QInputDialog::getText(this,
                        tr("Remove software RAID"),
                        tr("<b>Warning!</b><br /><br />"
