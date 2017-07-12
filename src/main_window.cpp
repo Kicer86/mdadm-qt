@@ -21,8 +21,11 @@
 #include "main_window.hpp"
 #include "create_raid_dialog.hpp"
 
+#include <QInputDialog>
 #include <QTableView>
 #include <QMenuBar>
+
+const QString MainWindow::CONFIRM_TEXT = tr("confirm");
 
 MainWindow::MainWindow():
     QMainWindow(),
@@ -35,18 +38,24 @@ MainWindow::MainWindow():
 
     m_raidsView = new QTableView(this);
     m_raidsView->setModel(&m_raidsModel);
+    m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_raidsView->setSelectionMode(QAbstractItemView::SingleSelection);
 
     auto raidMenu = menuBar()->addMenu(tr("&Raid"));
     QAction *actionCreate = new QAction(tr("&New"));
+    QAction *actionRemove = new QAction(tr("Remove selected"));
     QAction *actionQuit = new QAction(tr("&Quit"));
 
     actionCreate->setShortcut(Qt::CTRL + Qt::Key_N);
+    actionRemove->setShortcut(Qt::Key_Delete);
     actionQuit->setShortcut(Qt::CTRL + Qt::Key_Q);
 
     connect(actionCreate, &QAction::triggered, this, &MainWindow::createRaid);
+    connect(actionRemove, &QAction::triggered, this, &MainWindow::removeRaid);
     connect(actionQuit, &QAction::triggered, this, &QMainWindow::close);
 
     raidMenu->addAction(actionCreate);
+    raidMenu->addAction(actionRemove);
     raidMenu->addAction(actionQuit);
 
     auto viewMenu = menuBar()->addMenu(tr("&View"));
@@ -61,7 +70,14 @@ MainWindow::MainWindow():
     setCentralWidget(m_raidsView);
 
     refreshArraysList();
-    
+
+    connect(raidMenu, &QMenu::aboutToShow,
+            [this, actionRemove]()
+    {
+        actionRemove->setEnabled(
+                    this->m_raidsView->selectionModel()->hasSelection());
+    });
+
     connect(&m_mdadmController, &MDAdmController::raidCreated, this, &MainWindow::refreshArraysList);
 }
 
@@ -116,4 +132,39 @@ void MainWindow::createRaid()
                                      typeMap.value(type),
                                      disks);
     }
+}
+
+void MainWindow::removeRaid()
+{
+    QString raidDevice;
+
+    auto selected = m_raidsView->selectionModel()->selectedRows(0);
+
+    if (!selected.isEmpty())
+    {
+        QModelIndex modelIndex = selected.at(0);
+        if (modelIndex.isValid())
+            raidDevice = m_raidsModel.itemFromIndex(modelIndex)->text();
+
+    }
+
+    bool ok;
+    /* FIXME temporary solution */
+    QString text = QInputDialog::getText(this,
+                       tr("Remove software RAID"),
+                       tr("<b>Warning!</b><br /><br />"
+                          "This operation will remove <b>%1</b> RAID device"
+                          " from the system and clear metadata on all of its "
+                          "components.<br /><br />Please enter <b>%2</b> word"
+                          " to confirm this operation")
+                                         .arg(raidDevice)
+                                         .arg(CONFIRM_TEXT),
+                       QLineEdit::Normal,
+                       "",
+                       &ok);
+     if (ok && text == CONFIRM_TEXT)
+     {
+        m_mdadmController.stopRaid("/dev/" + raidDevice);
+     }
+
 }
