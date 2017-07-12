@@ -38,6 +38,8 @@ class MainWindow: public QMainWindow
         MainWindow& operator=(const MainWindow &) = delete;
         bool operator==(const MainWindow &) const = delete;
 
+        static const QString CONFIRM_TEXT;
+
     private:
         MDAdmProcess m_mdadmProcess;
         MDAdmController m_mdadmController;
@@ -46,6 +48,7 @@ class MainWindow: public QMainWindow
 
         void refreshArraysList();
         void createRaid();
+        void removeRaid();
 };
 
 #endif // MAINWINDOW_HPP
