@@ -22,6 +22,7 @@
 #include "create_raid_dialog.hpp"
 
 #include <QInputDialog>
+#include <QTabWidget>
 #include <QTableView>
 #include <QMenuBar>
 
@@ -30,9 +31,13 @@ MainWindow::MainWindow():
     QMainWindow(),
     m_mdadmProcess(),
     m_mdadmController(&m_mdadmProcess),
+    m_viewTabs(nullptr),
     m_raidsView(nullptr),
-    m_raidsModel()
+    m_disksView(nullptr),
+    m_raidsModel(),
+    m_disksModel()
 {
+    // raids tab
     m_raidsModel.setHorizontalHeaderLabels( { tr("raid device"), tr("type"), tr("block devices") } );
 
     m_raidsView = new QTableView(this);
@@ -40,6 +45,13 @@ MainWindow::MainWindow():
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_raidsView->setSelectionMode(QAbstractItemView::SingleSelection);
 
+    // disks tab
+    m_disksModel.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
+
+    m_disksView = new QTableView(this);
+    m_disksView->setModel(&m_disksModel);
+
+    // menus & shortcuts
     auto raidMenu = menuBar()->addMenu(tr("&Raid"));
     QAction *actionCreate = new QAction(tr("&New"));
     QAction *actionRemove = new QAction(tr("Remove selected"));
@@ -66,8 +78,14 @@ MainWindow::MainWindow():
 
     viewMenu->addAction(actionReload);
 
-    setCentralWidget(m_raidsView);
+    // setup tabs
+    m_viewTabs = new QTabWidget(this);
+    m_viewTabs->addTab(m_raidsView, tr("RAIDs"));
+    m_viewTabs->addTab(m_disksView, tr("Disks"));
 
+    setCentralWidget(m_viewTabs);
+
+    // refresh stuf
     refreshArraysList();
 
     connect(raidMenu, &QMenu::aboutToShow,

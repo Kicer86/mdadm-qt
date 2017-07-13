@@ -26,6 +26,7 @@
 #include "mdadm_controller.hpp"
 #include "mdadm_process.hpp"
 
+class QTabWidget;
 class QTableView;
 
 class MainWindow: public QMainWindow
@@ -41,8 +42,11 @@ class MainWindow: public QMainWindow
     private:
         MDAdmProcess m_mdadmProcess;
         MDAdmController m_mdadmController;
+        QTabWidget* m_viewTabs;
         QTableView* m_raidsView;
+        QTableView* m_disksView;
         QStandardItemModel m_raidsModel;
+        QStandardItemModel m_disksModel;
 
         void refreshArraysList();
         void createRaid();
