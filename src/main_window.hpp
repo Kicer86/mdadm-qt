@@ -49,6 +49,7 @@ class MainWindow: public QMainWindow
         QStandardItemModel m_disksModel;
 
         void refreshArraysList();
+        void refreshDisksList();
         void createRaid();
         void removeRaid();
 };

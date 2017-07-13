@@ -19,12 +19,15 @@
 
 
 #include "main_window.hpp"
-#include "create_raid_dialog.hpp"
 
 #include <QInputDialog>
 #include <QTabWidget>
 #include <QTableView>
 #include <QMenuBar>
+
+#include "create_raid_dialog.hpp"
+#include "disk_controller.hpp"
+#include "empty_filter.hpp"
 
 
 MainWindow::MainWindow():
@@ -87,6 +90,7 @@ MainWindow::MainWindow():
 
     // refresh stuf
     refreshArraysList();
+    refreshDisksList();
 
     connect(raidMenu, &QMenu::aboutToShow,
             [this, actionRemove]()
@@ -123,6 +127,27 @@ void MainWindow::refreshArraysList()
         }
     });
 }
+
+
+void MainWindow::refreshDisksList()
+{
+    const int rows = m_disksModel.rowCount();
+    m_disksModel.removeRows(0, rows);     // .clear() would clear headers also
+
+    const DiskController dc;
+    const auto disks = dc.listDisks(EmptyFilter());
+
+    for(const std::unique_ptr<IBlockDevice>& blk_dev: disks)
+    {
+        QStandardItem* device_item = new QStandardItem(blk_dev->devPath());
+        QStandardItem* type_item = new QStandardItem("disk");
+        QStandardItem* status_item = new QStandardItem(blk_dev->isUsed()? tr("mounted"): tr("ok"));  // TODO: 'ok' is not nice (?)
+
+        const QList<QStandardItem *> row = { device_item, type_item, status_item };
+        m_disksModel.appendRow(row);
+    }
+}
+
 
 void MainWindow::createRaid()
 {
