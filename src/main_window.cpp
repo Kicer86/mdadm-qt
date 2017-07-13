@@ -53,6 +53,8 @@ MainWindow::MainWindow():
 
     m_disksView = new QTableView(this);
     m_disksView->setModel(&m_disksModel);
+    m_disksView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_disksView->setSelectionMode(QAbstractItemView::SingleSelection);
 
     // menus & shortcuts
     auto raidMenu = menuBar()->addMenu(tr("&Raid"));
@@ -91,6 +93,12 @@ MainWindow::MainWindow():
     // refresh stuf
     refreshArraysList();
     refreshDisksList();
+
+    m_raidsView->sortByColumn(0, Qt::AscendingOrder);
+    m_raidsView->setSortingEnabled(true);
+
+    m_disksView->sortByColumn(0, Qt::AscendingOrder);
+    m_disksView->setSortingEnabled(true);
 
     connect(raidMenu, &QMenu::aboutToShow,
             [this, actionRemove]()
