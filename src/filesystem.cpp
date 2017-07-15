@@ -34,9 +34,10 @@ namespace
         {
             if (m_file.isOpen() == false)
             {
-                m_file.open(QFile::ReadOnly);      // TODO: flag for RW?
+                const bool status = m_file.open(QFile::ReadOnly);      // TODO: flag for RW?
 
-                m_stream = std::make_unique<QTextStream>(&m_file);
+                if (status)
+                    m_stream = std::make_unique<QTextStream>(&m_file);
             }
 
             return m_stream.get();
