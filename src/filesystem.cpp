@@ -48,7 +48,7 @@ FileSystem::~FileSystem()
 
 std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString&)
 {
-    std::unique_ptr<File> file;
+    std::unique_ptr<File> file = std::make_unique<File>();
 
     return file;
 }
