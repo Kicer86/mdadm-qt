@@ -16,7 +16,7 @@ private:
     Disk& operator=(const Disk&) = delete;
 public:
     Disk(const QString&);
-    Disk(Disk&&);
+    Disk(Disk&&) = default;
 
     bool operator==(const Disk&) const;
 

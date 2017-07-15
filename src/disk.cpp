@@ -11,13 +11,6 @@ Disk::Disk(const QString& name) :
 {
 }
 
-Disk::Disk(Disk&& other) :
-    BlockDevice(std::move(other)),
-    m_name(std::move(other.m_name)),
-    m_model(std::move(other.m_model)),
-    m_serial(std::move(other.m_serial))
-{
-}
 
 bool Disk::operator==(const Disk& other) const
 {
