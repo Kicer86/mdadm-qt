@@ -20,6 +20,7 @@
 
 #include "filesystem.hpp"
 
+#include <QDirIterator>
 #include <QFile>
 #include <QString>
 #include <QTextStream>
@@ -69,9 +70,17 @@ std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path)
 }
 
 
-std::deque<QString> FileSystem::listDir(const QString&, const char* filter)
+std::deque<QString> FileSystem::listDir(const QString& dir, const char* filter)
 {
     std::deque<QString> list;
+
+    QDirIterator di(dir, QStringList(filter), QDir::Dirs | QDir::NoDotAndDotDot);
+    while (di.hasNext())
+    {
+        di.next();
+
+        list.emplace_back(di.fileName());
+    }
 
     return list;
 }
