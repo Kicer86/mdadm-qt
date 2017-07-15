@@ -27,6 +27,29 @@ bool Disk::operator==(const Disk& other) const
              this->m_model == other.m_model);
 }
 
+
+const QString& Disk::serial() const
+{
+    return m_serial;
+}
+
+
+const QString& Disk::model() const
+{
+    return m_model;
+}
+
+
+const QString& Disk::name() const {
+    return m_name;
+}
+
+
+QString Disk::devPath() const {
+    return QString("/dev/") + m_name;
+}
+
+
 QString Disk::toString() const
 {
     return QString("%1, %2, %3, %4 [GiB]\n")

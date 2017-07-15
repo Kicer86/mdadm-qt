@@ -20,24 +20,10 @@ public:
 
     bool operator==(const Disk&) const;
 
-    const QString& serial() const
-    {
-        return m_serial;
-    }
-
-    const QString& model() const
-    {
-        return m_model;
-    }
-
-    const QString& name() const {
-        return m_name;
-    }
-
-    QString devPath() const {
-        return QString("/dev/") + m_name;
-    }
-
+    const QString& serial() const;
+    const QString& model() const;
+    const QString& name() const;
+    QString devPath() const;
     QString toString() const;
 };
 
