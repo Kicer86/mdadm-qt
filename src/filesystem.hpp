@@ -32,6 +32,9 @@ class FileSystem: public IFileSystem
         ~FileSystem();
         FileSystem& operator=(const FileSystem &) = delete;
         bool operator==(const FileSystem &) const = delete;
+
+        std::unique_ptr<IFile> openFile(const QString &) override;
+        std::deque<QString> listDir(const QString & , const char* filter) override;
 };
 
 #endif // FILESYSTEM_HPP

@@ -20,6 +20,19 @@
 
 #include "filesystem.hpp"
 
+#include <QString>
+
+namespace
+{
+    struct File: IFileSystem::IFile
+    {
+        QTextStream* getStream() override
+        {
+            return nullptr;
+        }
+    };
+}
+
 
 FileSystem::FileSystem()
 {
@@ -30,4 +43,20 @@ FileSystem::FileSystem()
 FileSystem::~FileSystem()
 {
 
+}
+
+
+std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString&)
+{
+    std::unique_ptr<File> file;
+
+    return file;
+}
+
+
+std::deque<QString> FileSystem::listDir(const QString&, const char* filter)
+{
+    std::deque<QString> list;
+
+    return list;
 }
