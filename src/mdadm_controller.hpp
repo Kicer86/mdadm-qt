@@ -74,7 +74,9 @@ class MDAdmController: public QObject
                             QStringList& block_devices);
         bool createRaid(const QString& raid_device, Type,
                         const QStringList& block_devices);
+        bool removeRaid(const QString& raid_device);
         bool stopRaid(const QString& raid_device);
+        bool zeroSuperblock(const QStringList& raid_components);
 
     private:
         IMDAdmProcess* m_mdadmProcess;
