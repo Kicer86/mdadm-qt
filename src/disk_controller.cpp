@@ -1,13 +1,14 @@
 #include "disk_controller.hpp"
-#include <QDirIterator>
+
 #include <QStringList>
 
 #include "idisk_filter.hpp"
 #include "iblock_device.hpp"
+#include "ifilesystem.hpp"
 
 #include "disk.hpp"
 
-DiskController::DiskController()
+DiskController::DiskController(IFileSystem* filesystem): m_fileSystem(filesystem)
 {
 
 }
@@ -15,12 +16,12 @@ DiskController::DiskController()
 std::vector<std::unique_ptr<IBlockDevice>> DiskController::listDisks(const IDiskFilter& filter) const
 {
     std::vector<std::unique_ptr<IBlockDevice>> disks;
-    QDirIterator di("/sys/block", QStringList("sd*"), QDir::Dirs |
-                    QDir::NoDotAndDotDot);
-    while (di.hasNext())
+
+    const std::deque<QString> files = m_fileSystem->listDir("/sys/block", "sd*");
+
+    for(const QString& file_name: files)
     {
-        di.next();
-        std::unique_ptr<Disk> disk(new Disk(di.fileName()));
+        std::unique_ptr<Disk> disk(new Disk(file_name, m_fileSystem));
         if (filter(*disk))
             disks.emplace_back(std::move(disk));
     }

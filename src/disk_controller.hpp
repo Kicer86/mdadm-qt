@@ -9,15 +9,18 @@
 #include "iblock_device.hpp"
 
 class IDiskFilter;
+struct IFileSystem;
 
 class DiskController
 {
+    IFileSystem* m_fileSystem;
+
     DiskController(const DiskController&) = delete;
     DiskController& operator=(const DiskController&) = delete;
     bool operator==(const DiskController&) = delete;
 
 public:
-    DiskController();
+    DiskController(IFileSystem *);
 
     std::vector<std::unique_ptr<IBlockDevice>> listDisks(const IDiskFilter&) const;
 

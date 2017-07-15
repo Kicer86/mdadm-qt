@@ -20,12 +20,11 @@
 #include "mdadm_controller.hpp"
 
 #include <QDebug>
-#include <QDirIterator>
 #include <QRegExp>
-#include <QFile>
-#include <QRegExp>
+#include <QFileInfo>
 #include <QTextStream>
 
+#include "ifilesystem.hpp"
 #include "imdadm_process.hpp"
 
 namespace
@@ -62,7 +61,9 @@ namespace
 }
 
 
-MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess): m_mdadmProcess(mdadmProcess)
+MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess, IFileSystem* fileSystem):
+    m_mdadmProcess(mdadmProcess),
+    m_fileSystem(fileSystem)
 {
 
 }
@@ -76,10 +77,12 @@ MDAdmController::~MDAdmController()
 
 bool MDAdmController::listRaids(const ListResult& result)
 {
-    QFile mdstat("/proc/mdstat");
+    auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
+                                                       QIODevice::Text);
 
-    const bool open_status = mdstat.exists() && mdstat.open(QIODevice::ReadOnly |
-                                                            QIODevice::Text);
+    QTextStream* mdstat_stream = file->getStream();
+
+    const bool open_status = mdstat_stream != nullptr;
 
     if (open_status)
     {
@@ -91,11 +94,10 @@ bool MDAdmController::listRaids(const ListResult& result)
         // see: http://doc.qt.io/qt-5/qiodevice.html#atEnd
         // and  http://doc.qt.io/qt-5/qfile.html#details
         // for details
-        QTextStream mdstat_stream(&mdstat);
 
-        for(QString outputLine = mdstat_stream.readLine();
+        for(QString outputLine = mdstat_stream->readLine();
             outputLine.isNull() == false;
-            outputLine = mdstat_stream.readLine())
+            outputLine = mdstat_stream->readLine())
         {
             if (mdadm_info.exactMatch(outputLine))
             {
@@ -120,8 +122,6 @@ bool MDAdmController::listRaids(const ListResult& result)
             }
         }
 
-        mdstat.close();
-
         result(results);
     }
 
@@ -131,13 +131,11 @@ bool MDAdmController::listRaids(const ListResult& result)
 bool MDAdmController::listComponents(const QString& raid_device,
                                      QStringList& block_devices) {
     QString slaves_path = "/sys/block/" + raid_device + "/slaves";
-    QDirIterator di(slaves_path, QDir::Dirs | QDir::NoDotAndDotDot);
 
-    while (di.hasNext())
-    {
-        di.next();
-        block_devices << ("/dev/" + di.fileName());
-    }
+    const std::deque<QString> files = m_fileSystem->listDir(slaves_path);
+
+    for (const QString& file: files)
+        block_devices << ("/dev/" + file);
 
     return !block_devices.empty();
 }

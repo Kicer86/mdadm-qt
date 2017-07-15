@@ -9,6 +9,8 @@ class QListView;
 class QComboBox;
 class QSpinBox;
 
+struct IFileSystem;
+
 class CreateRaidDialog : public QDialog
 {
     QListView* m_disksView;
@@ -27,7 +29,7 @@ class CreateRaidDialog : public QDialog
     void recalculateType(int count);
 
 public:
-    CreateRaidDialog(QWidget *parent = Q_NULLPTR);
+    CreateRaidDialog(IFileSystem *, QWidget *parent = Q_NULLPTR);
     CreateRaidDialog(const CreateRaidDialog &) = delete;
     CreateRaidDialog& operator=(const CreateRaidDialog &) = delete;
 

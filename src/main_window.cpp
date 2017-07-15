@@ -32,13 +32,14 @@
 
 MainWindow::MainWindow():
     QMainWindow(),
+    m_fileSystem(),
     m_mdadmProcess(),
-    m_mdadmController(&m_mdadmProcess),
+    m_mdadmController(&m_mdadmProcess, &m_fileSystem),
+    m_raidsModel(),
+    m_disksModel(),
     m_viewTabs(nullptr),
     m_raidsView(nullptr),
-    m_disksView(nullptr),
-    m_raidsModel(),
-    m_disksModel()
+    m_disksView(nullptr)
 {
     // raids tab
     m_raidsModel.setHorizontalHeaderLabels( { tr("raid device"), tr("type"), tr("block devices") } );
@@ -142,7 +143,7 @@ void MainWindow::refreshDisksList()
     const int rows = m_disksModel.rowCount();
     m_disksModel.removeRows(0, rows);     // .clear() would clear headers also
 
-    const DiskController dc;
+    const DiskController dc(&m_fileSystem);
     const auto disks = dc.listDisks(EmptyFilter());
 
     for(const std::unique_ptr<IBlockDevice>& blk_dev: disks)
@@ -159,7 +160,7 @@ void MainWindow::refreshDisksList()
 
 void MainWindow::createRaid()
 {
-    CreateRaidDialog createRaidDialog(this);
+    CreateRaidDialog createRaidDialog(&m_fileSystem, this);
     const auto ret = createRaidDialog.exec();
 
     if (ret == QDialog::Accepted)
