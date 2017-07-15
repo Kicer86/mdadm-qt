@@ -20,16 +20,30 @@
 
 #include "filesystem.hpp"
 
+#include <QFile>
 #include <QString>
+#include <QTextStream>
 
 namespace
 {
     struct File: IFileSystem::IFile
     {
+        File(const QString& path): m_stream(nullptr), m_file(path) {}
+
         QTextStream* getStream() override
         {
-            return nullptr;
+            if (m_file.isOpen() == false)
+            {
+                m_file.open(QFile::ReadOnly);      // TODO: flag for RW?
+
+                m_stream = std::make_unique<QTextStream>(&m_file);
+            }
+
+            return m_stream.get();
         }
+
+        std::unique_ptr<QTextStream> m_stream;
+        QFile m_file;
     };
 }
 
@@ -46,9 +60,9 @@ FileSystem::~FileSystem()
 }
 
 
-std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString&)
+std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path)
 {
-    std::unique_ptr<File> file = std::make_unique<File>();
+    std::unique_ptr<File> file = std::make_unique<File>(path);
 
     return file;
 }
