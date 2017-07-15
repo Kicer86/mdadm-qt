@@ -215,7 +215,7 @@ void MainWindow::removeRaid()
                        &ok);
      if (ok && text == CONFIRM_TEXT)
      {
-        m_mdadmController.stopRaid("/dev/" + raidDevice);
+        m_mdadmController.removeRaid("/dev/" + raidDevice);
      }
 
 }
