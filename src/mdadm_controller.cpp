@@ -93,7 +93,10 @@ bool MDAdmController::listRaids(const ListResult& result)
         // for details
         QTextStream mdstat_stream(&mdstat);
 
-        for(QString outputLine = mdstat_stream.readLine(); outputLine.isNull() == false; outputLine = mdstat_stream.readLine())
+        for(QString outputLine = mdstat_stream.readLine();
+            outputLine.isNull() == false;
+            outputLine = mdstat_stream.readLine())
+        {
             if (mdadm_info.exactMatch(outputLine))
             {
                 const QString dev = mdadm_info.cap(1);
@@ -115,6 +118,7 @@ bool MDAdmController::listRaids(const ListResult& result)
 
                 results.emplace_back(dev, devices_list, type);
             }
+        }
 
         mdstat.close();
 
@@ -139,7 +143,9 @@ bool MDAdmController::listComponents(const QString& raid_device,
 }
 
 
-bool MDAdmController::createRaid(const QString& raid_device, MDAdmController::Type type, const QStringList& block_devices)
+bool MDAdmController::createRaid(const QString& raid_device,
+                                 MDAdmController::Type type,
+                                 const QStringList& block_devices)
 {
     QStringList mdadm_args;
 
@@ -148,14 +154,16 @@ bool MDAdmController::createRaid(const QString& raid_device, MDAdmController::Ty
     mdadm_args << QString("--raid-devices=%1").arg(block_devices.size()) << block_devices;
 
     qDebug() << "executing mdadm with args: " << mdadm_args;
-    
-    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output, bool success, int exitCode)
+
+    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output,
+                                               bool success,
+                                               int exitCode)
     {
         if (success)
         {
             qDebug() << "mdadm exited normally with code: " << exitCode << " and output:";
             qDebug() << output;
-            
+
             emit raidCreated();
         }
         else
