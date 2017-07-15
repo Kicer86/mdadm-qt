@@ -17,7 +17,7 @@ namespace
     unsigned getLogicalBlockSize(IFileSystem* fs, const QString& name)
     {
         return utils::readValueFromFile<unsigned>(fs,
-                                                "/sys/block/" + name
+                                                  "/sys/block/" + name
                                                     + "/queue/logical_block_size");
     }
 }
