@@ -59,9 +59,9 @@ MainWindow::MainWindow():
 
     // menus & shortcuts
     auto raidMenu = menuBar()->addMenu(tr("&Raid"));
-    QAction *actionCreate = new QAction(tr("&New"));
-    QAction *actionRemove = new QAction(tr("Remove selected"));
-    QAction *actionQuit = new QAction(tr("&Quit"));
+    QAction *actionCreate = new QAction(tr("&New"), this);
+    QAction *actionRemove = new QAction(tr("Remove selected"), this);
+    QAction *actionQuit = new QAction(tr("&Quit"), this);
 
     actionCreate->setShortcut(Qt::CTRL + Qt::Key_N);
     actionRemove->setShortcut(Qt::Key_Delete);
@@ -76,7 +76,7 @@ MainWindow::MainWindow():
     raidMenu->addAction(actionQuit);
 
     auto viewMenu = menuBar()->addMenu(tr("&View"));
-    QAction *actionReload = new QAction(tr("&Reload"));
+    QAction *actionReload = new QAction(tr("&Reload"), this);
 
     actionReload->setShortcut(Qt::Key_F5);
 
