@@ -29,13 +29,13 @@ namespace
 {
     struct File: IFileSystem::IFile
     {
-        File(const QString& path): m_stream(nullptr), m_file(path) {}
+        File(const QString& path, const QIODevice::OpenMode& mode): m_stream(nullptr), m_file(path), m_mode(mode) {}
 
         QTextStream* getStream() override
         {
             if (m_file.isOpen() == false)
             {
-                const bool status = m_file.open(QFile::ReadOnly);      // TODO: flag for RW?
+                const bool status = m_file.open(m_mode);
 
                 if (status)
                     m_stream = std::make_unique<QTextStream>(&m_file);
@@ -46,6 +46,7 @@ namespace
 
         std::unique_ptr<QTextStream> m_stream;
         QFile m_file;
+        const QIODevice::OpenMode m_mode;
     };
 }
 
@@ -62,9 +63,9 @@ FileSystem::~FileSystem()
 }
 
 
-std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path)
+std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path, const QIODevice::OpenMode& mode)
 {
-    std::unique_ptr<File> file = std::make_unique<File>(path);
+    std::unique_ptr<File> file = std::make_unique<File>(path, mode);
 
     return file;
 }

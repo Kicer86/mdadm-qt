@@ -33,7 +33,7 @@ class FileSystem: public IFileSystem
         FileSystem& operator=(const FileSystem &) = delete;
         bool operator==(const FileSystem &) const = delete;
 
-        std::unique_ptr<IFile> openFile(const QString &) override;
+        std::unique_ptr<IFile> openFile(const QString &, const QIODevice::OpenMode &) override;
         std::deque<QString> listDir(const QString & , const char* filter) override;
 };
 

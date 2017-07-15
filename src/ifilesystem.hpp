@@ -5,6 +5,8 @@
 #include <deque>
 #include <memory>
 
+#include <QIODevice>
+
 class QTextStream;
 class QString;
 
@@ -19,7 +21,7 @@ struct IFileSystem
 
     virtual ~IFileSystem() = default;
 
-    virtual std::unique_ptr<IFile> openFile(const QString &) = 0;
+    virtual std::unique_ptr<IFile> openFile(const QString &, const QIODevice::OpenMode & = QIODevice::ReadOnly) = 0;
     virtual std::deque<QString> listDir(const QString &, const char* filter = "*.*") = 0;
 };
 
