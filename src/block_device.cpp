@@ -5,11 +5,12 @@
 #include "block_device.hpp"
 #include "utils.hpp"
 
-BlockDevice::BlockDevice(const QString& name) :
+BlockDevice::BlockDevice(const QString& name, IFileSystem* filesystem) :
     IBlockDevice(),
     m_name(name),
     m_logical_block_size(getLogicalBlockSize()),
-    m_size(getSize())
+    m_size(getSize()),
+    m_fileSystem(filesystem)
 {
 
 }

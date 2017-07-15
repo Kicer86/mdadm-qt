@@ -15,7 +15,7 @@ private:
     Disk(const Disk&) = delete;
     Disk& operator=(const Disk&) = delete;
 public:
-    Disk(const QString&);
+    Disk(const QString &, IFileSystem *);
     Disk(Disk&&) = default;
 
     bool operator==(const Disk&) const;

@@ -3,8 +3,8 @@
 
 
 
-Disk::Disk(const QString& name) :
-    BlockDevice(name),
+Disk::Disk(const QString& name, IFileSystem* filesystem) :
+    BlockDevice(name, filesystem),
     m_name(name),
     m_model("N/A"),
     m_serial("N/A")

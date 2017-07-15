@@ -7,7 +7,7 @@
 
 #include "disk.hpp"
 
-DiskController::DiskController()
+DiskController::DiskController(IFileSystem* filesystem): m_fileSystem(filesystem)
 {
 
 }
@@ -20,7 +20,7 @@ std::vector<std::unique_ptr<IBlockDevice>> DiskController::listDisks(const IDisk
     while (di.hasNext())
     {
         di.next();
-        std::unique_ptr<Disk> disk(new Disk(di.fileName()));
+        std::unique_ptr<Disk> disk(new Disk(di.fileName(), m_fileSystem));
         if (filter(*disk))
             disks.emplace_back(std::move(disk));
     }
