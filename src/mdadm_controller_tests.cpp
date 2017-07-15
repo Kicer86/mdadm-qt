@@ -90,3 +90,70 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid6Creation)
     MDAdmController controller(&mdadm_process);
     controller.createRaid("/dev/md4", MDAdmController::Type::Raid6, QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"}) );
 }
+
+
+TEST(MDAdmControllerTest, usesRightParameterForRaidStop)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args = {
+        "--stop",
+        "--verbose",
+        "/dev/md127"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process);
+    controller.stopRaid("/dev/md127");
+}
+
+
+TEST(MDAdmControllerTest,
+     usesEmptyListForZeroSuperblockFunction)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process);
+    EXPECT_FALSE(controller.zeroSuperblock(QStringList()));
+}
+
+TEST(MDAdmControllerTest,
+     usesRightParameterForClearingMetadataFromSingleDrive)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args = {
+        "--zero-superblock",
+        "/dev/sdb"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process);
+    EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb" }));
+}
+
+
+TEST(MDAdmControllerTest,
+     usesRightParameterForClearingMetadataFromMultipleDrives)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args = {
+        "--zero-superblock",
+        "/dev/sdb",
+        "/dev/sdc",
+        "/dev/sde"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process);
+    EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb",
+                                            "/dev/sdc",
+                                            "/dev/sde"}));
+}

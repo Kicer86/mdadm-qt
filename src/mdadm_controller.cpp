@@ -219,6 +219,9 @@ bool MDAdmController::zeroSuperblock(const QStringList& raid_components)
 {
     QStringList mdadm_args;
 
+    if (raid_components.isEmpty())
+        return false;
+
     mdadm_args << "--zero-superblock" << raid_components;
 
     m_mdadmProcess->execute(mdadm_args, [](const QByteArray& output,
