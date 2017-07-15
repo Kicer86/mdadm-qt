@@ -26,6 +26,7 @@
 #include <QRegExp>
 #include <QTextStream>
 
+#include "ifilesystem.hpp"
 #include "imdadm_process.hpp"
 
 namespace
@@ -62,7 +63,9 @@ namespace
 }
 
 
-MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess): m_mdadmProcess(mdadmProcess)
+MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess, IFileSystem* fileSystem):
+    m_mdadmProcess(mdadmProcess),
+    m_fileSystem(fileSystem)
 {
 
 }
@@ -148,14 +151,14 @@ bool MDAdmController::createRaid(const QString& raid_device, MDAdmController::Ty
     mdadm_args << QString("--raid-devices=%1").arg(block_devices.size()) << block_devices;
 
     qDebug() << "executing mdadm with args: " << mdadm_args;
-    
+
     m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output, bool success, int exitCode)
     {
         if (success)
         {
             qDebug() << "mdadm exited normally with code: " << exitCode << " and output:";
             qDebug() << output;
-            
+
             emit raidCreated();
         }
         else

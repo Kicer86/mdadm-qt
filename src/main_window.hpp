@@ -41,11 +41,11 @@ class MainWindow: public QMainWindow
         bool operator==(const MainWindow &) const = delete;
 
     private:
+        FileSystem m_fileSystem;
         MDAdmProcess m_mdadmProcess;
         MDAdmController m_mdadmController;
         QStandardItemModel m_raidsModel;
         QStandardItemModel m_disksModel;
-        FileSystem m_fileSystem;
         QTabWidget* m_viewTabs;
         QTableView* m_raidsView;
         QTableView* m_disksView;

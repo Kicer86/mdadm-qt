@@ -32,11 +32,11 @@
 
 MainWindow::MainWindow():
     QMainWindow(),
+    m_fileSystem(),
     m_mdadmProcess(),
-    m_mdadmController(&m_mdadmProcess),
+    m_mdadmController(&m_mdadmProcess, &m_fileSystem),
     m_raidsModel(),
     m_disksModel(),
-    m_fileSystem(),
     m_viewTabs(nullptr),
     m_raidsView(nullptr),
     m_disksView(nullptr)
