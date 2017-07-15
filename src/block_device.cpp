@@ -3,27 +3,33 @@
 #include <unistd.h>
 
 #include "block_device.hpp"
+#include "ifilesystem.hpp"
 #include "utils.hpp"
+
+namespace
+{
+    size_t getSize(IFileSystem* fs, const QString& name)
+    {
+        return utils::readValueFromFile<size_t>(fs,
+                                                "/sys/block/" + name + "/size");
+    }
+
+    unsigned getLogicalBlockSize(IFileSystem* fs, const QString& name)
+    {
+        return utils::readValueFromFile<unsigned>(fs,
+                                                "/sys/block/" + name
+                                                    + "/queue/logical_block_size");
+    }
+}
 
 BlockDevice::BlockDevice(const QString& name, IFileSystem* filesystem) :
     IBlockDevice(),
     m_name(name),
-    m_logical_block_size(getLogicalBlockSize()),
-    m_size(getSize()),
+    m_logical_block_size(getLogicalBlockSize(filesystem, name)),
+    m_size(getSize(filesystem, name)),
     m_fileSystem(filesystem)
 {
 
-}
-
-size_t BlockDevice::getSize() const
-{
-    return utils::readValueFromFile<size_t>("/sys/block/" + m_name + "/size");
-}
-
-unsigned BlockDevice::getLogicalBlockSize() const
-{
-    return utils::readValueFromFile<unsigned>("/sys/block/" + m_name
-                                              + "/queue/logical_block_size");
 }
 
 inline size_t BlockDevice::size() const
@@ -42,12 +48,9 @@ inline unsigned BlockDevice::logicalBlockSize() const
 }
 
 bool BlockDevice::isUsed() const {
+
     const QString dev_path("/dev/" + m_name);
-    bool ret = true;
-    int fd = open(QFile::encodeName(dev_path), O_RDONLY | O_EXCL);
-    if (fd > 0) {
-        ret = false;
-        close(fd);
-    }
-    return ret;
+    const bool result = m_fileSystem->openFile(dev_path)->getStream() != nullptr;
+
+    return result;
 }

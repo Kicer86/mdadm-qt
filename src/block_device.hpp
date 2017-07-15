@@ -19,13 +19,10 @@ public:
     bool isUsed() const;
 
 protected:
-    QString m_name;
-    unsigned m_logical_block_size;
-    size_t m_size;
+    const QString m_name;
+    const unsigned m_logical_block_size;
+    const size_t m_size;
     IFileSystem* m_fileSystem;
-
-    size_t getSize() const;
-    unsigned getLogicalBlockSize() const;
 
 private:
     BlockDevice(const BlockDevice&) = delete;
