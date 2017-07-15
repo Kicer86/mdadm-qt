@@ -50,7 +50,7 @@ inline unsigned BlockDevice::logicalBlockSize() const
 bool BlockDevice::isUsed() const {
 
     const QString dev_path("/dev/" + m_name);
-    const bool result = m_fileSystem->openFile(dev_path)->getStream() != nullptr;
+    const bool used = m_fileSystem->openFile(dev_path)->getStream() == nullptr;
 
-    return result;
+    return used;
 }
