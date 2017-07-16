@@ -193,7 +193,7 @@ void MainWindow::removeRaid()
 
     if (!selected.isEmpty())
     {
-        QModelIndex modelIndex = selected.at(0);
+        const QModelIndex modelIndex = selected.at(0);
         if (modelIndex.isValid())
             raidDevice = m_raidsModel.itemFromIndex(modelIndex)->text();
 
@@ -202,7 +202,7 @@ void MainWindow::removeRaid()
     /* FIXME temporary solution */
     const QString CONFIRM_TEXT = tr("confirm");
     bool ok;
-    QString text = QInputDialog::getText(this,
+    const QString text = QInputDialog::getText(this,
                        tr("Remove software RAID"),
                        tr("<b>Warning!</b><br /><br />"
                           "This operation will remove <b>%1</b> RAID device"
