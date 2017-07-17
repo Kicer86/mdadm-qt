@@ -150,7 +150,7 @@ void MainWindow::refreshDisksList()
     {
         QStandardItem* device_item = new QStandardItem(blk_dev->devPath());
         QStandardItem* type_item = new QStandardItem("disk");
-        QStandardItem* status_item = new QStandardItem(blk_dev->isUsed()? tr("mounted"): tr("ok"));  // TODO: 'ok' is not nice (?)
+        QStandardItem* status_item = new QStandardItem(blk_dev->isUsed()? tr("in use"): tr("ok"));  // TODO: 'ok' is not nice (?)
 
         const QList<QStandardItem *> row = { device_item, type_item, status_item };
         m_disksModel.appendRow(row);
