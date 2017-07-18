@@ -12,7 +12,7 @@
 #include "disk_controller.hpp"
 #include "exclude_used_filter.hpp"
 
-CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
+CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     QDialog(parent),
     m_disksView(nullptr),
     m_selectedDisksView(nullptr),
@@ -84,7 +84,7 @@ CreateRaidDialog::CreateRaidDialog(QWidget* parent) :
     mainLayout->addLayout(optionsLayout);
     mainLayout->addLayout(buttonCreateLayout);
 
-    DiskController dc;
+    DiskController dc(fs);
     ExcludeUsedFilter diskFilter;
 
     auto disks = dc.listDisks(diskFilter);

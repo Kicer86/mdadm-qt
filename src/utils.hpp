@@ -2,22 +2,30 @@
 #define UTILS_HPP
 
 #include <QString>
-#include <QFile>
 #include <QTextStream>
+
+#include "ifilesystem.hpp"
 
 namespace utils {
 
 template <typename T>
-T readValueFromFile(const QString& path)
+T readValueFromFile(QTextStream& file_stream)
 {
-    QFile file(path);
     T value {};
 
-    if (file.open(QIODevice::ReadOnly)) {
-        QTextStream file_stream(&file);
-        file_stream >> value;
-        file.close();
-    }
+    file_stream >> value;
+
+    return value;
+}
+
+template <typename T>
+T readValueFromFile(IFileSystem* fs, const QString& path)
+{
+    auto file = fs->openFile(path);
+
+    QTextStream* file_stream = file->getStream();
+
+    const T value = file_stream == nullptr? T{} : readValueFromFile<T>(*file_stream);
 
     return value;
 }

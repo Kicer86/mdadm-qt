@@ -23,6 +23,7 @@
 #include <QMainWindow>
 #include <QStandardItemModel>
 
+#include "filesystem.hpp"
 #include "mdadm_controller.hpp"
 #include "mdadm_process.hpp"
 
@@ -40,13 +41,14 @@ class MainWindow: public QMainWindow
         bool operator==(const MainWindow &) const = delete;
 
     private:
+        FileSystem m_fileSystem;
         MDAdmProcess m_mdadmProcess;
         MDAdmController m_mdadmController;
+        QStandardItemModel m_raidsModel;
+        QStandardItemModel m_disksModel;
         QTabWidget* m_viewTabs;
         QTableView* m_raidsView;
         QTableView* m_disksView;
-        QStandardItemModel m_raidsModel;
-        QStandardItemModel m_disksModel;
 
         void refreshArraysList();
         void refreshDisksList();

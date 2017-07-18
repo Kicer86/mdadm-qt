@@ -22,7 +22,7 @@ void PrintTo(const QStringList& string_list, std::ostream* os)
 TEST(MDAdmControllerTest, isConstructible)
 {
     EXPECT_NO_THROW({
-        MDAdmController controller(nullptr);
+        MDAdmController controller(nullptr, nullptr);
     });
 }
 
@@ -35,7 +35,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid0Creation)
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
         .WillOnce(Return(true));
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     controller.createRaid("/dev/md0", MDAdmController::Type::Raid0, QStringList({"/dev/sda", "/dev/sdc"}) );
 }
 
@@ -48,7 +48,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid1Creation)
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
         .WillOnce(Return(true));
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     controller.createRaid("/dev/md1", MDAdmController::Type::Raid1, QStringList({"/dev/sda", "/dev/sdc", "/dev/sde"}) );
 }
 
@@ -61,7 +61,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid4Creation)
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
         .WillOnce(Return(true));
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     controller.createRaid("/dev/md2", MDAdmController::Type::Raid4, QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd"}) );
 }
 
@@ -74,7 +74,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid5Creation)
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
         .WillOnce(Return(true));
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     controller.createRaid("/dev/md3", MDAdmController::Type::Raid5, QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc"}) );
 }
 
@@ -87,7 +87,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid6Creation)
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
         .WillOnce(Return(true));
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     controller.createRaid("/dev/md4", MDAdmController::Type::Raid6, QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"}) );
 }
 

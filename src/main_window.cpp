@@ -32,13 +32,14 @@
 
 MainWindow::MainWindow():
     QMainWindow(),
+    m_fileSystem(),
     m_mdadmProcess(),
-    m_mdadmController(&m_mdadmProcess),
+    m_mdadmController(&m_mdadmProcess, &m_fileSystem),
+    m_raidsModel(),
+    m_disksModel(),
     m_viewTabs(nullptr),
     m_raidsView(nullptr),
-    m_disksView(nullptr),
-    m_raidsModel(),
-    m_disksModel()
+    m_disksView(nullptr)
 {
     // raids tab
     m_raidsModel.setHorizontalHeaderLabels( { tr("raid device"), tr("type"), tr("block devices") } );
@@ -58,9 +59,9 @@ MainWindow::MainWindow():
 
     // menus & shortcuts
     auto raidMenu = menuBar()->addMenu(tr("&Raid"));
-    QAction *actionCreate = new QAction(tr("&New"));
-    QAction *actionRemove = new QAction(tr("Remove selected"));
-    QAction *actionQuit = new QAction(tr("&Quit"));
+    QAction *actionCreate = new QAction(tr("&New"), this);
+    QAction *actionRemove = new QAction(tr("Remove selected"), this);
+    QAction *actionQuit = new QAction(tr("&Quit"), this);
 
     actionCreate->setShortcut(Qt::CTRL + Qt::Key_N);
     actionRemove->setShortcut(Qt::Key_Delete);
@@ -75,7 +76,7 @@ MainWindow::MainWindow():
     raidMenu->addAction(actionQuit);
 
     auto viewMenu = menuBar()->addMenu(tr("&View"));
-    QAction *actionReload = new QAction(tr("&Reload"));
+    QAction *actionReload = new QAction(tr("&Reload"), this);
 
     actionReload->setShortcut(Qt::Key_F5);
 
@@ -142,14 +143,14 @@ void MainWindow::refreshDisksList()
     const int rows = m_disksModel.rowCount();
     m_disksModel.removeRows(0, rows);     // .clear() would clear headers also
 
-    const DiskController dc;
+    const DiskController dc(&m_fileSystem);
     const auto disks = dc.listDisks(EmptyFilter());
 
     for(const std::unique_ptr<IBlockDevice>& blk_dev: disks)
     {
         QStandardItem* device_item = new QStandardItem(blk_dev->devPath());
         QStandardItem* type_item = new QStandardItem("disk");
-        QStandardItem* status_item = new QStandardItem(blk_dev->isUsed()? tr("mounted"): tr("ok"));  // TODO: 'ok' is not nice (?)
+        QStandardItem* status_item = new QStandardItem(blk_dev->isUsed()? tr("in use"): tr("ok"));  // TODO: 'ok' is not nice (?)
 
         const QList<QStandardItem *> row = { device_item, type_item, status_item };
         m_disksModel.appendRow(row);
@@ -159,7 +160,7 @@ void MainWindow::refreshDisksList()
 
 void MainWindow::createRaid()
 {
-    CreateRaidDialog createRaidDialog(this);
+    CreateRaidDialog createRaidDialog(&m_fileSystem, this);
     const auto ret = createRaidDialog.exec();
 
     if (ret == QDialog::Accepted)
@@ -192,7 +193,7 @@ void MainWindow::removeRaid()
 
     if (!selected.isEmpty())
     {
-        QModelIndex modelIndex = selected.at(0);
+        const QModelIndex modelIndex = selected.at(0);
         if (modelIndex.isValid())
             raidDevice = m_raidsModel.itemFromIndex(modelIndex)->text();
 
@@ -201,7 +202,7 @@ void MainWindow::removeRaid()
     /* FIXME temporary solution */
     const QString CONFIRM_TEXT = tr("confirm");
     bool ok;
-    QString text = QInputDialog::getText(this,
+    const QString text = QInputDialog::getText(this,
                        tr("Remove software RAID"),
                        tr("<b>Warning!</b><br /><br />"
                           "This operation will remove <b>%1</b> RAID device"

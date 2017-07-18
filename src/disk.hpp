@@ -15,29 +15,15 @@ private:
     Disk(const Disk&) = delete;
     Disk& operator=(const Disk&) = delete;
 public:
-    Disk(const QString&);
-    Disk(Disk&&);
+    Disk(const QString &, IFileSystem *);
+    Disk(Disk&&) = default;
 
     bool operator==(const Disk&) const;
 
-    const QString& serial() const
-    {
-        return m_serial;
-    }
-
-    const QString& model() const
-    {
-        return m_model;
-    }
-
-    const QString& name() const {
-        return m_name;
-    }
-
-    QString devPath() const {
-        return QString("/dev/") + m_name;
-    }
-
+    const QString& serial() const;
+    const QString& model() const;
+    const QString& name() const;
+    QString devPath() const;
     QString toString() const;
 };
 

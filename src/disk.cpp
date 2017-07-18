@@ -3,21 +3,14 @@
 
 
 
-Disk::Disk(const QString& name) :
-    BlockDevice(name),
+Disk::Disk(const QString& name, IFileSystem* filesystem) :
+    BlockDevice(name, filesystem),
     m_name(name),
     m_model("N/A"),
     m_serial("N/A")
 {
 }
 
-Disk::Disk(Disk&& other) :
-    BlockDevice(std::move(other)),
-    m_name(std::move(other.m_name)),
-    m_model(std::move(other.m_model)),
-    m_serial(std::move(other.m_serial))
-{
-}
 
 bool Disk::operator==(const Disk& other) const
 {
@@ -26,6 +19,29 @@ bool Disk::operator==(const Disk& other) const
             (this->m_serial == other.m_serial &&
              this->m_model == other.m_model);
 }
+
+
+const QString& Disk::serial() const
+{
+    return m_serial;
+}
+
+
+const QString& Disk::model() const
+{
+    return m_model;
+}
+
+
+const QString& Disk::name() const {
+    return m_name;
+}
+
+
+QString Disk::devPath() const {
+    return QString("/dev/") + m_name;
+}
+
 
 QString Disk::toString() const
 {

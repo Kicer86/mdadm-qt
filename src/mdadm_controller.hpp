@@ -28,6 +28,7 @@
 
 
 struct IMDAdmProcess;
+struct IFileSystem;
 
 struct RaidInfo
 {
@@ -47,7 +48,7 @@ struct RaidInfo
 class MDAdmController: public QObject
 {
         Q_OBJECT
-    
+
     public:
         // ListResult - callback function for listRaids
         typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
@@ -61,7 +62,7 @@ class MDAdmController: public QObject
             Raid6,
         };
 
-        MDAdmController(IMDAdmProcess *);
+        MDAdmController(IMDAdmProcess *, IFileSystem *);
         MDAdmController(const MDAdmController &) = delete;
         ~MDAdmController();
 
@@ -80,7 +81,8 @@ class MDAdmController: public QObject
 
     private:
         IMDAdmProcess* m_mdadmProcess;
-        
+        IFileSystem* m_fileSystem;
+
     signals:
         void raidCreated();
 };
