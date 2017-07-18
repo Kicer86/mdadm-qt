@@ -105,7 +105,7 @@ TEST(MDAdmControllerTest, usesRightParameterForRaidStop)
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
             .WillOnce(Return(true));
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     controller.stopRaid("/dev/md127");
 }
 
@@ -115,7 +115,7 @@ TEST(MDAdmControllerTest,
 {
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     EXPECT_FALSE(controller.zeroSuperblock(QStringList()));
 }
 
@@ -132,7 +132,7 @@ TEST(MDAdmControllerTest,
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
             .WillOnce(Return(true));
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb" }));
 }
 
@@ -152,7 +152,7 @@ TEST(MDAdmControllerTest,
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
             .WillOnce(Return(true));
 
-    MDAdmController controller(&mdadm_process);
+    MDAdmController controller(&mdadm_process, nullptr);
     EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb",
                                             "/dev/sdc",
                                             "/dev/sde"}));
