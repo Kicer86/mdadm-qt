@@ -65,7 +65,7 @@ FileSystem::~FileSystem()
 
 std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path, const QIODevice::OpenMode& mode)
 {
-    std::unique_ptr<File> file = std::make_unique<File>(path, mode);
+    std::unique_ptr<IFileSystem::IFile> file = std::make_unique<File>(path, mode);
 
     return file;
 }
