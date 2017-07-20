@@ -87,7 +87,7 @@ bool MDAdmController::listRaids(const ListResult& result)
     if (open_status)
     {
         //                        raid device  status   type   devices
-        const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) ([^ ]+) (.*)");
+        const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) (([^ ]+) )?(.*)");
         std::vector<RaidInfo> results;
 
         // simple loop with atEnd() won't work
@@ -103,8 +103,8 @@ bool MDAdmController::listRaids(const ListResult& result)
             {
                 const QString dev = mdadm_info.cap(1);
                 const QString status = mdadm_info.cap(2);
-                const QString type = mdadm_info.cap(3);
-                const QString devices = mdadm_info.cap(4);
+                const QString type = mdadm_info.cap(4);
+                const QString devices = mdadm_info.cap(5);
 
                 const QStringList devices_list_raw = devices.split(" ");
 
