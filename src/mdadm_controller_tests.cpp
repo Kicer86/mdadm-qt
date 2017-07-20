@@ -4,6 +4,7 @@
 #include <gmock/gmock.h>
 
 #include "mdadm_controller.hpp"
+#include "ifilesystem_mock.hpp"
 #include "imdadm_process_mock.hpp"
 
 using testing::_;
@@ -16,6 +17,24 @@ void PrintTo(const QStringList& string_list, std::ostream* os)
     debug << string_list;
 
     *os << output.toStdString();
+}
+
+void PrintTo(const std::deque<QString>& string_deque, std::ostream* os)
+{
+    QString output;
+    QDebug debug(&output);
+
+    for (const auto& element : string_deque)
+    {
+        debug << element;
+    }
+
+    *os << output.toStdString();
+}
+
+void PrintTo(const QString& str, std::ostream* os)
+{
+    *os << str.toStdString();
 }
 
 
@@ -156,4 +175,34 @@ TEST(MDAdmControllerTest,
     EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb",
                                             "/dev/sdc",
                                             "/dev/sde"}));
+}
+
+TEST(MDAdmControllerTest,
+     usesRightParameterForRaidRemoval)
+{
+    IMDAdmProcessMock mdadm_process;
+    IFileSystemMock filesystem;
+
+    QString slavesPath("/sys/block/md127/slaves");
+
+    QStringList expected_args = {
+        "--stop",
+        "--verbose",
+        "/dev/md127",
+        "--zero-superblock",
+        "/dev/sdb",
+        "/dev/sdc",
+        "/dev/sdd"
+    };
+
+    EXPECT_CALL(filesystem, listDir(slavesPath, _))
+            .WillOnce(Return(
+                          std::deque<QString> { "sdb", "sdc", "sdd" }));
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process, &filesystem);
+    EXPECT_TRUE(controller.removeRaid("/dev/md127"));
+
 }
