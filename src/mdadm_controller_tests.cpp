@@ -206,3 +206,29 @@ TEST(MDAdmControllerTest,
     EXPECT_TRUE(controller.removeRaid("/dev/md127"));
 
 }
+
+TEST(MDAdmControllerTest,
+     usesRightParameterForEmptyRaidRemoval)
+{
+    IMDAdmProcessMock mdadm_process;
+    IFileSystemMock filesystem;
+
+    QString slavesPath("/sys/block/md4/slaves");
+
+    QStringList expected_args = {
+        "--stop",
+        "--verbose",
+        "/dev/md4"
+    };
+
+    EXPECT_CALL(filesystem, listDir(slavesPath, _))
+            .WillOnce(Return(
+                          std::deque<QString> { }));
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process, &filesystem);
+    EXPECT_TRUE(controller.removeRaid("/dev/md4"));
+
+}
