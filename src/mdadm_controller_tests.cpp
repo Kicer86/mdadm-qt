@@ -183,9 +183,9 @@ TEST(MDAdmControllerTest,
     IMDAdmProcessMock mdadm_process;
     IFileSystemMock filesystem;
 
-    QString slavesPath("/sys/block/md127/slaves");
+    const QString slavesPath("/sys/block/md127/slaves");
 
-    QStringList expected_args = {
+    const QStringList expected_args = {
         "--stop",
         "--verbose",
         "/dev/md127",
@@ -213,9 +213,9 @@ TEST(MDAdmControllerTest,
     IMDAdmProcessMock mdadm_process;
     IFileSystemMock filesystem;
 
-    QString slavesPath("/sys/block/md4/slaves");
+    const QString slavesPath("/sys/block/md4/slaves");
 
-    QStringList expected_args = {
+    const QStringList expected_args = {
         "--stop",
         "--verbose",
         "/dev/md4"
