@@ -1,6 +1,7 @@
 #include "disk.hpp"
 #include "utils.hpp"
 
+#include "printers_for_gmock.hpp"
 
 
 Disk::Disk(const QString& name, IFileSystem* filesystem) :
