@@ -2,7 +2,6 @@
 #include "utils.hpp"
 
 
-
 Disk::Disk(const QString& name, IFileSystem* filesystem) :
     BlockDevice(name, filesystem),
     m_name(name),

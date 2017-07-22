@@ -57,11 +57,17 @@ if(GMOCK_FOUND AND GTEST_FOUND)
     qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
 
     set(tests_sources
+            block_device.cpp
+            disk.cpp
             ifilesystem_mock.hpp
             imdadm_process_mock.hpp
-            mdadm_controller_tests.cpp
             mdadm_controller.cpp
             ${WRAPPED_FOR_TESTS}
+
+            printers_for_gmock.cpp
+
+            disk_tests.cpp
+            mdadm_controller_tests.cpp
     )
 
     add_executable(mdadm_unit_tests ${tests_sources})        # regular unit tests
