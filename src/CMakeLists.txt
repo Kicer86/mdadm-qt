@@ -59,6 +59,9 @@ if(GMOCK_FOUND AND GTEST_FOUND)
     set(tests_sources
             block_device.cpp
             disk.cpp
+            disk_controller.cpp
+            empty_filter.cpp
+            exclude_used_filter.cpp
             ifilesystem_mock.hpp
             imdadm_process_mock.hpp
             mdadm_controller.cpp
