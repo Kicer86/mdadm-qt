@@ -41,7 +41,7 @@ struct RaidInfo
               const QString& _type):
         raid_device(_raid_device),
         block_devices(_block_devices),
-        raid_type (_type)
+        raid_type(_type)
     {}
 };
 
