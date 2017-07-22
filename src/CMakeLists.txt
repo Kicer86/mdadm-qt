@@ -63,6 +63,8 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                         ${WRAPPED_FOR_TESTS}
     )
 
+    target_compile_options(mdadm_controller_tests PRIVATE -fprofile-arcs -ftest-coverage)
+
     target_include_directories(mdadm_controller_tests
                                     SYSTEM PRIVATE
                                         ${GMOCK_INCLUDE_DIRS}
@@ -77,6 +79,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                 ${GTEST_LIBRARY}
                                 ${CMAKE_THREAD_LIBS_INIT}
                                 Qt5::Core
+                                gcov
     )
 
     add_test(NAME mdadm_controller_tests
@@ -85,10 +88,14 @@ if(GMOCK_FOUND AND GTEST_FOUND)
 
     enable_testing()
 
-    add_custom_target(RunUnitTests ALL
-                      COMMAND ctest
-                      DEPENDS mdadm_controller_tests
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    )
+    #add_custom_target(RunUnitTests ALL
+    #                  COMMAND ctest
+    #                  DEPENDS mdadm_controller_tests
+    #                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    #)
+
+    include(CodeCoverage)
+
+    setup_target_for_coverage(mdadm-qt_coverage mdadm_controller_tests coverage)
 
 endif()
