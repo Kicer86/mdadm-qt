@@ -61,3 +61,17 @@ TEST(DiskTest, simpleConstruction)
         Disk disk("sda", fs.getFileSystem());
     });
 }
+
+
+TEST(DiskTest, returnsProperSizes)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_EQ(disk.size(), 1024 * 4096);
+    EXPECT_EQ(disk.sizeInSectorUnits(), 4096);
+    EXPECT_EQ(disk.logicalBlockSize(), 1024);
+}
