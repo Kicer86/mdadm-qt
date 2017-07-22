@@ -56,23 +56,23 @@ if(GMOCK_FOUND AND GTEST_FOUND)
 
     qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
 
-    add_executable(mdadm_controller_tests
+    add_executable(mdadm_unit_tests
                         imdadm_process_mock.hpp
                         mdadm_controller_tests.cpp
                         mdadm_controller.cpp
                         ${WRAPPED_FOR_TESTS}
     )
 
-    target_compile_options(mdadm_controller_tests PRIVATE -fprofile-arcs -ftest-coverage)
+    target_compile_options(mdadm_unit_tests PRIVATE -fprofile-arcs -ftest-coverage)
 
-    target_include_directories(mdadm_controller_tests
+    target_include_directories(mdadm_unit_tests
                                     SYSTEM PRIVATE
                                         ${GMOCK_INCLUDE_DIRS}
                                         ${GTEST_INCLUDE_DIRS}
                                         ${Qt5Core_INCLUDE_DIRS}
     )
 
-    target_link_libraries(mdadm_controller_tests
+    target_link_libraries(mdadm_unit_tests
                             PRIVATE
                                 ${GMOCK_MAIN_LIBRARY}
                                 ${GMOCK_LIBRARY}
@@ -82,8 +82,8 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                 gcov
     )
 
-    add_test(NAME mdadm_controller_tests
-             COMMAND mdadm_controller_tests
+    add_test(NAME mdadm_unit_tests
+             COMMAND mdadm_unit_tests
     )
 
     enable_testing()
