@@ -207,7 +207,7 @@ TEST(MDAdmControllerTest,
 
 }
 
-typedef std::unique_ptr<IFileSystemMock::IFileMock> ifileptr;
+typedef std::unique_ptr<IFileSystemMock::IFileMock> FilePtr;
 
 TEST(MDAdmControllerTest,
      listInactiveRaid0)
@@ -226,9 +226,9 @@ TEST(MDAdmControllerTest,
             .WillOnce(::testing::Invoke(
                           [&outputStream](const QString&,
                                           QIODevice::OpenMode)
-                                         ->ifileptr
+                                         ->FilePtr
     {
-        ifileptr ifile(new IFileSystemMock::IFileMock);
+        FilePtr ifile(new IFileSystemMock::IFileMock);
         EXPECT_CALL(*ifile, getStream()).WillOnce(Return(&outputStream));
         return ifile;
     }));
@@ -263,9 +263,9 @@ TEST(MDAdmControllerTest,
             .WillOnce(::testing::Invoke(
                           [&outputStream](const QString&,
                                           QIODevice::OpenMode)
-                                          ->ifileptr
+                                          ->FilePtr
     {
-        ifileptr ifile(new IFileSystemMock::IFileMock);
+        FilePtr ifile(new IFileSystemMock::IFileMock);
         EXPECT_CALL(*ifile, getStream()).WillOnce(Return(&outputStream));
         return ifile;
     }));
