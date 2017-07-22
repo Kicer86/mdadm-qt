@@ -29,18 +29,6 @@ matrix:
           # use compiler which has c++14 support
           env: COMPILER=g++-5
 
-        - compiler: clang
-          addons:
-            apt:
-             packages:
-               - clang-3.6
-                - lcov
-             sources:
-               - ubuntu-toolchain-r-test
-               - llvm-toolchain-precise-3.6
-          # use compiler which has c++14 support
-          env: COMPILER=clang++-3.6
-
 cache:
   directories:
   - $TRAVIS_BUILD_DIR/usr
