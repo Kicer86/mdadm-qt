@@ -225,6 +225,22 @@ void mockMdstatOutput(IFileSystemMock& filesystem, QTextStream* const outputStre
 
 }
 
+void compareListOutput(MDAdmController& controller,
+                       const std::vector<RaidInfo>& expected)
+{
+    EXPECT_TRUE(controller.listRaids(
+                    [&expected](const std::vector<RaidInfo>& raids)
+    {
+        ASSERT_EQ(raids.size(), expected.size());
+        auto expectedIt = expected.cbegin();
+        for (const auto& element : raids)
+        {
+            EXPECT_EQ(element, *expectedIt);
+            ++expectedIt;
+        }
+    }));
+}
+
 TEST(MDAdmControllerTest,
      listInactiveRaid0)
 {
@@ -241,14 +257,12 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(nullptr, &filesystem);
 
-    EXPECT_TRUE(controller.listRaids([](const std::vector<RaidInfo>& raids)
+    const std::vector<RaidInfo> expectedOutput =
     {
-        const QStringList devices { "sdf" };
-        const RaidInfo expected_info("md1", devices, "");
-        ASSERT_EQ(raids.size(), 1);
-        EXPECT_EQ(raids[0], expected_info);
-    }));
+        RaidInfo("md1", QStringList("sdf"), "")
+    };
 
+    compareListOutput(controller, expectedOutput);
 }
 
 TEST(MDAdmControllerTest,
@@ -268,12 +282,91 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(nullptr, &filesystem);
 
-    EXPECT_TRUE(controller.listRaids([](const std::vector<RaidInfo>& raids)
+    const std::vector<RaidInfo> expectedOutput =
     {
-        const QStringList devices { "sdb", "sdc", "sdd" };
-        const RaidInfo expected_info("md0", devices, "raid5");
+        RaidInfo("md0", QStringList({"sdb", "sdc", "sdd"}), "raid5")
+    };
 
-        ASSERT_EQ(raids.size(), 1);
-        EXPECT_EQ(raids[0], expected_info);
-    }));
+    compareListOutput(controller, expectedOutput);
+}
+
+TEST(MDAdmControllerTest,
+     listActiveRaid0Raid1Raid6)
+{
+    IFileSystemMock filesystem;
+
+    QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
+                         "[raid1] [raid10]\n"
+                         "md11 : active raid0 sdm[1] sdl[0]\n"
+                         "       260096 blocks super 1.2 512k chunks\n"
+                         "\n"
+                         "md8 : active raid6 sdk[3] sdj[2] sdi[1] sdh[0]\n"
+                         "      260096 blocks super 1.2 level 6, 512k chunk, "
+                         "algorithm 2 [4/4] [UUUU]\n"
+                         "\n"
+                         "md3 : active raid1 sdg[1] sdf[0]\n"
+                         "      130880 blocks super 1.2 [2/2] [UU]\n"
+                         "\n"
+                         "unused devices: <none>\n");
+    QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
+
+    mockMdstatOutput(filesystem, &outputStream);
+
+    MDAdmController controller(nullptr, &filesystem);
+
+    const std::vector<RaidInfo> expectedOutput =
+    {
+        RaidInfo("md11", QStringList({"sdm", "sdl"}), "raid0"),
+        RaidInfo("md8", QStringList({"sdk", "sdj", "sdi", "sdh"}), "raid6"),
+        RaidInfo("md3", QStringList({"sdg", "sdf"}), "raid1")
+    };
+
+    compareListOutput(controller, expectedOutput);
+}
+
+TEST(MDAdmControllerTest, listNoRaids)
+{
+    IFileSystemMock filesystem;
+
+    QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
+                         "[raid1] [raid10]\n"
+                         "\n"
+                         "unused devices: <none>\n");
+
+    QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
+
+    mockMdstatOutput(filesystem, &outputStream);
+
+    MDAdmController controller(nullptr, &filesystem);
+
+    const std::vector<RaidInfo> expectedOutput;
+
+    compareListOutput(controller, expectedOutput);
+}
+
+TEST(MDAdmControllerTest, listDegradedRaid)
+{
+    IFileSystemMock filesystem;
+
+    QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
+                         "[raid1] [raid10]\n"
+                         "md8 : active (auto-read-only) raid6 sdk[3] sdj[2] "
+                         "sdh[0]\n"
+                         "      260096 blocks super 1.2 level 6, 512k chunk, "
+                         "algorithm 2 [4/3] [U_UU]\n"
+                         "\n"
+                         "unused devices: <none>\n");
+
+    QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
+
+    mockMdstatOutput(filesystem, &outputStream);
+
+    MDAdmController controller(nullptr, &filesystem);
+
+    const std::vector<RaidInfo> expectedOutput =
+    {
+        RaidInfo("md8", QStringList({"sdk", "sdj", "sdh"}), "raid6"),
+    };
+
+    compareListOutput(controller, expectedOutput);
 }
