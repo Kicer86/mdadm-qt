@@ -57,6 +57,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
     qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
 
     set(tests_sources
+            ifilesystem_mock.hpp
             imdadm_process_mock.hpp
             mdadm_controller_tests.cpp
             mdadm_controller.cpp
