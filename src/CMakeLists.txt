@@ -56,15 +56,19 @@ if(GMOCK_FOUND AND GTEST_FOUND)
 
     qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
 
-    add_executable(mdadm_unit_tests
-                        imdadm_process_mock.hpp
-                        mdadm_controller_tests.cpp
-                        mdadm_controller.cpp
-                        ${WRAPPED_FOR_TESTS}
+    set(tests_sources
+            imdadm_process_mock.hpp
+            mdadm_controller_tests.cpp
+            mdadm_controller.cpp
+            ${WRAPPED_FOR_TESTS}
     )
 
-    target_compile_options(mdadm_unit_tests PRIVATE -fprofile-arcs -ftest-coverage)
+    add_executable(mdadm_unit_tests ${tests_sources})
+    add_executable(mdadm_unit_tests_cc ${tests_sources})     # code coverage
 
+    target_compile_options(mdadm_unit_tests_cc PRIVATE -fprofile-arcs -ftest-coverage)
+
+    # include dirs
     target_include_directories(mdadm_unit_tests
                                     SYSTEM PRIVATE
                                         ${GMOCK_INCLUDE_DIRS}
@@ -72,7 +76,24 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                         ${Qt5Core_INCLUDE_DIRS}
     )
 
+    target_include_directories(mdadm_unit_tests_cc
+                                    SYSTEM PRIVATE
+                                        ${GMOCK_INCLUDE_DIRS}
+                                        ${GTEST_INCLUDE_DIRS}
+                                        ${Qt5Core_INCLUDE_DIRS}
+    )
+
+    # link stage
     target_link_libraries(mdadm_unit_tests
+                            PRIVATE
+                                ${GMOCK_MAIN_LIBRARY}
+                                ${GMOCK_LIBRARY}
+                                ${GTEST_LIBRARY}
+                                ${CMAKE_THREAD_LIBS_INIT}
+                                Qt5::Core
+    )
+
+    target_link_libraries(mdadm_unit_tests_cc
                             PRIVATE
                                 ${GMOCK_MAIN_LIBRARY}
                                 ${GMOCK_LIBRARY}
@@ -88,14 +109,16 @@ if(GMOCK_FOUND AND GTEST_FOUND)
 
     enable_testing()
 
-    #add_custom_target(RunUnitTests ALL
-    #                  COMMAND ctest
-    #                  DEPENDS mdadm_controller_tests
-    #                  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    #)
+    # run unit tests after all build steps
+    add_custom_target(RunUnitTests ALL
+                      COMMAND ctest
+                      DEPENDS mdadm_unit_tests
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    )
 
+    # test coverage
     include(CodeCoverage)
 
-    setup_target_for_coverage(mdadm-qt_coverage mdadm_controller_tests coverage)
+    setup_target_for_coverage(run_unit_tests_code_coverage mdadm_unit_tests_cc coverage)
 
 endif()
