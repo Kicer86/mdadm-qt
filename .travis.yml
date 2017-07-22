@@ -23,6 +23,7 @@ matrix:
              packages:
                - g++-5
                - gcc-5
+               - lcov
              sources:
                - ubuntu-toolchain-r-test
           # use compiler which has c++14 support
@@ -33,6 +34,7 @@ matrix:
             apt:
              packages:
                - clang-3.6
+                - lcov
              sources:
                - ubuntu-toolchain-r-test
                - llvm-toolchain-precise-3.6
