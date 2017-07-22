@@ -108,9 +108,9 @@ if(GMOCK_FOUND AND GTEST_FOUND)
     enable_testing()
 
     # run unit tests after all build steps
-    add_custom_command(TARGET mdadm-qt POST_BUILD
-                      COMMAND ctest
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    add_custom_command(TARGET mdadm_unit_tests POST_BUILD
+                       COMMAND ctest
+                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 
     # test coverage

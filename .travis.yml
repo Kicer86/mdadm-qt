@@ -23,6 +23,7 @@ matrix:
              packages:
                - g++-5
                - gcc-5
+               - lcov
              sources:
                - ubuntu-toolchain-r-test
           # use compiler which has c++14 support
@@ -33,6 +34,7 @@ matrix:
             apt:
              packages:
                - clang-3.6
+                - lcov
              sources:
                - ubuntu-toolchain-r-test
                - llvm-toolchain-precise-3.6
@@ -62,4 +64,14 @@ before_script:
 
 script:
   - make
-  - pushd src && ctest -V && popd
+
+after_success:
+    # Creating report
+  - cd ${TRAVIS_BUILD_DIR}/build
+  - make run_unit_tests_code_coverage
+  - lcov --directory . --capture --output-file coverage.info # capture coverage info
+  - lcov --remove coverage.info '/usr/*' --output-file coverage.info # filter out system
+  - lcov --list coverage.info #debug info
+  # Uploading report to CodeCov
+  - bash <(curl -s https://codecov.io/bash) || echo "Codecov did not collect coverage reports"
+
