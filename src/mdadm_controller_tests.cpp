@@ -207,7 +207,23 @@ TEST(MDAdmControllerTest,
 
 }
 
-typedef std::unique_ptr<IFileSystemMock::IFileMock> ifileptr;
+typedef std::unique_ptr<IFileSystemMock::IFileMock> FilePtr;
+
+void mockMdstatOutput(IFileSystemMock& filesystem, QTextStream* const outputStream)
+{
+    EXPECT_CALL(filesystem, openFile(QString("/proc/mdstat"), QIODevice::ReadOnly |
+                                     QIODevice::Text))
+            .WillOnce(::testing::Invoke(
+                          [outputStream](const QString&,
+                                          QIODevice::OpenMode)
+                                         ->FilePtr
+    {
+        FilePtr ifile(new IFileSystemMock::IFileMock);
+        EXPECT_CALL(*ifile, getStream()).WillOnce(Return(outputStream));
+        return ifile;
+    }));
+
+}
 
 TEST(MDAdmControllerTest,
      listInactiveRaid0)
@@ -219,19 +235,9 @@ TEST(MDAdmControllerTest,
                          "      130048 blocks super 1.2\n"
                          "\n"
                          "unused devices: <none>\n");
-    QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
+    QTextStream outputStream(&mdstatOutput);
 
-    EXPECT_CALL(filesystem, openFile(QString("/proc/mdstat"), QIODevice::ReadOnly |
-                                     QIODevice::Text))
-            .WillOnce(::testing::Invoke(
-                          [&outputStream](const QString&,
-                                          QIODevice::OpenMode)
-                                         ->ifileptr
-    {
-        ifileptr ifile(new IFileSystemMock::IFileMock);
-        EXPECT_CALL(*ifile, getStream()).WillOnce(Return(&outputStream));
-        return ifile;
-    }));
+    mockMdstatOutput(filesystem, &outputStream);
 
     MDAdmController controller(nullptr, &filesystem);
 
@@ -258,17 +264,7 @@ TEST(MDAdmControllerTest,
                          "unused devices: <none>\n");
     QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
 
-    EXPECT_CALL(filesystem, openFile(QString("/proc/mdstat"), QIODevice::ReadOnly |
-                                     QIODevice::Text))
-            .WillOnce(::testing::Invoke(
-                          [&outputStream](const QString&,
-                                          QIODevice::OpenMode)
-                                          ->ifileptr
-    {
-        ifileptr ifile(new IFileSystemMock::IFileMock);
-        EXPECT_CALL(*ifile, getStream()).WillOnce(Return(&outputStream));
-        return ifile;
-    }));
+    mockMdstatOutput(filesystem, &outputStream);
 
     MDAdmController controller(nullptr, &filesystem);
 
