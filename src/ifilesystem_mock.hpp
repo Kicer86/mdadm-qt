@@ -7,6 +7,11 @@
 
 struct IFileSystemMock : public IFileSystem
 {
+    struct IFileMock : public IFile
+    {
+        MOCK_METHOD0(getStream, QTextStream*());
+    };
+
     MOCK_METHOD2(openFile, std::unique_ptr<IFile>(const QString&, const QIODevice::OpenMode&));
     MOCK_METHOD2(listDir, std::deque<QString>(const QString&, const char*));
 };

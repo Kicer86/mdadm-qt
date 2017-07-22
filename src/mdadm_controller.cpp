@@ -60,6 +60,12 @@ namespace
     }
 }
 
+bool RaidInfo::operator==(const RaidInfo &other) const
+{
+    return this->block_devices == other.block_devices &&
+            this->raid_device == other.raid_device &&
+            this->raid_type == other.raid_type;
+}
 
 MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess, IFileSystem* fileSystem):
     m_mdadmProcess(mdadmProcess),

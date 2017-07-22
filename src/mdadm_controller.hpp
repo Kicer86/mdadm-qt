@@ -43,6 +43,8 @@ struct RaidInfo
         block_devices(_block_devices),
         raid_type (_type)
     {}
+
+    bool operator==(const RaidInfo&) const;
 };
 
 class MDAdmController: public QObject
