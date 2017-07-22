@@ -63,8 +63,8 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             ${WRAPPED_FOR_TESTS}
     )
 
-    add_executable(mdadm_unit_tests ${tests_sources})
-    add_executable(mdadm_unit_tests_cc ${tests_sources})     # code coverage
+    add_executable(mdadm_unit_tests ${tests_sources})        # regular unit tests
+    add_executable(mdadm_unit_tests_cc ${tests_sources})     # unit tests with code coverage
 
     target_compile_options(mdadm_unit_tests_cc PRIVATE -fprofile-arcs -ftest-coverage)
 
@@ -103,16 +103,13 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                 gcov
     )
 
-    add_test(NAME mdadm_unit_tests
-             COMMAND mdadm_unit_tests
-    )
+    add_test(NAME mdadm_unit_tests COMMAND mdadm_unit_tests)
 
     enable_testing()
 
     # run unit tests after all build steps
-    add_custom_target(RunUnitTests ALL
+    add_custom_command(TARGET mdadm-qt POST_BUILD
                       COMMAND ctest
-                      DEPENDS mdadm_unit_tests
                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 
