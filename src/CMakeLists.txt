@@ -59,6 +59,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
     set(tests_sources
             block_device.cpp
             disk.cpp
+            disk_controller.cpp
             ifilesystem_mock.hpp
             imdadm_process_mock.hpp
             mdadm_controller.cpp
@@ -67,6 +68,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             printers_for_gmock.cpp
 
             disk_tests.cpp
+            disk_controller_tests.cpp
             mdadm_controller_tests.cpp
     )
 
