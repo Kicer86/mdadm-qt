@@ -27,13 +27,15 @@ class FakeFileSystem
             QTextStream& current_stream = m_streams.back();
 
             EXPECT_CALL(m_fs, openFile(path, _))
-                .WillOnce(::testing::Invoke(
+                .WillRepeatedly(::testing::Invoke(
                             [&current_stream](const QString&, QIODevice::OpenMode)
             {
                 std::unique_ptr<IFileSystemMock::IFileMock> file
                     = std::make_unique<IFileSystemMock::IFileMock>();
 
-                EXPECT_CALL(*file, getStream()).WillOnce(Return(&current_stream));
+                EXPECT_CALL(*file, getStream())
+                    .WillRepeatedly(Return(&current_stream));
+
                 return file;
             }));
         }
@@ -74,4 +76,104 @@ TEST(DiskTest, returnsProperSizes)
     EXPECT_EQ(disk.size(), 1024 * 4096);
     EXPECT_EQ(disk.sizeInSectorUnits(), 4096);
     EXPECT_EQ(disk.logicalBlockSize(), 1024);
+}
+
+
+TEST(DiskTest, returnsProperSerial)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_EQ(disk.serial(), "N/A");
+}
+
+
+TEST(DiskTest, returnsProperModel)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_EQ(disk.model(), "N/A");
+}
+
+
+TEST(DiskTest, returnsProperName)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_EQ(disk.name(), "sda");
+}
+
+
+TEST(DiskTest, returnsProperDevPath)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_EQ(disk.devPath(), "/dev/sda");
+}
+
+
+TEST(DiskTest, returnsProperIdentification)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1073741824");    // 1 GiB
+    fs.addFile("/sys/block/sda/size", "4096");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_EQ(disk.toString(), "sda, N/A, N/A, 4096 [GiB]\n");
+}
+
+
+TEST(DiskTest, returnsTrueForEqualObjects)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+
+    Disk disk1("sda", fs.getFileSystem());
+    Disk disk2("sda", fs.getFileSystem());
+
+    EXPECT_TRUE(disk1 == disk2);
+}
+
+
+TEST(DiskTest, returnsFalseForDifferentObjects)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+    fs.addFile("/sys/block/sdb/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sdb/size", "4096");
+
+    Disk disk1("sda", fs.getFileSystem());
+    Disk disk2("sdb", fs.getFileSystem());
+
+    EXPECT_FALSE(disk1 == disk2);
+}
+
+
+TEST(DiskTest, returnsTrueWhenComparingObjectWithItself)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_TRUE(disk == disk);
 }
