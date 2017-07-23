@@ -13,10 +13,9 @@ Disk::Disk(const QString& name, IFileSystem* filesystem) :
 
 bool Disk::operator==(const Disk& other) const
 {
-    return this == &other ||
-            this->m_name == other.m_name ||
-            (this->m_serial == other.m_serial &&
-             this->m_model == other.m_model);
+    return this->m_name == other.m_name &&
+           this->m_serial == other.m_serial &&
+           this->m_model == other.m_model;
 }
 
 
