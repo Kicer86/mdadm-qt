@@ -50,10 +50,12 @@ class MainWindow: public QMainWindow
         QTableView* m_raidsView;
         QTableView* m_disksView;
 
+        void contextMenu(const QPoint&);
+        bool removeRaid(const QString&);
         void refreshArraysList();
         void refreshDisksList();
         void createRaid();
-        void removeRaid();
+        void menuRemoveRaid();
 };
 
 #endif // MAINWINDOW_HPP
