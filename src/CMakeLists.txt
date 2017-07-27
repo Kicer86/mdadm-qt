@@ -62,6 +62,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             disk_controller.cpp
             empty_filter.cpp
             exclude_used_filter.cpp
+            ifilesystem_mock.cpp
             ifilesystem_mock.hpp
             imdadm_process_mock.hpp
             mdadm_controller.cpp
@@ -70,6 +71,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             printers_for_gmock.cpp
 
             disk_tests.cpp
+            disk_controller_tests.cpp
             mdadm_controller_tests.cpp
     )
 
