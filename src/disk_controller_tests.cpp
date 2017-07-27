@@ -5,6 +5,7 @@
 #include "disk_controller.hpp"
 #include "idisk_filter_mock.hpp"
 #include "ifilesystem_mock.hpp"
+#include "printers_for_gmock.hpp"
 
 
 using ::testing::_;
@@ -22,15 +23,17 @@ TEST(DiskControllerTest, isConstructible)
 TEST(DiskControllerTest, returnsAllDevicesWhenEmptyFilterIsBeingUsed)
 {
     IDiskFilterMock filter;
-    IFileSystemMock fs;
+    FakeFileSystem fs;
 
-    const std::deque<QString> drives = { "sda", "sdb", "sdy", "sdz" };
+    for(const char* device: {"sda", "sdb", "sdy", "sdz"})
+    {
+        fs.addFile( QString("/sys/block/%1/queue/logical_block_size").arg(device), "1024");
+        fs.addFile( QString("/sys/block/%1/size").arg(device), "4096");
+    }
 
     EXPECT_CALL(filter, func_op(_)).WillRepeatedly(Return(true));
-    EXPECT_CALL(fs, listDir(QString("/sys/block"), _))
-        .WillOnce(Return(drives));
 
-    DiskController dc(&fs);
+    DiskController dc(fs.getFileSystem());
 
     std::vector<std::unique_ptr<IBlockDevice>> devices = dc.listDisks(filter);
 
