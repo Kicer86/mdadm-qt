@@ -60,6 +60,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             block_device.cpp
             disk.cpp
             disk_controller.cpp
+            ifilesystem_mock.cpp
             ifilesystem_mock.hpp
             imdadm_process_mock.hpp
             mdadm_controller.cpp

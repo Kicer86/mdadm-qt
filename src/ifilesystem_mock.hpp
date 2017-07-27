@@ -16,4 +16,21 @@ struct IFileSystemMock : public IFileSystem
     MOCK_METHOD2(listDir, std::deque<QString>(const QString&, const char*));
 };
 
+
+class FakeFileSystem
+{
+    public:
+        FakeFileSystem();
+        ~FakeFileSystem();
+
+        void addFile(const QString& path, const QString& content);
+        IFileSystem* getFileSystem();
+
+    private:
+        IFileSystemMock m_fs;
+        std::deque<QString> m_contents;
+        std::deque<QTextStream> m_streams;
+};
+
+
 #endif // IFILESYSTEM_MOCK_HPP
