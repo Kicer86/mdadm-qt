@@ -12,14 +12,6 @@ using testing::_;
 using testing::Return;
 
 
-TEST(MDAdmControllerTest, isConstructible)
-{
-    EXPECT_NO_THROW({
-        MDAdmController controller(nullptr, nullptr);
-    });
-}
-
-
 TEST(MDAdmControllerTest, usesRightParametersForRaid0Creation)
 {
     IMDAdmProcessMock mdadm_process;

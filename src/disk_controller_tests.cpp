@@ -11,14 +11,6 @@
 using ::testing::_;
 using ::testing::Return;
 
-TEST(DiskControllerTest, isConstructible)
-{
-    EXPECT_NO_THROW(
-    {
-        DiskController dc(nullptr);
-    });
-}
-
 
 TEST(DiskControllerTest, returnsAllDevicesWhenEmptyFilterIsBeingUsed)
 {
