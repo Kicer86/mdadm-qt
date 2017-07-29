@@ -1,0 +1,3 @@
+
+ignore:
+  - "*/printers_for_gmock.cpp"
