@@ -17,6 +17,6 @@ public:
     {
     }
 
-    bool operator()(const Disk&) const;
+    bool operator()(const IBlockDevice &) const;
 };
 #endif // EMPTY_FILTER_H

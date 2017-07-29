@@ -1,7 +1,7 @@
 #include "exclude_used_filter.hpp"
-#include "disk.hpp"
+#include "iblock_device.hpp"
 
-bool ExcludeUsedFilter::operator()(const Disk& disk) const
+bool ExcludeUsedFilter::operator()(const IBlockDevice& disk) const
 {
     return !disk.isUsed();
 }

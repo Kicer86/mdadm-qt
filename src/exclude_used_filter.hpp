@@ -3,7 +3,7 @@
 
 #include "idisk_filter.hpp"
 
-class Disk;
+class IBlockDevice;
 
 class ExcludeUsedFilter : public IDiskFilter
 {
@@ -17,6 +17,6 @@ public:
     {
     }
 
-    bool operator()(const Disk& disk) const;
+    bool operator()(const IBlockDevice& disk) const;
 };
 #endif // EXCLUDE_USED_FILTER_H
