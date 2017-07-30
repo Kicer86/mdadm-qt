@@ -17,10 +17,7 @@ TEST(DiskTest, simpleConstruction)
     fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
     fs.addFile("/sys/block/sda/size", "4096");
 
-    EXPECT_NO_THROW(
-    {
-        Disk disk("sda", fs.getFileSystem());
-    });
+    Disk disk("sda", fs.getFileSystem());
 }
 
 
