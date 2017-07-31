@@ -23,6 +23,7 @@ matrix:
                - g++-5
                - gcc-5
                - lcov
+               - qtbase5-dev
              sources:
                - ubuntu-toolchain-r-test
           # use compiler which has c++14 support
