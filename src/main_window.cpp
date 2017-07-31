@@ -61,19 +61,15 @@ MainWindow::MainWindow():
     // menus & shortcuts
     auto raidMenu = menuBar()->addMenu(tr("&Raid"));
     QAction *actionCreate = new QAction(tr("&New"), this);
-    QAction *actionRemove = new QAction(tr("Remove selected"), this);
     QAction *actionQuit = new QAction(tr("&Quit"), this);
 
     actionCreate->setShortcut(Qt::CTRL + Qt::Key_N);
-    actionRemove->setShortcut(Qt::Key_Delete);
     actionQuit->setShortcut(Qt::CTRL + Qt::Key_Q);
 
     connect(actionCreate, &QAction::triggered, this, &MainWindow::createRaid);
-    connect(actionRemove, &QAction::triggered, this, &MainWindow::menuRemoveRaid);
     connect(actionQuit, &QAction::triggered, this, &QMainWindow::close);
 
     raidMenu->addAction(actionCreate);
-    raidMenu->addAction(actionRemove);
     raidMenu->addAction(actionQuit);
 
     auto viewMenu = menuBar()->addMenu(tr("&View"));
@@ -101,13 +97,6 @@ MainWindow::MainWindow():
 
     m_disksView->sortByColumn(0, Qt::AscendingOrder);
     m_disksView->setSortingEnabled(true);
-
-    connect(raidMenu, &QMenu::aboutToShow,
-            [this, actionRemove]()
-    {
-        actionRemove->setEnabled(
-                    this->m_raidsView->selectionModel()->hasSelection());
-    });
 
     connect(&m_mdadmController, &MDAdmController::raidCreated, this,
             &MainWindow::refreshArraysList);
