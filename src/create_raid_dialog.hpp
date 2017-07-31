@@ -11,6 +11,11 @@ class QSpinBox;
 
 struct IFileSystem;
 
+struct RaidLimits {
+    int m_total;
+    int m_missing;
+};
+
 class CreateRaidDialog : public QDialog
 {
     QListView* m_disksView;
@@ -21,12 +26,12 @@ class CreateRaidDialog : public QDialog
     QComboBox *m_cbTypes;
     QSpinBox *m_sbDevNumber;
 
-    const QMap<QString, int> m_raidTypes;
+    const QMap<QString, RaidLimits> m_raidTypes;
 
     void addElements();
     void removeElements();
 
-    void recalculateType(int count);
+    void recalculateType(int total, int missing);
 
 public:
     CreateRaidDialog(IFileSystem *, QWidget *parent = Q_NULLPTR);

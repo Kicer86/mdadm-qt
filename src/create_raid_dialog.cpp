@@ -20,11 +20,11 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     m_selectedDisksModel(),
     m_cbTypes(nullptr),
     m_sbDevNumber(nullptr),
-    m_raidTypes({{"RAID0", 1},
-                 {"RAID1", 2},
-                 {"RAID4", 3},
-                 {"RAID5", 3},
-                 {"RAID6", 4}})
+    m_raidTypes({{"RAID0", {1,0}},
+                 {"RAID1", {2,127}},
+                 {"RAID4", {3,1}},
+                 {"RAID5", {3,1}},
+                 {"RAID6", {4,2}}})
 {
     QVBoxLayout *systemDisksLayout = new QVBoxLayout;
     QVBoxLayout *buttonDiskLayout = new QVBoxLayout;
@@ -89,9 +89,17 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     auto disks = dc.listDisks(diskFilter);
 
-    for (const auto& disk : disks) {
+    for (const auto& disk : disks)
+    {
         QStandardItem* item = new QStandardItem(disk->toString());
         item->setData(disk->devPath());
+        m_disksModel.appendRow(item);
+    }
+
+    for (int i=0; i<3; ++i)
+    {
+        QStandardItem* item = new QStandardItem(tr("missing - %1").arg(i+1));
+        item->setData(QString("missing"));
         m_disksModel.appendRow(item);
     }
 
@@ -120,6 +128,7 @@ void CreateRaidDialog::addElements()
 {
     QItemSelectionModel *selectionModel = m_disksView->selectionModel();
     std::vector<QPersistentModelIndex> rows_to_delete;
+    int missing = 0;
 
     for (const auto& elem : selectionModel->selectedIndexes())
     {
@@ -134,9 +143,14 @@ void CreateRaidDialog::addElements()
     {
         m_disksModel.removeRow(elem.row());
     }
+
+    for (int i = 0; i < m_selectedDisksModel.rowCount(); ++i)
+        if (m_selectedDisksModel.item(i,0)->data() == "missing")
+            ++missing;
+
     m_disksModel.sort(0);
     m_selectedDisksModel.sort(0);
-    recalculateType(m_selectedDisksModel.rowCount());
+    recalculateType(m_selectedDisksModel.rowCount(), missing);
 }
 
 void CreateRaidDialog::removeElements()
@@ -144,6 +158,7 @@ void CreateRaidDialog::removeElements()
     QItemSelectionModel *selectionModel =
             m_selectedDisksView->selectionModel();
     std::vector<QPersistentModelIndex> rows_to_delete;
+    int missing = 0;
 
     for (const auto& elem : selectionModel->selectedIndexes())
     {
@@ -161,17 +176,21 @@ void CreateRaidDialog::removeElements()
         m_selectedDisksModel.removeRow(elem.row());
     }
 
+    for (int i = 0; i < m_selectedDisksModel.rowCount(); ++i)
+        if (m_selectedDisksModel.item(i,0)->data() == "missing")
+            ++missing;
+
     m_selectedDisksModel.sort(0);
     m_disksModel.sort(0);
-    recalculateType(m_selectedDisksModel.rowCount());
+    recalculateType(m_selectedDisksModel.rowCount(), missing);
 }
 
-void CreateRaidDialog::recalculateType(int count)
+void CreateRaidDialog::recalculateType(int total, int missing)
 {
     const QStandardItemModel* model =
             qobject_cast<const QStandardItemModel*>(m_cbTypes->model());
 
-    m_cbTypes->setDisabled(count == 0);
+    m_cbTypes->setDisabled(total == 0 || missing == total);
 
     for (int i=0; i< m_cbTypes->count(); ++i)
     {
@@ -179,7 +198,8 @@ void CreateRaidDialog::recalculateType(int count)
 
         Q_ASSERT(m_raidTypes.contains(type));
         auto item = model->item(i);
-        if (count < m_raidTypes.value(type))
+        if (total < m_raidTypes.value(type).m_total ||
+                missing > m_raidTypes.value(type).m_missing)
         {
             item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
         }
