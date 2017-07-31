@@ -47,6 +47,28 @@ void FakeFileSystem::addFile(const QString& path, const QString& content)
 }
 
 
+void FakeFileSystem::addInaccessibleFile(const QString& path)
+{
+    m_files.insert(path);
+
+    m_streams.emplace_back(static_cast<QIODevice *>(nullptr));
+    QTextStream& current_stream = m_streams.back();
+
+    EXPECT_CALL(m_fs, openFile(path, _))
+        .WillRepeatedly(::testing::Invoke(
+                    [&current_stream](const QString&, QIODevice::OpenMode)
+    {
+        std::unique_ptr<IFileSystemMock::IFileMock> file
+            = std::make_unique<IFileSystemMock::IFileMock>();
+
+        EXPECT_CALL(*file, getStream())
+            .WillRepeatedly(Return(nullptr));
+
+        return file;
+    }));
+}
+
+
 IFileSystem* FakeFileSystem::getFileSystem()
 {
     return &m_fs;

@@ -133,3 +133,30 @@ TEST(DiskTest, returnsTrueWhenComparingObjectWithItself)
 
     EXPECT_TRUE(disk == disk);
 }
+
+
+TEST(DiskTest, reportsWhenNotUsed)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+    fs.addFile("/dev/sda", "");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_FALSE(disk.isUsed());
+}
+
+
+TEST(DiskTest, reportsWhenUsed)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/sda/queue/logical_block_size", "1024");
+    fs.addFile("/sys/block/sda/size", "4096");
+    fs.addInaccessibleFile("/dev/sda");
+
+    Disk disk("sda", fs.getFileSystem());
+
+    EXPECT_TRUE(disk.isUsed());
+}
+
