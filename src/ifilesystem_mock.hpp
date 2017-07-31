@@ -24,6 +24,7 @@ class FakeFileSystem
         ~FakeFileSystem();
 
         void addFile(const QString& path, const QString& content);
+        void addInaccessibleFile(const QString& path);
         IFileSystem* getFileSystem();
 
     private:

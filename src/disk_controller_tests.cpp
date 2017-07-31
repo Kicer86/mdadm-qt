@@ -21,6 +21,7 @@ TEST(DiskControllerTest, returnsAllDevicesWhenEmptyFilterIsBeingUsed)
     {
         fs.addFile( QString("/sys/block/%1/queue/logical_block_size").arg(device), "1024");
         fs.addFile( QString("/sys/block/%1/size").arg(device), "4096");
+        fs.addFile( QString("/mnt/block/%1").arg(device), "1234567890");          // some random file to complicate situation
     }
 
     EXPECT_CALL(filter, func_op(_)).WillRepeatedly(Return(true));
