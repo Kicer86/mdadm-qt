@@ -90,7 +90,7 @@ TEST(MDAdmControllerTest, usesRightParameterForRaidStop)
     };
 
     EXPECT_CALL(mdadm_process, execute(expected_args, _))
-            .WillOnce(Return(true));
+            .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
     controller.stopRaid("/dev/md127");
