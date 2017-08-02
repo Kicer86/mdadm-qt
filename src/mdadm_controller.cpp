@@ -58,6 +58,20 @@ namespace
 
         return result;
     }
+
+
+    void dumpMDAdmProcessResult(const QByteArray& output,
+                                bool success,
+                                int exitCode)
+    {
+        if (success)
+        {
+            qDebug() << "mdadm exited normally with code: " << exitCode << " and output:";
+            qDebug() << output;
+        }
+        else
+            qDebug() << "mdadm crashed";
+    }
 }
 
 bool RaidInfo::operator==(const RaidInfo &other) const
@@ -134,6 +148,7 @@ bool MDAdmController::listRaids(const ListResult& result)
     return open_status;
 }
 
+
 bool MDAdmController::listComponents(const QString& raid_device,
                                      QStringList& block_devices) {
     QString slaves_path = "/sys/block/" + raid_device + "/slaves";
@@ -163,19 +178,15 @@ bool MDAdmController::createRaid(const QString& raid_device,
                                                bool success,
                                                int exitCode)
     {
-        if (success)
-        {
-            qDebug() << "mdadm exited normally with code: " << exitCode << " and output:";
-            qDebug() << output;
+        dumpMDAdmProcessResult(output, success, exitCode);
 
+        if (success)
             emit raidCreated();
-        }
-        else
-            qDebug() << "mdadm crashed";
     });
 
     return true;
 }
+
 
 bool MDAdmController::removeRaid(const QString& raid_device)
 {
@@ -189,18 +200,7 @@ bool MDAdmController::removeRaid(const QString& raid_device)
         mdadm_args << "--zero-superblock" << components;
     }
 
-    m_mdadmProcess->execute(mdadm_args, [](const QByteArray& output,
-                                           bool success, int exitCode)
-    {
-        if (success)
-        {
-            qDebug() << "mdadm exited normally with code: "
-                     << exitCode << " and output:";
-            qDebug() << output;
-        }
-        else
-            qDebug() << "mdadm crashed";
-    });
+    m_mdadmProcess->execute(mdadm_args, dumpMDAdmProcessResult);
 
     return true;
 }
@@ -211,18 +211,7 @@ bool MDAdmController::stopRaid(const QString& raid_device)
 
     mdadm_args << "--stop" << "--verbose" << raid_device;
 
-    m_mdadmProcess->execute(mdadm_args, [](const QByteArray& output,
-                                           bool success, int exitCode)
-    {
-        if (success)
-        {
-            qDebug() << "mdadm exited normally with code: "
-                     << exitCode << " and output:";
-            qDebug() << output;
-        }
-        else
-            qDebug() << "mdadm crashed";
-    });
+    m_mdadmProcess->execute(mdadm_args, dumpMDAdmProcessResult);
 
     return true;
 }
@@ -236,18 +225,7 @@ bool MDAdmController::zeroSuperblock(const QStringList& raid_components)
 
     mdadm_args << "--zero-superblock" << raid_components;
 
-    m_mdadmProcess->execute(mdadm_args, [](const QByteArray& output,
-                                           bool success, int exitCode)
-    {
-        if (success)
-        {
-            qDebug() << "mdadm exited normally with code: "
-                     << exitCode << " and output:";
-            qDebug() << output;
-        }
-        else
-            qDebug() << "mdadm crashed";
-    });
+    m_mdadmProcess->execute(mdadm_args, dumpMDAdmProcessResult);
 
     return true;
 }
