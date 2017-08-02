@@ -106,6 +106,7 @@ TEST(MDAdmControllerTest,
     EXPECT_FALSE(controller.zeroSuperblock(QStringList()));
 }
 
+
 TEST(MDAdmControllerTest,
      usesRightParameterForClearingMetadataFromSingleDrive)
 {
@@ -145,6 +146,7 @@ TEST(MDAdmControllerTest,
                                             "/dev/sde"}));
 }
 
+
 TEST(MDAdmControllerTest,
      usesRightParameterForRaidRemoval)
 {
@@ -172,8 +174,8 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(&mdadm_process, &filesystem);
     EXPECT_TRUE(controller.removeRaid("/dev/md127"));
-
 }
+
 
 TEST(MDAdmControllerTest,
      usesRightParameterForEmptyRaidRemoval)
