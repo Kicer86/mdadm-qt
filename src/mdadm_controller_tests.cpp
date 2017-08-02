@@ -255,6 +255,7 @@ void compareListOutput(MDAdmController& controller,
     }));
 }
 
+
 TEST(MDAdmControllerTest,
      listInactiveRaid0)
 {
@@ -278,6 +279,7 @@ TEST(MDAdmControllerTest,
 
     compareListOutput(controller, expectedOutput);
 }
+
 
 TEST(MDAdmControllerTest,
      listActiveRaid5)
@@ -303,6 +305,7 @@ TEST(MDAdmControllerTest,
 
     compareListOutput(controller, expectedOutput);
 }
+
 
 TEST(MDAdmControllerTest,
      listActiveRaid0Raid1Raid6)
@@ -338,6 +341,7 @@ TEST(MDAdmControllerTest,
     compareListOutput(controller, expectedOutput);
 }
 
+
 TEST(MDAdmControllerTest, listNoRaids)
 {
     IFileSystemMock filesystem;
@@ -357,6 +361,7 @@ TEST(MDAdmControllerTest, listNoRaids)
 
     compareListOutput(controller, expectedOutput);
 }
+
 
 TEST(MDAdmControllerTest, listDegradedRaid)
 {
