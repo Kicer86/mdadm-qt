@@ -20,14 +20,25 @@
 #ifndef RAIDSMODEL_HPP
 #define RAIDSMODEL_HPP
 
-class RaidsModel
-{
-public:
-    RaidsModel();
-    RaidsModel(const RaidsModel &) = delete;
-    ~RaidsModel();
+#include <QStandardItemModel>
 
-    RaidsModel& operator=(const RaidsModel &) = delete;
+class RaidsModel: public QAbstractItemModel
+{
+    public:
+        RaidsModel();
+        RaidsModel(const RaidsModel &) = delete;
+        ~RaidsModel();
+
+        RaidsModel& operator=(const RaidsModel &) = delete;
+
+    private:
+        int columnCount(const QModelIndex & parent) const override;
+        QVariant data(const QModelIndex & index, int role) const override;
+        QModelIndex index(int row, int column, const QModelIndex & parent) const override;
+        QModelIndex parent(const QModelIndex & child) const override;
+        int rowCount(const QModelIndex & parent) const override;
+
+        QStandardItemModel m_model;
 };
 
 #endif // RAIDSMODEL_HPP
