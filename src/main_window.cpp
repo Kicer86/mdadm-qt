@@ -110,7 +110,6 @@ MainWindow::~MainWindow()
 
 }
 
-//#include <QtDebug>
 
 void MainWindow::contextMenu(const QPoint& pos)
 {
