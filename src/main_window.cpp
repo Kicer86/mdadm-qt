@@ -128,7 +128,7 @@ void MainWindow::contextMenu(const QPoint& pos)
             [device, this](bool)
     {
         if (!device.isNull())
-        this->removeRaid(device);
+            this->removeRaid(device);
     });
 
     raidOptions->addAction(actionRemove);
