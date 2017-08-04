@@ -89,3 +89,9 @@ int RaidsModel::rowCount(const QModelIndex& parent) const
 {
     return m_model.rowCount(parent);
 }
+
+
+QVariant RaidsModel::headerData(int section, Qt::Orientation orientation, int role) const
+{
+    return m_model.headerData(section, orientation, role);
+}
