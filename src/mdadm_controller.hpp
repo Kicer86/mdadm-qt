@@ -32,9 +32,9 @@ struct IFileSystem;
 
 struct RaidInfo
 {
-    const QString raid_device;
-    const QStringList block_devices;
-    const QString raid_type;
+    QString raid_device;
+    QStringList block_devices;
+    QString raid_type;
 
     RaidInfo (const QString& _raid_device,
               const QStringList& _block_devices,
