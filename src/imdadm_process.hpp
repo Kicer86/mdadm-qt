@@ -28,10 +28,16 @@
 struct IMDAdmProcess
 {
     typedef std::function<void(const QByteArray &, bool, int)> ExecutionResult;    // output, normal exit?, exit code
+    typedef std::function<QString(const QByteArray &)> ReadChannelParser;
 
     virtual ~IMDAdmProcess() = default;
 
-    virtual bool execute(const QStringList &, const ExecutionResult &) = 0;        // execute mdadm with given parameters and returns result thru ExecutionResult
+    /* execute mdadm with given parameters and returns result
+     * through ExecutionResult. The ReadChannelParser is used
+     * for interaction with user
+     */
+    virtual bool execute(const QStringList &, const ExecutionResult &,
+                         const ReadChannelParser& parser = nullptr) = 0;
 };
 
 #endif // IMDADMPROCESS_HPP

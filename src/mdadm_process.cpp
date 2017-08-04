@@ -34,10 +34,23 @@ MDAdmProcess::~MDAdmProcess()
 }
 
 
-bool MDAdmProcess::execute(const QStringList& args, const ExecutionResult& result)
+bool MDAdmProcess::execute(const QStringList& args,
+                           const ExecutionResult& result,
+                           const ReadChannelParser& parser)
 {
     QProcess* mdadm = new QProcess;
     mdadm->setProcessChannelMode(QProcess::MergedChannels);
+
+    QObject::connect(mdadm, &QProcess::readyReadStandardOutput,
+                     [parser, mdadm]()
+    {
+        if (parser != nullptr) {
+            QString response = parser(mdadm->readAll());
+            if (!response.isEmpty())
+                mdadm->write(response.toStdString().c_str());
+            mdadm->write("\n");
+        }
+    });
 
     QObject::connect(mdadm, qOverload<int, QProcess::ExitStatus>(&QProcess::finished),
         [result, mdadm](int exitCode, QProcess::ExitStatus status)
@@ -49,8 +62,10 @@ bool MDAdmProcess::execute(const QStringList& args, const ExecutionResult& resul
         mdadm->deleteLater();
     });
 
+    mdadm->waitForReadyRead();
+
     // TODO: find path to mdadm
-    mdadm->start("mdadm", args, QProcess::ReadOnly);
+    mdadm->start("mdadm", args, QProcess::ReadWrite);
 
     return true;
 }

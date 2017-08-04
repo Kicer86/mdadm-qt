@@ -24,6 +24,7 @@
 #include <QTabWidget>
 #include <QTableView>
 #include <QMenuBar>
+#include <QMessageBox>
 
 #include "create_raid_dialog.hpp"
 #include "disk_controller.hpp"
@@ -181,7 +182,20 @@ void MainWindow::createRaid()
 
         m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
                                      typeMap.value(type),
-                                     disks);
+                                     disks,
+                                     [](const QString &output)
+                                            ->QString
+        {
+            if (output.contains('?')) {
+                QMessageBox::StandardButton result =
+                QMessageBox::warning(nullptr, "Warning", output,
+                                 QMessageBox::Yes | QMessageBox::No,
+                                 QMessageBox::No);
+                return (result == QMessageBox::Yes) ? "y" : "n";
+            }
+
+            return "";
+        });
     }
 }
 

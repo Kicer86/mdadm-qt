@@ -8,7 +8,9 @@
 
 struct IMDAdmProcessMock: IMDAdmProcess
 {
-    MOCK_METHOD2(execute, bool(const QStringList &, const ExecutionResult &));
+    MOCK_METHOD3(execute, bool(const QStringList &,
+                               const ExecutionResult &,
+                               const ReadChannelParser &));
 };
 
 #endif

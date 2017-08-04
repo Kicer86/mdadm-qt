@@ -17,7 +17,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid0Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md0", "--level", "stripe", "--raid-devices=2", "/dev/sda", "/dev/sdc" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -30,7 +30,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid1Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md1", "--level", "mirror", "--raid-devices=3", "/dev/sda", "/dev/sdc", "/dev/sde" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -43,7 +43,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid4Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md2", "--level", "4", "--raid-devices=4", "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -56,7 +56,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid5Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md3", "--level", "5", "--raid-devices=3", "/dev/sda", "/dev/sdb", "/dev/sdc" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -69,7 +69,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid6Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md4", "--level", "6", "--raid-devices=5", "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -87,7 +87,7 @@ TEST(MDAdmControllerTest, usesRightParameterForRaidStop)
         "/dev/md127"
     };
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -114,7 +114,7 @@ TEST(MDAdmControllerTest,
         "/dev/sdb"
     };
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -134,7 +134,7 @@ TEST(MDAdmControllerTest,
         "/dev/sde"
     };
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -165,7 +165,7 @@ TEST(MDAdmControllerTest,
             .WillOnce(Return(
                           std::deque<QString> { "sdb", "sdc", "sdd" }));
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, &filesystem);
@@ -191,7 +191,7 @@ TEST(MDAdmControllerTest,
             .WillOnce(Return(
                           std::deque<QString> { }));
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(Return(true));
 
     MDAdmController controller(&mdadm_process, &filesystem);

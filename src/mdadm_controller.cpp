@@ -149,7 +149,8 @@ bool MDAdmController::listComponents(const QString& raid_device,
 
 bool MDAdmController::createRaid(const QString& raid_device,
                                  MDAdmController::Type type,
-                                 const QStringList& block_devices)
+                                 const QStringList& block_devices,
+                                 const OutputParser& callback)
 {
     QStringList mdadm_args;
 
@@ -172,6 +173,11 @@ bool MDAdmController::createRaid(const QString& raid_device,
         }
         else
             qDebug() << "mdadm crashed";
+    },
+    [callback](const QByteArray& output)->QString {
+        if (callback != nullptr)
+            return callback(QString(output));
+        return "";
     });
 
     return true;
