@@ -44,6 +44,12 @@ struct RaidInfo
         raid_type(_type)
     {}
 
+    RaidInfo(const RaidInfo &) = default;
+    RaidInfo(RaidInfo &&) = default;
+
+    RaidInfo& operator=(const RaidInfo &) = default;
+    RaidInfo& operator=(RaidInfo &&) = default;
+
     bool operator==(const RaidInfo&) const;
 };
 
