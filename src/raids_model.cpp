@@ -17,9 +17,13 @@
  *
  */
 
+
 #include "raids_model.hpp"
 
-RaidsModel::RaidsModel(): m_model()
+#include <cassert>
+
+
+RaidsModel::RaidsModel(): m_model(), m_infos()
 {
     m_model.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
 }
@@ -33,6 +37,7 @@ RaidsModel::~RaidsModel()
 
 void RaidsModel::load(const std::vector<RaidInfo>& raids)
 {
+    m_infos = raids;
     const int rows = m_model.rowCount();
     m_model.removeRows(0, rows);     // .clear() would clear headers also
 
@@ -45,6 +50,14 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
         const QList<QStandardItem *> row = { raid_device_item, raid_type_item, raid_blk_devices_item };
         m_model.appendRow(row);
     }
+}
+
+
+const RaidInfo& RaidsModel::infoForRow(int row) const
+{
+    assert(row < m_infos.size());
+
+    return m_infos[row];
 }
 
 

@@ -37,6 +37,8 @@ class RaidsModel: public QAbstractItemModel
 
         void load(const std::vector<RaidInfo> &);
 
+        const RaidInfo& infoForRow(int) const;
+
     private:
         int columnCount(const QModelIndex & parent) const override;
         QVariant data(const QModelIndex & index, int role) const override;
@@ -45,6 +47,7 @@ class RaidsModel: public QAbstractItemModel
         int rowCount(const QModelIndex & parent) const override;
 
         QStandardItemModel m_model;
+        std::vector<RaidInfo> m_infos;
 };
 
 #endif // RAIDSMODEL_HPP
