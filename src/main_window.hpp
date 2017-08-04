@@ -21,11 +21,11 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
-#include <QStandardItemModel>
 
 #include "filesystem.hpp"
 #include "mdadm_controller.hpp"
 #include "mdadm_process.hpp"
+#include "raids_model.hpp"
 
 class QTabWidget;
 class QTableView;
@@ -44,7 +44,7 @@ class MainWindow: public QMainWindow
         FileSystem m_fileSystem;
         MDAdmProcess m_mdadmProcess;
         MDAdmController m_mdadmController;
-        QStandardItemModel m_raidsModel;
+        RaidsModel m_raidsModel;
         QStandardItemModel m_disksModel;
         QTabWidget* m_viewTabs;
         QTableView* m_raidsView;
@@ -55,7 +55,6 @@ class MainWindow: public QMainWindow
         void refreshArraysList();
         void refreshDisksList();
         void createRaid();
-        void menuRemoveRaid();
 };
 
 #endif // MAINWINDOW_HPP

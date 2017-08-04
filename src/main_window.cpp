@@ -42,8 +42,6 @@ MainWindow::MainWindow():
     m_disksView(nullptr)
 {
     // raids tab
-    m_raidsModel.setHorizontalHeaderLabels( { tr("raid device"), tr("type"), tr("block devices") } );
-
     m_raidsView = new QTableView(this);
     m_raidsView->setModel(&m_raidsModel);
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -118,7 +116,8 @@ void MainWindow::contextMenu(const QPoint& pos)
     if (!index.isValid())
         return;
 
-    const QString device = m_raidsModel.itemFromIndex(index)->text();
+    const RaidInfo& raid = m_raidsModel.infoForRow(index.row());
+    const QString& device = raid.raid_device;
 
     QMenu *raidOptions = new QMenu(this);
     QAction *actionRemove = new QAction("Remove " + device, this);
@@ -162,21 +161,9 @@ bool MainWindow::removeRaid(const QString& raidDevice)
 
 void MainWindow::refreshArraysList()
 {
-    const int rows = m_raidsModel.rowCount();
-    m_raidsModel.removeRows(0, rows);     // .clear() would clear headers also
+    auto load = std::bind(&RaidsModel::load, &m_raidsModel, std::placeholders::_1);
 
-    m_mdadmController.listRaids([this](const std::vector<RaidInfo>& raids)
-    {
-        for(const RaidInfo& raid: raids)
-        {
-            QStandardItem* raid_device_item = new QStandardItem(raid.raid_device);
-            QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
-            QStandardItem* raid_blk_devices_item = new QStandardItem(raid.block_devices.join(", "));
-
-            const QList<QStandardItem *> row = { raid_device_item, raid_type_item, raid_blk_devices_item };
-            m_raidsModel.appendRow(row);
-        }
-    });
+    m_mdadmController.listRaids(load);
 }
 
 
@@ -225,22 +212,4 @@ void MainWindow::createRaid()
                                      typeMap.value(type),
                                      disks);
     }
-}
-
-void MainWindow::menuRemoveRaid()
-{
-    QString raidDevice;
-
-    auto selected = m_raidsView->selectionModel()->selectedRows(0);
-
-    if (!selected.isEmpty())
-    {
-        const QModelIndex modelIndex = selected.at(0);
-        if (modelIndex.isValid())
-            raidDevice = m_raidsModel.itemFromIndex(modelIndex)->text();
-
-    }
-
-    if (!raidDevice.isNull())
-        removeRaid(raidDevice);
 }
