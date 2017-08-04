@@ -21,13 +21,30 @@
 
 RaidsModel::RaidsModel(): m_model()
 {
-
+    m_model.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
 }
 
 
 RaidsModel::~RaidsModel()
 {
 
+}
+
+
+void RaidsModel::load(const std::vector<RaidInfo>& raids)
+{
+    const int rows = m_model.rowCount();
+    m_model.removeRows(0, rows);     // .clear() would clear headers also
+
+    for(const RaidInfo& raid: raids)
+    {
+        QStandardItem* raid_device_item = new QStandardItem(raid.raid_device);
+        QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
+        QStandardItem* raid_blk_devices_item = new QStandardItem(raid.block_devices.join(", "));
+
+        const QList<QStandardItem *> row = { raid_device_item, raid_type_item, raid_blk_devices_item };
+        m_model.appendRow(row);
+    }
 }
 
 

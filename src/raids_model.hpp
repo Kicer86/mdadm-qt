@@ -20,7 +20,11 @@
 #ifndef RAIDSMODEL_HPP
 #define RAIDSMODEL_HPP
 
+
 #include <QStandardItemModel>
+
+#include "mdadm_controller.hpp"
+
 
 class RaidsModel: public QAbstractItemModel
 {
@@ -30,6 +34,8 @@ class RaidsModel: public QAbstractItemModel
         ~RaidsModel();
 
         RaidsModel& operator=(const RaidsModel &) = delete;
+
+        void load(const std::vector<RaidInfo> &);
 
     private:
         int columnCount(const QModelIndex & parent) const override;
