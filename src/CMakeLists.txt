@@ -29,6 +29,8 @@ set(SRCS
         block_device.hpp
         disk.cpp
         disk.hpp
+        missing.cpp
+        missing.hpp
 )
 
 qt5_wrap_cpp(WRAPPED mdadm_controller.hpp)
