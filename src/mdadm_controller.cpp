@@ -200,8 +200,16 @@ bool MDAdmController::removeRaid(const QString& raid_device)
         mdadm_args << "--zero-superblock" << components;
     }
 
-    m_mdadmProcess->execute(mdadm_args, dumpMDAdmProcessResult);
+    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output,
+                                               bool success,
+                                               int exitCode)
+    {
+        dumpMDAdmProcessResult(output, success, exitCode);
 
+        if (success)
+            emit raidRemoved();
+    });
+    
     return true;
 }
 

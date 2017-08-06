@@ -98,6 +98,8 @@ MainWindow::MainWindow():
 
     connect(&m_mdadmController, &MDAdmController::raidCreated, this,
             &MainWindow::refreshArraysList);
+    connect(&m_mdadmController, &MDAdmController::raidRemoved, this,
+            &MainWindow::refreshArraysList);
     connect(m_raidsView, &QTableView::customContextMenuRequested, this,
             &MainWindow::contextMenu);
 }
