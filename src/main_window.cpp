@@ -43,7 +43,7 @@ MainWindow::MainWindow():
 {
     // raids tab
     m_raidsView = new QTableView(this);
-    m_raidsView->setModel(&m_raidsModel);
+    m_raidsView->setModel(m_raidsModel.model());
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_raidsView->setSelectionMode(QAbstractItemView::SingleSelection);
     m_raidsView->setContextMenuPolicy(Qt::CustomContextMenu);

@@ -26,7 +26,7 @@
 #include "mdadm_controller.hpp"
 
 
-class RaidsModel: public QAbstractItemModel
+class RaidsModel: public QObject
 {
     public:
         RaidsModel();
@@ -38,18 +38,9 @@ class RaidsModel: public QAbstractItemModel
         void load(const std::vector<RaidInfo> &);
 
         const RaidInfo& infoForRow(int) const;
+        QAbstractItemModel* model();
 
     private:
-        // pure virtuals:
-        int columnCount(const QModelIndex & parent) const override;
-        QVariant data(const QModelIndex & index, int role) const override;
-        QModelIndex index(int row, int column, const QModelIndex & parent) const override;
-        QModelIndex parent(const QModelIndex & child) const override;
-        int rowCount(const QModelIndex & parent) const override;
-        
-        // virtuals:
-        QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-
         QStandardItemModel m_model;
         std::vector<RaidInfo> m_infos;
 };

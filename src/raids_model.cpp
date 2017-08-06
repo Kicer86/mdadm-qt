@@ -61,37 +61,7 @@ const RaidInfo& RaidsModel::infoForRow(int row) const
 }
 
 
-int RaidsModel::columnCount(const QModelIndex& parent) const
+QAbstractItemModel* RaidsModel::model()
 {
-    return m_model.columnCount(parent);
-}
-
-
-QVariant RaidsModel::data(const QModelIndex& index, int role) const
-{
-    return m_model.data(index, role);
-}
-
-
-QModelIndex RaidsModel::index(int row, int column, const QModelIndex& parent) const
-{
-    return m_model.index(row, column, parent);
-}
-
-
-QModelIndex RaidsModel::parent(const QModelIndex& child) const
-{
-    return m_model.parent(child);
-}
-
-
-int RaidsModel::rowCount(const QModelIndex& parent) const
-{
-    return m_model.rowCount(parent);
-}
-
-
-QVariant RaidsModel::headerData(int section, Qt::Orientation orientation, int role) const
-{
-    return m_model.headerData(section, orientation, role);
+    return &m_model;
 }
