@@ -32,9 +32,9 @@ struct IFileSystem;
 
 struct RaidInfo
 {
-    const QString raid_device;
-    const QStringList block_devices;
-    const QString raid_type;
+    QString raid_device;
+    QStringList block_devices;
+    QString raid_type;
 
     RaidInfo (const QString& _raid_device,
               const QStringList& _block_devices,
@@ -43,6 +43,12 @@ struct RaidInfo
         block_devices(_block_devices),
         raid_type(_type)
     {}
+
+    RaidInfo(const RaidInfo &) = default;
+    RaidInfo(RaidInfo &&) = default;
+
+    RaidInfo& operator=(const RaidInfo &) = default;
+    RaidInfo& operator=(RaidInfo &&) = default;
 
     bool operator==(const RaidInfo&) const;
 };
@@ -87,6 +93,7 @@ class MDAdmController: public QObject
 
     signals:
         void raidCreated();
+        void raidRemoved();
 };
 
 #endif // MDADMCONTROLLER_HPP

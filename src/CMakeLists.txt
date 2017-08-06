@@ -19,6 +19,8 @@ set(SRCS
         empty_filter.hpp
         filesystem.cpp
         filesystem.hpp
+        raids_model.cpp
+        raids_model.hpp
         exclude_used_filter.cpp
         exclude_used_filter.hpp
         create_raid_dialog.cpp

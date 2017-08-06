@@ -77,8 +77,8 @@ namespace
 bool RaidInfo::operator==(const RaidInfo &other) const
 {
     return this->block_devices == other.block_devices &&
-            this->raid_device == other.raid_device &&
-            this->raid_type == other.raid_type;
+           this->raid_device == other.raid_device &&
+           this->raid_type == other.raid_type;
 }
 
 MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess, IFileSystem* fileSystem):
@@ -200,8 +200,16 @@ bool MDAdmController::removeRaid(const QString& raid_device)
         mdadm_args << "--zero-superblock" << components;
     }
 
-    m_mdadmProcess->execute(mdadm_args, dumpMDAdmProcessResult);
+    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output,
+                                               bool success,
+                                               int exitCode)
+    {
+        dumpMDAdmProcessResult(output, success, exitCode);
 
+        if (success)
+            emit raidRemoved();
+    });
+    
     return true;
 }
 

@@ -42,12 +42,11 @@ MainWindow::MainWindow():
     m_disksView(nullptr)
 {
     // raids tab
-    m_raidsModel.setHorizontalHeaderLabels( { tr("raid device"), tr("type"), tr("block devices") } );
-
     m_raidsView = new QTableView(this);
-    m_raidsView->setModel(&m_raidsModel);
+    m_raidsView->setModel(m_raidsModel.model());
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_raidsView->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_raidsView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // disks tab
     m_disksModel.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
@@ -60,19 +59,15 @@ MainWindow::MainWindow():
     // menus & shortcuts
     auto raidMenu = menuBar()->addMenu(tr("&Raid"));
     QAction *actionCreate = new QAction(tr("&New"), this);
-    QAction *actionRemove = new QAction(tr("Remove selected"), this);
     QAction *actionQuit = new QAction(tr("&Quit"), this);
 
     actionCreate->setShortcut(Qt::CTRL + Qt::Key_N);
-    actionRemove->setShortcut(Qt::Key_Delete);
     actionQuit->setShortcut(Qt::CTRL + Qt::Key_Q);
 
     connect(actionCreate, &QAction::triggered, this, &MainWindow::createRaid);
-    connect(actionRemove, &QAction::triggered, this, &MainWindow::removeRaid);
     connect(actionQuit, &QAction::triggered, this, &QMainWindow::close);
 
     raidMenu->addAction(actionCreate);
-    raidMenu->addAction(actionRemove);
     raidMenu->addAction(actionQuit);
 
     auto viewMenu = menuBar()->addMenu(tr("&View"));
@@ -101,14 +96,12 @@ MainWindow::MainWindow():
     m_disksView->sortByColumn(0, Qt::AscendingOrder);
     m_disksView->setSortingEnabled(true);
 
-    connect(raidMenu, &QMenu::aboutToShow,
-            [this, actionRemove]()
-    {
-        actionRemove->setEnabled(
-                    this->m_raidsView->selectionModel()->hasSelection());
-    });
-
-    connect(&m_mdadmController, &MDAdmController::raidCreated, this, &MainWindow::refreshArraysList);
+    connect(&m_mdadmController, &MDAdmController::raidCreated, this,
+            &MainWindow::refreshArraysList);
+    connect(&m_mdadmController, &MDAdmController::raidRemoved, this,
+            &MainWindow::refreshArraysList);
+    connect(m_raidsView, &QTableView::customContextMenuRequested, this,
+            &MainWindow::contextMenu);
 }
 
 
@@ -118,23 +111,61 @@ MainWindow::~MainWindow()
 }
 
 
+void MainWindow::contextMenu(const QPoint& pos)
+{
+    const QModelIndex index = m_raidsView->indexAt(pos);
+
+    if (!index.isValid())
+        return;
+
+    const RaidInfo& raid = m_raidsModel.infoForRow(index.row());
+    const QString& device = raid.raid_device;
+
+    QMenu *raidOptions = new QMenu(this);
+    QAction *actionRemove = new QAction("Remove " + device, this);
+
+    connect(actionRemove, qOverload<bool>(&QAction::triggered),
+            [device, this](bool)
+    {
+        if (!device.isNull())
+            this->removeRaid(device);
+    });
+
+    raidOptions->addAction(actionRemove);
+    raidOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
+
+}
+
+bool MainWindow::removeRaid(const QString& raidDevice)
+{
+    /* FIXME temporary solution */
+    const QString CONFIRM_TEXT = tr("confirm");
+    bool ret;
+
+    const QString text = QInputDialog::getText(this,
+                       tr("Remove software RAID"),
+                       tr("<b>Warning!</b><br /><br />"
+                          "This operation will remove <b>%1</b> RAID device"
+                          " from the system and clear metadata on all of its "
+                          "components.<br /><br />Please enter <b>%2</b> word"
+                          " to confirm this operation")
+                                         .arg(raidDevice)
+                                         .arg(CONFIRM_TEXT),
+                       QLineEdit::Normal,
+                       "",
+                       &ret);
+     if (ret && text == CONFIRM_TEXT)
+     {
+        ret = m_mdadmController.removeRaid("/dev/" + raidDevice);
+     }
+     return ret;
+}
+
 void MainWindow::refreshArraysList()
 {
-    const int rows = m_raidsModel.rowCount();
-    m_raidsModel.removeRows(0, rows);     // .clear() would clear headers also
+    auto load = std::bind(&RaidsModel::load, &m_raidsModel, std::placeholders::_1);
 
-    m_mdadmController.listRaids([this](const std::vector<RaidInfo>& raids)
-    {
-        for(const RaidInfo& raid: raids)
-        {
-            QStandardItem* raid_device_item = new QStandardItem(raid.raid_device);
-            QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
-            QStandardItem* raid_blk_devices_item = new QStandardItem(raid.block_devices.join(", "));
-
-            const QList<QStandardItem *> row = { raid_device_item, raid_type_item, raid_blk_devices_item };
-            m_raidsModel.appendRow(row);
-        }
-    });
+    m_mdadmController.listRaids(load);
 }
 
 
@@ -183,40 +214,4 @@ void MainWindow::createRaid()
                                      typeMap.value(type),
                                      disks);
     }
-}
-
-void MainWindow::removeRaid()
-{
-    QString raidDevice;
-
-    auto selected = m_raidsView->selectionModel()->selectedRows(0);
-
-    if (!selected.isEmpty())
-    {
-        const QModelIndex modelIndex = selected.at(0);
-        if (modelIndex.isValid())
-            raidDevice = m_raidsModel.itemFromIndex(modelIndex)->text();
-
-    }
-
-    /* FIXME temporary solution */
-    const QString CONFIRM_TEXT = tr("confirm");
-    bool ok;
-    const QString text = QInputDialog::getText(this,
-                       tr("Remove software RAID"),
-                       tr("<b>Warning!</b><br /><br />"
-                          "This operation will remove <b>%1</b> RAID device"
-                          " from the system and clear metadata on all of its "
-                          "components.<br /><br />Please enter <b>%2</b> word"
-                          " to confirm this operation")
-                                         .arg(raidDevice)
-                                         .arg(CONFIRM_TEXT),
-                       QLineEdit::Normal,
-                       "",
-                       &ok);
-     if (ok && text == CONFIRM_TEXT)
-     {
-        m_mdadmController.removeRaid("/dev/" + raidDevice);
-     }
-
 }
