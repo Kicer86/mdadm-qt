@@ -124,7 +124,7 @@ void MainWindow::contextMenu(const QPoint& pos)
     QMenu *raidOptions = new QMenu(this);
     QAction *actionRemove = new QAction("Remove " + device, this);
 
-    connect(actionRemove, qOverload<bool>(&QAction::triggered),
+    connect(actionRemove, &QAction::triggered,
             [device, this](bool)
     {
         if (!device.isNull())
