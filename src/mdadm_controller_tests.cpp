@@ -165,7 +165,7 @@ TEST(MDAdmControllerTest,
         "/dev/sdd"
     };
 
-    EXPECT_CALL(filesystem, listDir(slavesPath, _))
+    EXPECT_CALL(filesystem, listDir(slavesPath, _, QDir::Dirs | QDir::NoDotAndDotDot))
             .WillOnce(Return(
                           std::deque<QString> { "sdb", "sdc", "sdd" }));
 
@@ -191,7 +191,7 @@ TEST(MDAdmControllerTest,
         "/dev/md4"
     };
 
-    EXPECT_CALL(filesystem, listDir(slavesPath, _))
+    EXPECT_CALL(filesystem, listDir(slavesPath, _, QDir::Dirs | QDir::NoDotAndDotDot))
             .WillOnce(Return(
                           std::deque<QString> { }));
 

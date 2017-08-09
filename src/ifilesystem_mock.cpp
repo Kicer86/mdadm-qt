@@ -11,7 +11,7 @@ using ::testing::Return;
 
 FakeFileSystem::FakeFileSystem(): m_fs()
 {
-    EXPECT_CALL(m_fs, listDir(_, _))
+    EXPECT_CALL(m_fs, listDir(_, _, _))
         .WillRepeatedly(Invoke(this, &FakeFileSystem::getDirContent));
 }
 
@@ -75,7 +75,7 @@ IFileSystem* FakeFileSystem::getFileSystem()
 }
 
 
-std::deque<QString> FakeFileSystem::getDirContent(const QString& dir, const char* filter)
+std::deque<QString> FakeFileSystem::getDirContent(const QString& dir, const char* filter, QDir::Filters)
 {
     std::set<QString> result;
 

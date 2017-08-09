@@ -13,7 +13,7 @@ struct IFileSystemMock : public IFileSystem
     };
 
     MOCK_METHOD2(openFile, std::unique_ptr<IFile>(const QString&, const QIODevice::OpenMode&));
-    MOCK_METHOD2(listDir, std::deque<QString>(const QString&, const char*));
+    MOCK_METHOD3(listDir, std::deque<QString>(const QString&, const char*, QDir::Filters));
 };
 
 
@@ -33,7 +33,7 @@ class FakeFileSystem
         std::deque<QTextStream> m_streams;
         std::set<QString> m_files;
 
-        std::deque<QString> getDirContent(const QString&, const char*);
+        std::deque<QString> getDirContent(const QString&, const char*, QDir::Filters);
 };
 
 

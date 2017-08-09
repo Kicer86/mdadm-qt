@@ -71,11 +71,11 @@ std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path, co
 }
 
 
-std::deque<QString> FileSystem::listDir(const QString& dir, const char* filter)
+std::deque<QString> FileSystem::listDir(const QString& dir, const char* filter, QDir::Filters type_filter)
 {
     std::deque<QString> list;
 
-    QDirIterator di(dir, QStringList(filter), QDir::Dirs | QDir::NoDotAndDotDot);
+    QDirIterator di(dir, QStringList(filter), type_filter);
     while (di.hasNext())
     {
         di.next();

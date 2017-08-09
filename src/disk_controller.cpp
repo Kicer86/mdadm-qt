@@ -17,7 +17,7 @@ std::vector<std::unique_ptr<IBlockDevice>> DiskController::listDisks(const IDisk
 {
     std::vector<std::unique_ptr<IBlockDevice>> disks;
 
-    const std::deque<QString> files = m_fileSystem->listDir("/sys/block", "sd*");
+    const std::deque<QString> files = m_fileSystem->listDir("/sys/block", "sd*", QDir::Dirs | QDir::NoDotAndDotDot);
 
     for(const QString& file_name: files)
     {
