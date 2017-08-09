@@ -62,8 +62,6 @@ bool MDAdmProcess::execute(const QStringList& args,
         mdadm->deleteLater();
     });
 
-    mdadm->waitForReadyRead();
-
     // TODO: find path to mdadm
     mdadm->start("mdadm", args, QProcess::ReadWrite);
 
