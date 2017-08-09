@@ -242,7 +242,7 @@ QStringList CreateRaidDialog::getSelectedDisks() const
     {
         QStandardItem *item = m_selectedDisksModel.item(row, 0);
         if (item != nullptr)
-            disks.append(item->data().toString());
+            disks.append(item->data(DiskItemData::PATH).toString());
     }
 
     return disks;
