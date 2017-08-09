@@ -23,7 +23,7 @@ public:
     DiskController(IFileSystem *);
 
     std::vector<std::unique_ptr<IBlockDevice>> listDisks(const IDiskFilter&) const;
-
+    std::unique_ptr<IBlockDevice> getMissingDevice() const;
 };
 
 #endif // DISKCONTROLLER_HPP

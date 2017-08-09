@@ -45,6 +45,11 @@ bool Missing::isUsed() const
     return false;
 }
 
+bool Missing::isPhysical() const
+{
+    return false;
+}
+
 QString Missing::devPath() const
 {
     return "missing";

@@ -33,6 +33,7 @@ public:
     size_t sizeInSectorUnits() const;
     unsigned logicalBlockSize() const;
     bool isUsed() const;
+    bool isPhysical() const;
     QString devPath() const;
     QString toString() const;
 

@@ -7,17 +7,20 @@
 #include "ifilesystem.hpp"
 
 #include "disk.hpp"
+#include "missing.hpp"
 
 DiskController::DiskController(IFileSystem* filesystem): m_fileSystem(filesystem)
 {
 
 }
 
-std::vector<std::unique_ptr<IBlockDevice>> DiskController::listDisks(const IDiskFilter& filter) const
+std::vector<std::unique_ptr<IBlockDevice>>
+DiskController::listDisks(const IDiskFilter& filter) const
 {
     std::vector<std::unique_ptr<IBlockDevice>> disks;
 
-    const std::deque<QString> files = m_fileSystem->listDir("/sys/block", "sd*");
+    const std::deque<QString> files =
+            m_fileSystem->listDir("/sys/block", "sd*");
 
     for(const QString& file_name: files)
     {
@@ -27,4 +30,10 @@ std::vector<std::unique_ptr<IBlockDevice>> DiskController::listDisks(const IDisk
     }
 
     return disks;
+}
+
+std::unique_ptr<IBlockDevice> DiskController::getMissingDevice() const
+{
+    std::unique_ptr<Missing> missing(new Missing());
+    return missing;
 }

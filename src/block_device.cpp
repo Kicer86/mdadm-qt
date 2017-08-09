@@ -47,10 +47,16 @@ inline unsigned BlockDevice::logicalBlockSize() const
     return m_logical_block_size;
 }
 
-bool BlockDevice::isUsed() const {
+bool BlockDevice::isUsed() const
+{
 
     const QString dev_path("/dev/" + m_name);
     const bool used = m_fileSystem->openFile(dev_path)->getStream() == nullptr;
 
     return used;
+}
+
+bool BlockDevice::isPhysical() const
+{
+    return true;
 }

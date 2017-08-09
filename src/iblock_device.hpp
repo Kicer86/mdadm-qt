@@ -13,6 +13,7 @@ public:
     virtual size_t sizeInSectorUnits() const = 0;
     virtual unsigned logicalBlockSize() const = 0;
     virtual bool isUsed() const = 0;
+    virtual bool isPhysical() const = 0;
     virtual QString devPath() const = 0;
     virtual QString toString() const = 0;
 };

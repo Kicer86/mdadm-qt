@@ -20,6 +20,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     m_selectedDisksModel(),
     m_cbTypes(nullptr),
     m_sbDevNumber(nullptr),
+    m_labelDiskCount(nullptr),
     m_raidTypes({{"RAID0", {1,0}},
                  {"RAID1", {2,127}},
                  {"RAID4", {3,1}},
@@ -41,6 +42,8 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     QPushButton *buttonAdd = new QPushButton(tr("->"));
     QPushButton *buttonRemove = new QPushButton(tr("<-"));
+    QPushButton *buttonAddMissing = new QPushButton(tr("+ MISSING"));
+
 
     m_cbTypes = new QComboBox;
     m_cbTypes->addItems(m_raidTypes.keys());
@@ -50,6 +53,8 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     /* TODO: get ranges from other class */
     m_sbDevNumber->setRange(0, 127);
+
+    m_labelDiskCount = new QLabel();
 
     QPushButton *buttonCancel = new QPushButton(tr("Cancel"));
     QPushButton *buttonCreate = new QPushButton(tr("Create"));
@@ -63,6 +68,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     buttonDiskLayout->addStretch();
     buttonDiskLayout->addWidget(buttonAdd);
     buttonDiskLayout->addWidget(buttonRemove);
+    buttonDiskLayout->addWidget(buttonAddMissing);
     buttonDiskLayout->addStretch();
 
     selectedDisksLayout->addWidget(labelSelectedDisks);
@@ -82,6 +88,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     mainLayout->addLayout(disksLayout);
     mainLayout->addLayout(optionsLayout);
+    mainLayout->addWidget(m_labelDiskCount);
     mainLayout->addLayout(buttonCreateLayout);
 
     DiskController dc(fs);
@@ -92,18 +99,24 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     for (const auto& disk : disks)
     {
         QStandardItem* item = new QStandardItem(disk->toString());
-        item->setData(disk->devPath());
-        m_disksModel.appendRow(item);
-    }
-
-    for (int i=0; i<3; ++i)
-    {
-        QStandardItem* item = new QStandardItem(tr("missing - %1").arg(i+1));
-        item->setData(QString("missing"));
+        item->setData(disk->devPath(), DiskItemData::PATH);
+        item->setData(disk->isPhysical(), DiskItemData::IS_PHYSICAL);
         m_disksModel.appendRow(item);
     }
 
     m_disksModel.sort(0);
+
+    connect(buttonAddMissing, &QPushButton::clicked,
+            [this, buttonAddMissing, &dc]()
+    {
+        auto missing = dc.getMissingDevice();
+        QStandardItem* item = new QStandardItem(missing->toString());
+        item->setData(missing->devPath(), DiskItemData::PATH);
+        item->setData(missing->isPhysical(), DiskItemData::IS_PHYSICAL);
+        m_selectedDisksModel.appendRow(item);
+
+        this->recalculateType();
+    });
 
     connect(buttonAdd, &QPushButton::clicked, this,
             &CreateRaidDialog::addElements);
@@ -121,6 +134,8 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     m_disksView->setSelectionMode(QAbstractItemView::MultiSelection);
     m_selectedDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
 
+    updateCounters(0, 0);
+
     setLayout(mainLayout);
 }
 
@@ -128,7 +143,6 @@ void CreateRaidDialog::addElements()
 {
     QItemSelectionModel *selectionModel = m_disksView->selectionModel();
     std::vector<QPersistentModelIndex> rows_to_delete;
-    int missing = 0;
 
     for (const auto& elem : selectionModel->selectedIndexes())
     {
@@ -144,13 +158,9 @@ void CreateRaidDialog::addElements()
         m_disksModel.removeRow(elem.row());
     }
 
-    for (int i = 0; i < m_selectedDisksModel.rowCount(); ++i)
-        if (m_selectedDisksModel.item(i,0)->data() == "missing")
-            ++missing;
-
     m_disksModel.sort(0);
     m_selectedDisksModel.sort(0);
-    recalculateType(m_selectedDisksModel.rowCount(), missing);
+    recalculateType();
 }
 
 void CreateRaidDialog::removeElements()
@@ -158,7 +168,6 @@ void CreateRaidDialog::removeElements()
     QItemSelectionModel *selectionModel =
             m_selectedDisksView->selectionModel();
     std::vector<QPersistentModelIndex> rows_to_delete;
-    int missing = 0;
 
     for (const auto& elem : selectionModel->selectedIndexes())
     {
@@ -167,7 +176,11 @@ void CreateRaidDialog::removeElements()
 
         QStandardItem* item = m_selectedDisksModel
                 .takeItem(elem.row(), elem.column());
-        m_disksModel.appendRow(item);
+
+        if (item->data(DiskItemData::IS_PHYSICAL).toBool())
+            m_disksModel.appendRow(item);
+        else
+            delete item;
         rows_to_delete.emplace_back(elem);
     }
 
@@ -176,21 +189,24 @@ void CreateRaidDialog::removeElements()
         m_selectedDisksModel.removeRow(elem.row());
     }
 
-    for (int i = 0; i < m_selectedDisksModel.rowCount(); ++i)
-        if (m_selectedDisksModel.item(i,0)->data() == "missing")
-            ++missing;
-
     m_selectedDisksModel.sort(0);
     m_disksModel.sort(0);
-    recalculateType(m_selectedDisksModel.rowCount(), missing);
+    recalculateType();
 }
 
-void CreateRaidDialog::recalculateType(int total, int missing)
+void CreateRaidDialog::recalculateType()
 {
     const QStandardItemModel* model =
             qobject_cast<const QStandardItemModel*>(m_cbTypes->model());
 
+    const auto& total = static_cast<unsigned>(m_selectedDisksModel.rowCount());
+    unsigned missing = getMissingCount();
+
     m_cbTypes->setDisabled(total == 0 || missing == total);
+
+    int last_enabled = 0;
+    bool current_disabled = false;
+    const int current = m_cbTypes->currentIndex();
 
     for (int i=0; i< m_cbTypes->count(); ++i)
     {
@@ -202,12 +218,20 @@ void CreateRaidDialog::recalculateType(int total, int missing)
                 missing > m_raidTypes.value(type).m_missing)
         {
             item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+            if (i == current)
+                current_disabled = true;
         }
         else
         {
             item->setFlags(item->flags() | Qt::ItemIsEnabled);
+            last_enabled = i;
         }
     }
+
+    if (current_disabled)
+        m_cbTypes->setCurrentIndex(last_enabled);
+
+    updateCounters(total, missing);
 }
 
 QStringList CreateRaidDialog::getSelectedDisks() const
@@ -232,4 +256,24 @@ QString CreateRaidDialog::getType() const
 unsigned CreateRaidDialog::getMDNumber() const
 {
     return static_cast<unsigned>(m_sbDevNumber->value());
+}
+
+unsigned CreateRaidDialog::getMissingCount() const
+{
+    unsigned missing = 0;
+    const auto& total = m_selectedDisksModel.rowCount();
+    for (int i = 0; i < total; ++i) {
+        auto item = m_selectedDisksModel.item(i, 0);
+        if (!item->data(DiskItemData::IS_PHYSICAL).toBool()) {
+            ++missing;
+        }
+    }
+
+    return missing;
+}
+
+void CreateRaidDialog::updateCounters(unsigned total, unsigned missing)
+{
+    m_labelDiskCount->setText(tr("Total / missing devices: %1/%2")
+                              .arg(total).arg(missing));
 }
