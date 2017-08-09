@@ -76,6 +76,61 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid6Creation)
     controller.createRaid("/dev/md4", MDAdmController::Type::Raid6, QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"}) );
 }
 
+TEST(MDAdmControllerTest, usesRightParametersForRaid1CreationWithMissing)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args =
+    {
+        "--create", "--verbose", "/dev/md7", "--level", "mirror",
+        "--raid-devices=2", "/dev/sdb", "missing"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.createRaid("/dev/md7", MDAdmController::Type::Raid1,
+                          QStringList({"/dev/sdb", "missing"}));
+}
+
+TEST(MDAdmControllerTest, usesRightParametersForRaid5CreationWithMissing)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args =
+    {
+        "--create", "--verbose", "/dev/md8", "--level", "5",
+        "--raid-devices=3", "/dev/sdm", "missing", "/dev/sdn"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.createRaid("/dev/md8", MDAdmController::Type::Raid5,
+                          QStringList({"/dev/sdm", "missing", "/dev/sdn"}));
+}
+
+TEST(MDAdmControllerTest, usesRightParametersForRaid6CreationWithMissing)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args =
+    {
+        "--create", "--verbose", "/dev/md127", "--level", "6",
+        "--raid-devices=4", "/dev/sdl", "/dev/sdm", "missing",
+        "missing"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.createRaid("/dev/md127", MDAdmController::Type::Raid6,
+                          QStringList({"/dev/sdl", "/dev/sdm", "missing",
+                                       "missing"}));
+}
 
 TEST(MDAdmControllerTest, usesRightParameterForRaidStop)
 {

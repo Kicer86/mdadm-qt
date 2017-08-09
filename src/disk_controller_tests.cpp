@@ -5,6 +5,7 @@
 #include "disk_controller.hpp"
 #include "idisk_filter_mock.hpp"
 #include "ifilesystem_mock.hpp"
+#include "missing.hpp"
 #include "printers_for_gmock.hpp"
 
 
@@ -30,4 +31,15 @@ TEST(DiskControllerTest, returnsAllDevicesWhenEmptyFilterIsBeingUsed)
     std::vector<std::unique_ptr<IBlockDevice>> devices = dc.listDisks(filter);
 
     ASSERT_EQ(devices.size(), 4);
+}
+
+TEST(DiskControllerTest, returnsMissingDeviceInstance)
+{
+    FakeFileSystem fs;
+    DiskController dc(fs.getFileSystem());
+
+    auto missing = dc.getMissingDevice();
+
+    EXPECT_FALSE(missing->isPhysical());
+    EXPECT_EQ(missing->devPath(), "missing");
 }
