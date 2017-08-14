@@ -19,8 +19,8 @@ struct RaidLimits {
 
 class CreateRaidDialog : public QDialog
 {
-    enum DiskItemData { PATH = Qt::UserRole,
-                        IS_PHYSICAL };
+    enum DiskItemData { Path = Qt::UserRole,
+                        IsPhysical };
 
     QListView* m_disksView;
     QListView* m_selectedDisksView;

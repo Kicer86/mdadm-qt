@@ -32,14 +32,3 @@ TEST(DiskControllerTest, returnsAllDevicesWhenEmptyFilterIsBeingUsed)
 
     ASSERT_EQ(devices.size(), 4);
 }
-
-TEST(DiskControllerTest, returnsMissingDeviceInstance)
-{
-    FakeFileSystem fs;
-    DiskController dc(fs.getFileSystem());
-
-    auto missing = dc.getMissingDevice();
-
-    EXPECT_FALSE(missing->isPhysical());
-    EXPECT_EQ(missing->devPath(), "missing");
-}

@@ -11,6 +11,7 @@
 #include "create_raid_dialog.hpp"
 #include "disk_controller.hpp"
 #include "exclude_used_filter.hpp"
+#include "missing.hpp"
 
 CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     QDialog(parent),
@@ -99,8 +100,8 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     for (const auto& disk : disks)
     {
         QStandardItem* item = new QStandardItem(disk->toString());
-        item->setData(disk->devPath(), DiskItemData::PATH);
-        item->setData(disk->isPhysical(), DiskItemData::IS_PHYSICAL);
+        item->setData(disk->devPath(), DiskItemData::Path);
+        item->setData(disk->isPhysical(), DiskItemData::IsPhysical);
         m_disksModel.appendRow(item);
     }
 
@@ -109,10 +110,10 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     connect(buttonAddMissing, &QPushButton::clicked,
             [this, buttonAddMissing, &dc]()
     {
-        auto missing = dc.getMissingDevice();
+        std::unique_ptr<Missing> missing(new Missing());
         QStandardItem* item = new QStandardItem(missing->toString());
-        item->setData(missing->devPath(), DiskItemData::PATH);
-        item->setData(missing->isPhysical(), DiskItemData::IS_PHYSICAL);
+        item->setData(missing->devPath(), DiskItemData::Path);
+        item->setData(missing->isPhysical(), DiskItemData::IsPhysical);
         m_selectedDisksModel.appendRow(item);
 
         this->recalculateType();
@@ -177,7 +178,7 @@ void CreateRaidDialog::removeElements()
         QStandardItem* item = m_selectedDisksModel
                 .takeItem(elem.row(), elem.column());
 
-        if (item->data(DiskItemData::IS_PHYSICAL).toBool())
+        if (item->data(DiskItemData::IsPhysical).toBool())
             m_disksModel.appendRow(item);
         else
             delete item;
@@ -242,7 +243,7 @@ QStringList CreateRaidDialog::getSelectedDisks() const
     {
         QStandardItem *item = m_selectedDisksModel.item(row, 0);
         if (item != nullptr)
-            disks.append(item->data(DiskItemData::PATH).toString());
+            disks.append(item->data(DiskItemData::Path).toString());
     }
 
     return disks;
@@ -264,7 +265,7 @@ unsigned CreateRaidDialog::getMissingCount() const
     const auto& total = m_selectedDisksModel.rowCount();
     for (int i = 0; i < total; ++i) {
         auto item = m_selectedDisksModel.item(i, 0);
-        if (!item->data(DiskItemData::IS_PHYSICAL).toBool()) {
+        if (!item->data(DiskItemData::IsPhysical).toBool()) {
             ++missing;
         }
     }

@@ -31,9 +31,3 @@ DiskController::listDisks(const IDiskFilter& filter) const
 
     return disks;
 }
-
-std::unique_ptr<IBlockDevice> DiskController::getMissingDevice() const
-{
-    std::unique_ptr<Missing> missing(new Missing());
-    return missing;
-}
