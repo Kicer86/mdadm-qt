@@ -2,6 +2,8 @@
 find_package(Qt5Widgets REQUIRED)
 
 set(SRCS
+        device_type_visitor.cpp
+        device_type_visitor.hpp
         imdadm_process.hpp
         main.cpp
         main_window.cpp
@@ -14,6 +16,7 @@ set(SRCS
         disk_controller.cpp
         disk_controller.hpp
         idisk_filter.hpp
+        idevice_visitor.hpp
         ifilesystem.hpp
         empty_filter.cpp
         empty_filter.hpp
@@ -60,6 +63,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
 
     set(tests_sources
             block_device.cpp
+            device_type_visitor.cpp
             disk.cpp
             missing.cpp
             disk_controller.cpp
@@ -74,6 +78,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
 
             printers_for_gmock.cpp
 
+            device_type_visitor_tests.cpp
             disk_tests.cpp
             disk_controller_tests.cpp
             filters_tests.cpp

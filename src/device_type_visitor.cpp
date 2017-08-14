@@ -1,6 +1,6 @@
 /*
- * The "missing" device representation.
- * Copyright (C) 2017  Arkadiusz Bubała <arek2407066@gmail.com>
+ * Device type visitor
+ * Copyright (C) 2017  Michał Walenciak <Kicer86@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,31 +17,44 @@
  *
  */
 
-#ifndef MISSING_HPP
-#define MISSING_HPP
+#include "device_type_visitor.hpp"
 
 #include "iblock_device.hpp"
 
-
-class Missing : public IBlockDevice
+DeviceTypeVisitor::DeviceTypeVisitor():
+    m_missing(),
+    m_disk()
 {
-public:
-    Missing();
-    Missing(Missing&&) = default;
+}
 
-    size_t size() const;
-    size_t sizeInSectorUnits() const;
-    unsigned logicalBlockSize() const;
-    bool isUsed() const;
-    bool isPhysical() const;
-    QString devPath() const;
-    QString toString() const;
 
-private:
-    Missing(const Missing&) = delete;
-    Missing& operator=(const Missing&) = delete;
+void DeviceTypeVisitor::setMissingHandler(const std::function<void(Missing *)>& handler)
+{
+    m_missing = handler;
+}
 
-    void accept(IDeviceVisitor * ) override;
-};
 
-#endif // MISSING_HPP
+void DeviceTypeVisitor::setDiskHandler(const std::function<void(Disk *)>& handler)
+{
+    m_disk = handler;
+}
+
+
+void DeviceTypeVisitor::goFor(IBlockDevice* dev)
+{
+    dev->accept(this);
+}
+
+
+void DeviceTypeVisitor::visit(Disk* d)
+{
+    if (m_disk)
+        m_disk(d);
+}
+
+
+void DeviceTypeVisitor::visit(Missing* m)
+{
+    if (m_missing)
+        m_missing(m);
+}

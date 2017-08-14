@@ -22,6 +22,17 @@ namespace
     }
 }
 
+
+BlockDevice::BlockDevice():
+    IBlockDevice(),
+    m_name(""),
+    m_logical_block_size(0),
+    m_size(0),
+    m_fileSystem(nullptr)
+{
+}
+
+
 BlockDevice::BlockDevice(const QString& name, IFileSystem* filesystem) :
     IBlockDevice(),
     m_name(name),

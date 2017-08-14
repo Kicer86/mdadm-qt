@@ -10,6 +10,7 @@ struct IFileSystem;
 class BlockDevice : public IBlockDevice
 {
 public:
+    BlockDevice();
     BlockDevice(const QString &, IFileSystem *);
     BlockDevice(BlockDevice&&) = default;
 

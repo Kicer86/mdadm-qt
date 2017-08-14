@@ -1,5 +1,15 @@
+
 #include "disk.hpp"
 #include "utils.hpp"
+#include "idevice_visitor.hpp"
+
+Disk::Disk():
+    BlockDevice(),
+    m_name(""),
+    m_model(""),
+    m_serial("")
+{
+}
 
 
 Disk::Disk(const QString& name, IFileSystem* filesystem) :
@@ -47,3 +57,11 @@ QString Disk::toString() const
             .arg(m_name).arg(m_model).arg(m_serial)
             .arg(m_logical_block_size * m_size / 1024.0 / 1024.0 / 1024.0);
 }
+
+
+void Disk::accept(IDeviceVisitor* visitor)
+{
+    visitor->visit(this);
+}
+
+

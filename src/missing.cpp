@@ -18,7 +18,11 @@
  */
 
 #include "missing.hpp"
+
 #include <QObject>
+
+#include "idevice_visitor.hpp"
+
 
 Missing::Missing() : IBlockDevice()
 {
@@ -59,3 +63,10 @@ QString Missing::toString() const
 {
     return QObject::tr("Missing device representation");
 }
+
+
+void Missing::accept(IDeviceVisitor* visitor)
+{
+    visitor->visit(this);
+}
+

@@ -15,6 +15,7 @@ struct IBlockDeviceMock: IBlockDevice
     MOCK_CONST_METHOD0(devPath, QString());
     MOCK_CONST_METHOD0(toString, QString());
     MOCK_CONST_METHOD0(isPhysical, bool());
+    MOCK_METHOD1(accept, void(IDeviceVisitor *));
 };
 
 #endif
