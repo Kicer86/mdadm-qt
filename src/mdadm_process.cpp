@@ -33,7 +33,6 @@ MDAdmProcess::~MDAdmProcess()
 
 }
 
-
 bool MDAdmProcess::execute(const QStringList& args,
                            const ExecutionResult& result,
                            const ReadChannelParser& parser)
@@ -45,10 +44,10 @@ bool MDAdmProcess::execute(const QStringList& args,
                      [parser, mdadm]()
     {
         if (parser != nullptr) {
-            QString response = parser(mdadm->readAll());
+            QByteArray channel = mdadm->readAll();
+            QString response = parser(channel) + '\n';
             if (!response.isEmpty())
                 mdadm->write(response.toStdString().c_str());
-            mdadm->write("\n");
         }
     });
 

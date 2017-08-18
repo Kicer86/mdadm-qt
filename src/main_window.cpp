@@ -179,14 +179,18 @@ void MainWindow::createRaid()
         const auto mdNumber = createRaidDialog.getMDNumber();
 
         Q_ASSERT(typeMap.contains(type));
+        QString message;
 
         m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
                                      typeMap.value(type),
                                      disks,
-                                     [](const QString &output)
+                                     [message](const QString &output) mutable
                                             ->QString
         {
-            if (output.contains('?')) {
+            // stdin is read only in ask function in util.c
+            // output ends with "(y/n) "
+            message.append(output);
+            if (message.endsWith("(y/n) ")) {
                 QMessageBox::StandardButton result =
                 QMessageBox::warning(nullptr, "Warning", output,
                                  QMessageBox::Yes | QMessageBox::No,
