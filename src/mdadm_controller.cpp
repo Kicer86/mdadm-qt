@@ -138,7 +138,7 @@ bool MDAdmController::listComponents(const QString& raid_device,
                                      QStringList& block_devices) {
     QString slaves_path = "/sys/block/" + raid_device + "/slaves";
 
-    const std::deque<QString> files = m_fileSystem->listDir(slaves_path);
+    const std::deque<QString> files = m_fileSystem->listDir(slaves_path, "*");
 
     for (const QString& file: files)
         block_devices << ("/dev/" + file);

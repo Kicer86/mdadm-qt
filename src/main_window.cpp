@@ -158,7 +158,6 @@ void MainWindow::refreshDisksList()
     }
 }
 
-
 void MainWindow::createRaid()
 {
     CreateRaidDialog createRaidDialog(&m_fileSystem, this);
@@ -190,9 +189,11 @@ void MainWindow::createRaid()
             // stdin is read only in ask function in util.c
             // output ends with "(y/n) "
             message.append(output);
-            if (message.endsWith("(y/n) ")) {
+            if (message.endsWith("Continue creating array? ") ||
+                    message.endsWith("(y/n) ")) {
+
                 QMessageBox::StandardButton result =
-                QMessageBox::warning(nullptr, "Warning", output,
+                QMessageBox::warning(nullptr, "Warning", message,
                                  QMessageBox::Yes | QMessageBox::No,
                                  QMessageBox::No);
                 return (result == QMessageBox::Yes) ? "y" : "n";
