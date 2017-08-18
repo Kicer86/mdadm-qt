@@ -186,18 +186,29 @@ void MainWindow::createRaid()
                                      [message](const QString &output) mutable
                                             ->QString
         {
-            // stdin is read only in ask function in util.c
-            // output ends with "(y/n) "
-            message.append(output);
-            if (message.endsWith("Continue creating array? ") ||
-                    message.endsWith("(y/n) ")) {
+            /* prompt is the same for all warning messages
+             * taken from Create.c file in mdadm sources
+             */
+            const char prompt[] = "Continue creating array?";
+            QString formatted(output);
+            formatted.replace("mdadm: ","");
+            formatted.replace(QRegExp("\n[ ]+"), " ");
+            formatted.replace('\n', "<br />");
+            formatted.replace(QRegExp("^([a-zA-Z]+:)"), "<b>\\1</b>");
+            formatted.replace(prompt, QString("<br /><b>%1</b>").arg(prompt));
+
+            message.append(formatted);
+
+            if (message.contains(prompt)) {
 
                 QMessageBox::StandardButton result =
                 QMessageBox::warning(nullptr, "Warning", message,
                                  QMessageBox::Yes | QMessageBox::No,
                                  QMessageBox::No);
+                message.clear();
                 return (result == QMessageBox::Yes) ? "y" : "n";
             }
+            message.append("<br />");
 
             return "";
         });
