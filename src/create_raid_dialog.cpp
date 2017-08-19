@@ -168,58 +168,54 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     setLayout(mainLayout);
 }
 
-void CreateRaidDialog::addElements()
+void CreateRaidDialog::move(const QListView* sourceView,
+                            QStandardItemModel& sourceModel,
+                            QStandardItemModel& destinationModel,
+                            void (*insert)(QStandardItemModel &,
+                                              QStandardItem*))
 {
-    QItemSelectionModel *selectionModel = m_disksView->selectionModel();
+    QItemSelectionModel *selectionModel = sourceView->selectionModel();
     std::vector<QPersistentModelIndex> rows_to_delete;
 
     for (const auto& elem : selectionModel->selectedIndexes())
     {
         if (!elem.isValid())
             continue;
-        QStandardItem* item = m_disksModel.takeItem(elem.row(), elem.column());
-        m_selectedDisksModel.appendRow(item);
+        QStandardItem* item = sourceModel.takeItem(elem.row(), elem.column());
+
+        insert(destinationModel, item);
         rows_to_delete.emplace_back(elem);
     }
 
     for (const auto& elem: rows_to_delete)
     {
-        m_disksModel.removeRow(elem.row());
+        sourceModel.removeRow(elem.row());
     }
 
-    m_disksModel.sort(0);
-    m_selectedDisksModel.sort(0);
+    sourceModel.sort(0);
+    destinationModel.sort(0);
+}
+
+void CreateRaidDialog::addElements()
+{
+    move(m_disksView, m_disksModel, m_selectedDisksModel,
+         [](QStandardItemModel &model, QStandardItem*item)
+    {
+        model.appendRow(item);
+    });
     recalculateType();
 }
 
 void CreateRaidDialog::removeElements()
 {
-    QItemSelectionModel *selectionModel =
-            m_selectedDisksView->selectionModel();
-    std::vector<QPersistentModelIndex> rows_to_delete;
-
-    for (const auto& elem : selectionModel->selectedIndexes())
+    move(m_selectedDisksView, m_selectedDisksModel, m_disksModel,
+         [](QStandardItemModel &model, QStandardItem*item)
     {
-        if (!elem.isValid())
-            continue;
-
-        QStandardItem* item = m_selectedDisksModel
-                .takeItem(elem.row(), elem.column());
-
         if (item->data(DiskItemData::IsPhysical).toBool())
-            m_disksModel.appendRow(item);
+            model.appendRow(item);
         else
             delete item;
-        rows_to_delete.emplace_back(elem);
-    }
-
-    for (const auto& elem : rows_to_delete)
-    {
-        m_selectedDisksModel.removeRow(elem.row());
-    }
-
-    m_selectedDisksModel.sort(0);
-    m_disksModel.sort(0);
+    });
     recalculateType();
 }
 

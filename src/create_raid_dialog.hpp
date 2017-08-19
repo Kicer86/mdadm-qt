@@ -54,6 +54,10 @@ class CreateRaidDialog : public QDialog
 
     const QMap<QString, RaidLimits> m_raidTypes;
 
+    void move(const QListView*, QStandardItemModel&, QStandardItemModel&,
+              void (*)(QStandardItemModel &, QStandardItem*));
+
+    /* array components management */
     void addElements();
     void removeElements();
 
