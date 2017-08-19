@@ -65,6 +65,8 @@ class CreateRaidDialog : public QDialog
     void addSpares();
     void removeSpares();
 
+    QStringList getDisksFromModel(const QStandardItemModel&) const;
+
     void recalculateType();
 
 public:
@@ -73,6 +75,7 @@ public:
     CreateRaidDialog& operator=(const CreateRaidDialog &) = delete;
 
     QStringList getSelectedDisks() const;
+    QStringList getSelectedSpares() const;
     QString getType() const;
     unsigned getMDNumber() const;
     unsigned getMissingCount() const;

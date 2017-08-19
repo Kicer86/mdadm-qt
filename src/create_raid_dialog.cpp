@@ -283,18 +283,28 @@ void CreateRaidDialog::recalculateType()
     updateCounters(total, missing);
 }
 
-QStringList CreateRaidDialog::getSelectedDisks() const
+QStringList
+CreateRaidDialog::getDisksFromModel(const QStandardItemModel& model) const
 {
     QStringList disks;
 
-    for (int row = 0; row < m_selectedDisksModel.rowCount(); ++row)
+    for (int row = 0; row < model.rowCount(); ++row)
     {
-        QStandardItem *item = m_selectedDisksModel.item(row, 0);
+        QStandardItem *item = model.item(row, 0);
         if (item != nullptr)
             disks.append(item->data(DiskItemData::Path).toString());
     }
 
     return disks;
+}
+
+QStringList CreateRaidDialog::getSelectedDisks() const
+{
+    return getDisksFromModel(m_selectedDisksModel);
+}
+
+QStringList CreateRaidDialog::getSelectedSpares() const {
+    return getDisksFromModel(m_spareDisksModel);
 }
 
 QString CreateRaidDialog::getType() const
