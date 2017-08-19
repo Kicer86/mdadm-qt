@@ -205,6 +205,7 @@ void MainWindow::createRaid()
             { "RAID6", MDAdmController::Type::Raid6 }
         };
         const auto disks = createRaidDialog.getSelectedDisks();
+        const auto spares = createRaidDialog.getSelectedSpares();
         const auto type = createRaidDialog.getType();
         const auto mdNumber = createRaidDialog.getMDNumber();
 
@@ -214,6 +215,7 @@ void MainWindow::createRaid()
         m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
                                      typeMap.value(type),
                                      disks,
+                                     spares,
                                      [message](const QString &output) mutable
                                             ->QString
         {

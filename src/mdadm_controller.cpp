@@ -169,6 +169,7 @@ bool MDAdmController::listComponents(const QString& raid_device,
 bool MDAdmController::createRaid(const QString& raid_device,
                                  MDAdmController::Type type,
                                  const QStringList& block_devices,
+                                 const QStringList& spare_devices,
                                  const OutputParser& callback)
 {
     QStringList mdadm_args;
@@ -178,6 +179,12 @@ bool MDAdmController::createRaid(const QString& raid_device,
     mdadm_args << QString("--raid-devices=%1")
                   .arg(block_devices.size())
                << block_devices;
+    if (!spare_devices.empty())
+    {
+        mdadm_args << QString("--spare-devices=%1")
+                      .arg(spare_devices.size())
+                   << spare_devices;
+    }
 
     qDebug() << "executing mdadm with args: " << mdadm_args;
 

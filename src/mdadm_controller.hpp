@@ -85,6 +85,7 @@ class MDAdmController: public QObject
                             QStringList& block_devices);
         bool createRaid(const QString& raid_device, Type,
                         const QStringList& block_devices,
+                        const QStringList& spare_devices,
                         const OutputParser& output_parser = nullptr);
         bool removeRaid(const QString& raid_device);
         bool stopRaid(const QString& raid_device);
