@@ -67,13 +67,11 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     QPushButton *buttonRemove = new QPushButton(tr("<-"));
     QPushButton *buttonAddMissing = new QPushButton(tr("+ MISSING"));
 
-    QButtonGroup *buttonGroupSpare = new QButtonGroup(this);
     QPushButton *buttonAddSpare = new QPushButton(tr("+ SPARE"));
     QPushButton *buttonRemoveSpare = new QPushButton(tr("- SPARE"));
 
-    buttonGroupSpare->addButton(buttonAddSpare);
-    buttonGroupSpare->addButton(buttonRemoveSpare);
-
+    buttonAdd->setDisabled(true);
+    buttonRemove->setDisabled(true);
     buttonAddSpare->setDisabled(true);
     buttonRemoveSpare->setDisabled(true);
 
@@ -173,20 +171,62 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     connect(m_cbTypes,
             static_cast<void(QComboBox::*)(const QString&)>
                 (&QComboBox::currentIndexChanged),
-            [buttonGroupSpare](const QString& type)
+            [buttonAddSpare](const QString& type)
     {
-        const auto disable = (type == "RAID0");
-        for (auto element : buttonGroupSpare->buttons()) {
-            element->setDisabled(disable);
-        }
+        buttonAddSpare->setDisabled(type == "RAID0");
     });
+
     m_disksView->setModel(&m_disksModel);
     m_selectedDisksView->setModel(&m_selectedDisksModel);
     m_spareDisksView->setModel(&m_spareDisksModel);
 
     m_disksView->setSelectionMode(QAbstractItemView::MultiSelection);
+    m_disksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_selectedDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
+    m_selectedDisksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     m_spareDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
+    m_spareDisksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    connect(m_disksView->selectionModel(),
+            static_cast<void(QItemSelectionModel::*)(const QItemSelection&,
+                                                     const QItemSelection&)>
+                (&QItemSelectionModel::selectionChanged),
+            [this, buttonAdd, buttonAddSpare](const QItemSelection&,
+                                              const QItemSelection&)
+    {
+        const auto selection = this->m_disksView->selectionModel()->selection();
+        const auto add_disabled = selection.empty();
+        const auto spare_disabled = (selection.empty() ||
+                                     this->m_cbTypes->currentText() == "RAID0");
+        buttonAdd->setDisabled(add_disabled);
+        buttonAddSpare->setDisabled(spare_disabled);
+    });
+
+    connect(m_selectedDisksView->selectionModel(),
+            static_cast<void(QItemSelectionModel::*)(const QItemSelection&,
+                                                     const QItemSelection&)>
+            (&QItemSelectionModel::selectionChanged),
+            [this, buttonRemove](const QItemSelection&,
+                                 const QItemSelection&)
+    {
+        const auto selection =
+                this->m_selectedDisksView->selectionModel()->selection();
+        buttonRemove->setDisabled(selection.empty());
+
+    });
+
+    connect(m_spareDisksView->selectionModel(),
+            static_cast<void(QItemSelectionModel::*)(const QItemSelection&,
+                                                     const QItemSelection&)>
+            (&QItemSelectionModel::selectionChanged),
+            [this, buttonRemoveSpare](const QItemSelection&,
+                                      const QItemSelection&)
+    {
+        const auto selection =
+                this->m_spareDisksView->selectionModel()->selection();
+        buttonRemoveSpare->setDisabled(selection.empty());
+
+    });
 
     updateCounters(0, 0);
 
@@ -216,6 +256,8 @@ void CreateRaidDialog::move(const QListView* sourceView,
     {
         sourceModel.removeRow(elem.row());
     }
+
+    emit selectionModel->selectionChanged(QItemSelection(), QItemSelection());
 
     sourceModel.sort(0);
     destinationModel.sort(0);
