@@ -61,6 +61,10 @@ class CreateRaidDialog : public QDialog
     void addElements();
     void removeElements();
 
+    /* spare management */
+    void addSpares();
+    void removeSpares();
+
     void recalculateType();
 
 public:

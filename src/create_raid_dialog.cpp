@@ -151,6 +151,10 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
             &CreateRaidDialog::addElements);
     connect(buttonRemove, &QPushButton::clicked, this,
             &CreateRaidDialog::removeElements);
+    connect(buttonAddSpare, &QPushButton::clicked, this,
+            &CreateRaidDialog::addSpares);
+    connect(buttonRemoveSpare, &QPushButton::clicked, this,
+            &CreateRaidDialog::removeSpares);
 
     connect(buttonCancel, &QPushButton::clicked, this,
             &CreateRaidDialog::reject);
@@ -159,9 +163,11 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     m_disksView->setModel(&m_disksModel);
     m_selectedDisksView->setModel(&m_selectedDisksModel);
+    m_spareDisksView->setModel(&m_spareDisksModel);
 
     m_disksView->setSelectionMode(QAbstractItemView::MultiSelection);
     m_selectedDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
+    m_spareDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
 
     updateCounters(0, 0);
 
@@ -199,7 +205,7 @@ void CreateRaidDialog::move(const QListView* sourceView,
 void CreateRaidDialog::addElements()
 {
     move(m_disksView, m_disksModel, m_selectedDisksModel,
-         [](QStandardItemModel &model, QStandardItem*item)
+         [](QStandardItemModel& model, QStandardItem* item)
     {
         model.appendRow(item);
     });
@@ -209,7 +215,7 @@ void CreateRaidDialog::addElements()
 void CreateRaidDialog::removeElements()
 {
     move(m_selectedDisksView, m_selectedDisksModel, m_disksModel,
-         [](QStandardItemModel &model, QStandardItem*item)
+         [](QStandardItemModel& model, QStandardItem* item)
     {
         if (item->data(DiskItemData::IsPhysical).toBool())
             model.appendRow(item);
@@ -217,6 +223,24 @@ void CreateRaidDialog::removeElements()
             delete item;
     });
     recalculateType();
+}
+
+void CreateRaidDialog::addSpares()
+{
+    move(m_disksView, m_disksModel, m_spareDisksModel,
+         [](QStandardItemModel& model, QStandardItem* item)
+    {
+        model.appendRow(item);
+    });
+}
+
+void CreateRaidDialog::removeSpares()
+{
+    move(m_spareDisksView, m_spareDisksModel, m_disksModel,
+         [](QStandardItemModel& model, QStandardItem* item)
+    {
+        model.appendRow(item);
+    });
 }
 
 void CreateRaidDialog::recalculateType()
