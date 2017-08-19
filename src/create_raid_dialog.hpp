@@ -43,8 +43,10 @@ class CreateRaidDialog : public QDialog
 
     QListView* m_disksView;
     QListView* m_selectedDisksView;
+    QListView* m_spareDisksView;
     QStandardItemModel m_disksModel;
     QStandardItemModel m_selectedDisksModel;
+    QStandardItemModel m_spareDisksModel;
 
     QComboBox *m_cbTypes;
     QSpinBox *m_sbDevNumber;

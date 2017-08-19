@@ -36,8 +36,10 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     QDialog(parent),
     m_disksView(nullptr),
     m_selectedDisksView(nullptr),
+    m_spareDisksView(nullptr),
     m_disksModel(),
     m_selectedDisksModel(),
+    m_spareDisksModel(),
     m_cbTypes(nullptr),
     m_sbDevNumber(nullptr),
     m_labelDiskCount(nullptr),
@@ -56,13 +58,15 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     QVBoxLayout *mainLayout = new QVBoxLayout;
 
-
     QLabel *labelDisks = new QLabel(tr("available disks:"));
     QLabel *labelSelectedDisks = new QLabel(tr("disks for RAID:"));
+    QLabel *labelSpareDisks = new QLabel(tr("spare disks:"));
 
     QPushButton *buttonAdd = new QPushButton(tr("->"));
     QPushButton *buttonRemove = new QPushButton(tr("<-"));
     QPushButton *buttonAddMissing = new QPushButton(tr("+ MISSING"));
+    QPushButton *buttonAddSpare = new QPushButton(tr("+ SPARE"));
+    QPushButton *buttonRemoveSpare = new QPushButton(tr("- SPARE"));
 
 
     m_cbTypes = new QComboBox;
@@ -81,6 +85,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     m_disksView = new QListView;
     m_selectedDisksView = new QListView;
+    m_spareDisksView = new QListView;
 
     systemDisksLayout->addWidget(labelDisks);
     systemDisksLayout->addWidget(m_disksView);
@@ -90,9 +95,13 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     buttonDiskLayout->addWidget(buttonRemove);
     buttonDiskLayout->addWidget(buttonAddMissing);
     buttonDiskLayout->addStretch();
+    buttonDiskLayout->addWidget(buttonAddSpare);
+    buttonDiskLayout->addWidget(buttonRemoveSpare);
+    buttonDiskLayout->addStretch();
 
     selectedDisksLayout->addWidget(labelSelectedDisks);
     selectedDisksLayout->addWidget(m_selectedDisksView);
+    selectedDisksLayout->addWidget(m_spareDisksView);
 
     disksLayout->addLayout(systemDisksLayout);
     disksLayout->addLayout(buttonDiskLayout);
