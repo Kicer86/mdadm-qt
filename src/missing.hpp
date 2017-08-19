@@ -1,5 +1,5 @@
 /*
- * Empty disk filter class.
+ * The "missing" device representation.
  * Copyright (C) 2017  Arkadiusz Bubała <arek2407066@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,25 +17,31 @@
  *
  */
 
-#ifndef EMPTY_FILTER_H
-#define EMPTY_FILTER_H
+#ifndef MISSING_HPP
+#define MISSING_HPP
 
-#include "idisk_filter.hpp"
+#include "iblock_device.hpp"
 
-class Disk;
 
-class EmptyFilter : public IDiskFilter
+class Missing : public IBlockDevice
 {
-private:
-    EmptyFilter(const EmptyFilter&) = delete;
-    EmptyFilter& operator=(const EmptyFilter&) = delete;
-    bool operator==(const EmptyFilter &) = delete;
-
 public:
-    EmptyFilter() : IDiskFilter()
-    {
-    }
+    Missing();
+    Missing(Missing&&) = default;
 
-    bool operator()(const IBlockDevice &) const;
+    size_t size() const;
+    size_t sizeInSectorUnits() const;
+    unsigned logicalBlockSize() const;
+    bool isUsed() const;
+    bool isPhysical() const;
+    QString devPath() const;
+    QString toString() const;
+
+private:
+    Missing(const Missing&) = delete;
+    Missing& operator=(const Missing&) = delete;
+
+    void accept(IDeviceVisitor * ) override;
 };
-#endif // EMPTY_FILTER_H
+
+#endif // MISSING_HPP

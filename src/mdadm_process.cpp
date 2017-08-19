@@ -34,13 +34,30 @@ MDAdmProcess::~MDAdmProcess()
 }
 
 
-bool MDAdmProcess::execute(const QStringList& args, const ExecutionResult& result)
+bool MDAdmProcess::execute(const QStringList& args,
+                           const ExecutionResult& result,
+                           const ReadChannelParser& parser)
 {
     QProcess* mdadm = new QProcess;
     mdadm->setProcessChannelMode(QProcess::MergedChannels);
 
-    QObject::connect(mdadm, static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
-        [result, mdadm](int exitCode, QProcess::ExitStatus status)
+    QObject::connect(mdadm, &QProcess::readyReadStandardOutput,
+                     [parser, mdadm]()
+    {
+        if (parser != nullptr) {
+            QByteArray channel = mdadm->readAll();
+            QString response = parser(channel);
+            if (!response.isEmpty()) {
+                response += '\n';
+                mdadm->write(response.toStdString().c_str());
+            }
+        }
+    });
+
+    QObject::connect(mdadm,
+                     static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>
+                        (&QProcess::finished),
+                     [result, mdadm](int exitCode, QProcess::ExitStatus status)
     {
         const QByteArray output = mdadm->readAll();
 
@@ -50,7 +67,7 @@ bool MDAdmProcess::execute(const QStringList& args, const ExecutionResult& resul
     });
 
     // TODO: find path to mdadm
-    mdadm->start("mdadm", args, QProcess::ReadOnly);
+    mdadm->start("mdadm", args, QProcess::ReadWrite);
 
     return true;
 }

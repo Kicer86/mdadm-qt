@@ -60,6 +60,8 @@ class MDAdmController: public QObject
     public:
         // ListResult - callback function for listRaids
         typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
+        // OutputParser - callback function for process read channel
+        typedef std::function<QString(const QString &)> OutputParser;
 
         enum class Type
         {
@@ -82,7 +84,8 @@ class MDAdmController: public QObject
         bool listComponents(const QString& raid_device,
                             QStringList& block_devices);
         bool createRaid(const QString& raid_device, Type,
-                        const QStringList& block_devices);
+                        const QStringList& block_devices,
+                        const OutputParser& output_parser = nullptr);
         bool removeRaid(const QString& raid_device);
         bool stopRaid(const QString& raid_device);
         bool zeroSuperblock(const QStringList& raid_components);

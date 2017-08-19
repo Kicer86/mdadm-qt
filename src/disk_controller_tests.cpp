@@ -5,6 +5,7 @@
 #include "disk_controller.hpp"
 #include "idisk_filter_mock.hpp"
 #include "ifilesystem_mock.hpp"
+#include "missing.hpp"
 #include "printers_for_gmock.hpp"
 
 

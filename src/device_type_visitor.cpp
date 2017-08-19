@@ -1,5 +1,5 @@
 /*
- * Wrapper over mdadm process
+ * Device type visitor
  * Copyright (C) 2017  Michał Walenciak <Kicer86@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,24 +17,44 @@
  *
  */
 
-#ifndef MDADMPROCESS_HPP
-#define MDADMPROCESS_HPP
+#include "device_type_visitor.hpp"
 
-#include "imdadm_process.hpp"
+#include "iblock_device.hpp"
 
-class MDAdmProcess: public IMDAdmProcess
+DeviceTypeVisitor::DeviceTypeVisitor():
+    m_missing(),
+    m_disk()
 {
-    public:
-        MDAdmProcess();
-        MDAdmProcess(const MDAdmProcess &) = delete;
-        virtual ~MDAdmProcess();
+}
 
-        MDAdmProcess& operator=(const MDAdmProcess &) = delete;
-        bool operator==(const MDAdmProcess &) const = delete;
 
-        // overrides:
-        bool execute(const QStringList &, const ExecutionResult &,
-                     const ReadChannelParser& parser = nullptr) override;
-};
+void DeviceTypeVisitor::setMissingHandler(const std::function<void(Missing *)>& handler)
+{
+    m_missing = handler;
+}
 
-#endif // MDADMPROCESS_HPP
+
+void DeviceTypeVisitor::setDiskHandler(const std::function<void(Disk *)>& handler)
+{
+    m_disk = handler;
+}
+
+
+void DeviceTypeVisitor::goFor(IBlockDevice* dev)
+{
+    dev->accept(this);
+}
+
+
+void DeviceTypeVisitor::visit(Disk* d)
+{
+    if (m_disk)
+        m_disk(d);
+}
+
+
+void DeviceTypeVisitor::visit(Missing* m)
+{
+    if (m_missing)
+        m_missing(m);
+}

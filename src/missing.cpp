@@ -1,5 +1,5 @@
 /*
- * Empty disk filter class.
+ * The "missing" device representation.
  * Copyright (C) 2017  Arkadiusz Bubała <arek2407066@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,25 +17,56 @@
  *
  */
 
-#ifndef EMPTY_FILTER_H
-#define EMPTY_FILTER_H
+#include "missing.hpp"
 
-#include "idisk_filter.hpp"
+#include <QObject>
 
-class Disk;
+#include "idevice_visitor.hpp"
 
-class EmptyFilter : public IDiskFilter
+
+Missing::Missing() : IBlockDevice()
 {
-private:
-    EmptyFilter(const EmptyFilter&) = delete;
-    EmptyFilter& operator=(const EmptyFilter&) = delete;
-    bool operator==(const EmptyFilter &) = delete;
 
-public:
-    EmptyFilter() : IDiskFilter()
-    {
-    }
+}
 
-    bool operator()(const IBlockDevice &) const;
-};
-#endif // EMPTY_FILTER_H
+size_t Missing::size() const
+{
+    return 0;
+}
+
+size_t Missing::sizeInSectorUnits() const
+{
+    return 0;
+}
+
+unsigned Missing::logicalBlockSize() const
+{
+    return 0;
+}
+
+bool Missing::isUsed() const
+{
+    return false;
+}
+
+bool Missing::isPhysical() const
+{
+    return false;
+}
+
+QString Missing::devPath() const
+{
+    return "missing";
+}
+
+QString Missing::toString() const
+{
+    return QObject::tr("Missing device representation");
+}
+
+
+void Missing::accept(IDeviceVisitor* visitor)
+{
+    visitor->visit(this);
+}
+

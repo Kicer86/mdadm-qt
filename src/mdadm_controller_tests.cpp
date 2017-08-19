@@ -19,7 +19,8 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid0Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md0", "--level", "stripe", "--raid-devices=2", "/dev/sda", "/dev/sdc" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -32,7 +33,8 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid1Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md1", "--level", "mirror", "--raid-devices=3", "/dev/sda", "/dev/sdc", "/dev/sde" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -45,7 +47,8 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid4Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md2", "--level", "4", "--raid-devices=4", "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -58,7 +61,8 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid5Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md3", "--level", "5", "--raid-devices=3", "/dev/sda", "/dev/sdb", "/dev/sdc" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -71,13 +75,69 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid6Creation)
     IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = { "--create", "--verbose", "/dev/md4", "--level", "6", "--raid-devices=5", "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde" };
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
     controller.createRaid("/dev/md4", MDAdmController::Type::Raid6, QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde"}) );
 }
 
+TEST(MDAdmControllerTest, usesRightParametersForRaid1CreationWithMissing)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args =
+    {
+        "--create", "--verbose", "/dev/md7", "--level", "mirror",
+        "--raid-devices=2", "/dev/sdb", "missing"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.createRaid("/dev/md7", MDAdmController::Type::Raid1,
+                          QStringList({"/dev/sdb", "missing"}));
+}
+
+TEST(MDAdmControllerTest, usesRightParametersForRaid5CreationWithMissing)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args =
+    {
+        "--create", "--verbose", "/dev/md8", "--level", "5",
+        "--raid-devices=3", "/dev/sdm", "missing", "/dev/sdn"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.createRaid("/dev/md8", MDAdmController::Type::Raid5,
+                          QStringList({"/dev/sdm", "missing", "/dev/sdn"}));
+}
+
+TEST(MDAdmControllerTest, usesRightParametersForRaid6CreationWithMissing)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args =
+    {
+        "--create", "--verbose", "/dev/md127", "--level", "6",
+        "--raid-devices=4", "/dev/sdl", "/dev/sdm", "missing",
+        "missing"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(Return(true));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.createRaid("/dev/md127", MDAdmController::Type::Raid6,
+                          QStringList({"/dev/sdl", "/dev/sdm", "missing",
+                                       "missing"}));
+}
 
 TEST(MDAdmControllerTest, usesRightParameterForRaidStop)
 {
@@ -89,7 +149,7 @@ TEST(MDAdmControllerTest, usesRightParameterForRaidStop)
         "/dev/md127"
     };
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -117,7 +177,7 @@ TEST(MDAdmControllerTest,
         "/dev/sdb"
     };
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -137,7 +197,8 @@ TEST(MDAdmControllerTest,
         "/dev/sde"
     };
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);
@@ -169,7 +230,7 @@ TEST(MDAdmControllerTest,
             .WillOnce(Return(
                           std::deque<QString> { "sdb", "sdc", "sdd" }));
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, &filesystem);
@@ -195,7 +256,7 @@ TEST(MDAdmControllerTest,
             .WillOnce(Return(
                           std::deque<QString> { }));
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, &filesystem);
@@ -213,7 +274,7 @@ TEST(MDAdmControllerTest,
         "/dev/sdb"
     };
 
-    EXPECT_CALL(mdadm_process, execute(expected_args, _))
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("crash"), false, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr);

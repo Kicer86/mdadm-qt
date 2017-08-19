@@ -1,5 +1,5 @@
 /*
- * Wrapper over mdadm process
+ * Device type visitor
  * Copyright (C) 2017  Michał Walenciak <Kicer86@gmail.com>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,24 +17,32 @@
  *
  */
 
-#ifndef MDADMPROCESS_HPP
-#define MDADMPROCESS_HPP
+#ifndef DEVICETYPEVISITOR_HPP
+#define DEVICETYPEVISITOR_HPP
 
-#include "imdadm_process.hpp"
+#include <functional>
 
-class MDAdmProcess: public IMDAdmProcess
+#include "idevice_visitor.hpp"
+
+class IBlockDevice;
+
+class DeviceTypeVisitor: public IDeviceVisitor
 {
     public:
-        MDAdmProcess();
-        MDAdmProcess(const MDAdmProcess &) = delete;
-        virtual ~MDAdmProcess();
+        DeviceTypeVisitor();
+        virtual ~DeviceTypeVisitor() = default;
 
-        MDAdmProcess& operator=(const MDAdmProcess &) = delete;
-        bool operator==(const MDAdmProcess &) const = delete;
+        void setMissingHandler(const std::function<void(Missing *)> &);
+        void setDiskHandler(const std::function<void(Disk *)> &);
 
-        // overrides:
-        bool execute(const QStringList &, const ExecutionResult &,
-                     const ReadChannelParser& parser = nullptr) override;
+        void goFor(IBlockDevice *);
+
+    private:
+        std::function<void(Missing *)> m_missing;
+        std::function<void(Disk *)> m_disk;
+
+        void visit(Disk *) override;
+        void visit(Missing *) override;
 };
 
-#endif // MDADMPROCESS_HPP
+#endif // DEVICETYPEVISITOR_HPP

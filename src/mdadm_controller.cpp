@@ -66,7 +66,8 @@ namespace
     {
         if (success)
         {
-            qDebug() << "mdadm exited normally with code: " << exitCode << " and output:";
+            qDebug() << "mdadm exited normally with code: "
+                     << exitCode << " and output:";
             qDebug() << output;
         }
         else
@@ -81,7 +82,8 @@ bool RaidInfo::operator==(const RaidInfo &other) const
            this->raid_type == other.raid_type;
 }
 
-MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess, IFileSystem* fileSystem):
+MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess,
+                                 IFileSystem* fileSystem):
     m_mdadmProcess(mdadmProcess),
     m_fileSystem(fileSystem)
 {
@@ -153,7 +155,9 @@ bool MDAdmController::listComponents(const QString& raid_device,
                                      QStringList& block_devices) {
     QString slaves_path = "/sys/block/" + raid_device + "/slaves";
 
-    const std::deque<QString> files = m_fileSystem->listDir(slaves_path, "*", QDir::Dirs | QDir::NoDotAndDotDot);
+    const std::deque<QString> files =
+            m_fileSystem->listDir(slaves_path, "*",
+                                  QDir::Dirs | QDir::NoDotAndDotDot);
 
     for (const QString& file: files)
         block_devices << ("/dev/" + file);
@@ -164,17 +168,21 @@ bool MDAdmController::listComponents(const QString& raid_device,
 
 bool MDAdmController::createRaid(const QString& raid_device,
                                  MDAdmController::Type type,
-                                 const QStringList& block_devices)
+                                 const QStringList& block_devices,
+                                 const OutputParser& callback)
 {
     QStringList mdadm_args;
 
     mdadm_args << "--create" << "--verbose" << raid_device;
     mdadm_args << "--level" << levelName(type);
-    mdadm_args << QString("--raid-devices=%1").arg(block_devices.size()) << block_devices;
+    mdadm_args << QString("--raid-devices=%1")
+                  .arg(block_devices.size())
+               << block_devices;
 
     qDebug() << "executing mdadm with args: " << mdadm_args;
 
-    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output,
+    m_mdadmProcess->execute(mdadm_args,
+                            [this](const QByteArray& output,
                                                bool success,
                                                int exitCode)
     {
@@ -182,6 +190,14 @@ bool MDAdmController::createRaid(const QString& raid_device,
 
         if (success)
             emit raidCreated();
+        else
+            qDebug() << "mdadm crashed";
+    },
+                            [callback](const QByteArray& output)->QString
+    {
+        if (callback != nullptr)
+            return callback(QString(output));
+        return "";
     });
 
     return true;
