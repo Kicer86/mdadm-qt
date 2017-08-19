@@ -21,6 +21,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
+#include <QButtonGroup>
 #include <QComboBox>
 #include <QLabel>
 #include <QListView>
@@ -65,9 +66,16 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     QPushButton *buttonAdd = new QPushButton(tr("->"));
     QPushButton *buttonRemove = new QPushButton(tr("<-"));
     QPushButton *buttonAddMissing = new QPushButton(tr("+ MISSING"));
+
+    QButtonGroup *buttonGroupSpare = new QButtonGroup(this);
     QPushButton *buttonAddSpare = new QPushButton(tr("+ SPARE"));
     QPushButton *buttonRemoveSpare = new QPushButton(tr("- SPARE"));
 
+    buttonGroupSpare->addButton(buttonAddSpare);
+    buttonGroupSpare->addButton(buttonRemoveSpare);
+
+    buttonAddSpare->setDisabled(true);
+    buttonRemoveSpare->setDisabled(true);
 
     m_cbTypes = new QComboBox;
     m_cbTypes->addItems(m_raidTypes.keys());
@@ -101,6 +109,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     selectedDisksLayout->addWidget(labelSelectedDisks);
     selectedDisksLayout->addWidget(m_selectedDisksView);
+    selectedDisksLayout->addWidget(labelSpareDisks);
     selectedDisksLayout->addWidget(m_spareDisksView);
 
     disksLayout->addLayout(systemDisksLayout);
@@ -161,6 +170,16 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     connect(buttonCreate, &QPushButton::clicked, this,
             &CreateRaidDialog::accept);
 
+    connect(m_cbTypes,
+            static_cast<void(QComboBox::*)(const QString&)>
+                (&QComboBox::currentIndexChanged),
+            [buttonGroupSpare](const QString& type)
+    {
+        const auto disable = (type == "RAID0");
+        for (auto element : buttonGroupSpare->buttons()) {
+            element->setDisabled(disable);
+        }
+    });
     m_disksView->setModel(&m_disksModel);
     m_selectedDisksView->setModel(&m_selectedDisksModel);
     m_spareDisksView->setModel(&m_spareDisksModel);
@@ -232,6 +251,7 @@ void CreateRaidDialog::addSpares()
     {
         model.appendRow(item);
     });
+    recalculateType();
 }
 
 void CreateRaidDialog::removeSpares()
@@ -241,6 +261,7 @@ void CreateRaidDialog::removeSpares()
     {
         model.appendRow(item);
     });
+    recalculateType();
 }
 
 void CreateRaidDialog::recalculateType()
@@ -249,36 +270,44 @@ void CreateRaidDialog::recalculateType()
             qobject_cast<const QStandardItemModel*>(m_cbTypes->model());
 
     const auto& total = static_cast<unsigned>(m_selectedDisksModel.rowCount());
+    const auto spares = m_spareDisksModel.rowCount() > 0;
     unsigned missing = getMissingCount();
 
-    m_cbTypes->setDisabled(total == 0 || missing == total);
+    const auto& disable = (total == 0 || missing == total ||
+                           (spares && total == 1));
 
-    int last_enabled = 0;
-    bool current_disabled = false;
-    const int current = m_cbTypes->currentIndex();
+    m_cbTypes->setDisabled(disable);
 
-    for (int i=0; i< m_cbTypes->count(); ++i)
+    if (!disable)
     {
-        const QString &type = m_cbTypes->itemText(i);
+        int last_enabled = 0;
+        bool current_disabled = false;
+        const int current = m_cbTypes->currentIndex();
 
-        Q_ASSERT(m_raidTypes.contains(type));
-        auto item = model->item(i);
-        if (total < m_raidTypes.value(type).m_total ||
-                missing > m_raidTypes.value(type).m_missing)
+        for (int i=0; i< m_cbTypes->count(); ++i)
         {
-            item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
-            if (i == current)
-                current_disabled = true;
+            const QString &type = m_cbTypes->itemText(i);
+
+            Q_ASSERT(m_raidTypes.contains(type));
+            auto item = model->item(i);
+            if (total < m_raidTypes.value(type).m_total ||
+                    missing > m_raidTypes.value(type).m_missing ||
+                    (type == "RAID0" && spares))
+            {
+                item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
+                if (i == current)
+                    current_disabled = true;
+            }
+            else
+            {
+                item->setFlags(item->flags() | Qt::ItemIsEnabled);
+                last_enabled = i;
+            }
         }
-        else
-        {
-            item->setFlags(item->flags() | Qt::ItemIsEnabled);
-            last_enabled = i;
-        }
+
+        if (current_disabled)
+            m_cbTypes->setCurrentIndex(last_enabled);
     }
-
-    if (current_disabled)
-        m_cbTypes->setCurrentIndex(last_enabled);
 
     updateCounters(total, missing);
 }
