@@ -210,15 +210,14 @@ void MainWindow::createRaid()
         const auto mdNumber = createRaidDialog.getMDNumber();
 
         Q_ASSERT(typeMap.contains(type));
-        QString message;
 
         m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
                                      typeMap.value(type),
                                      disks,
                                      spares,
-                                     [message](const QString &output) mutable
-                                            ->QString
+                                     [](const QString &output)->QString
         {
+            static QString message("");
             /* prompt is the same for all warning messages
              * taken from Create.c file in mdadm sources
              */
