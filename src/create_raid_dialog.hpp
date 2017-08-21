@@ -82,7 +82,7 @@ private:
 
     QStringList getDisksFromModel(const QStandardItemModel&) const;
 
-    void recalculateType();
+    void recalculateRaidType();
 };
 
 #endif // CREATE_RAID_DIALOG_HPP

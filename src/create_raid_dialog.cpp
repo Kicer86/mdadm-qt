@@ -155,7 +155,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
         item->setData(missing->isPhysical(), DiskItemData::IsPhysical);
         m_selectedDisksModel.appendRow(item);
 
-        this->recalculateType();
+        this->recalculateRaidType();
     });
 
     connect(buttonAdd, &QPushButton::clicked, this,
@@ -274,7 +274,7 @@ void CreateRaidDialog::addElements()
     {
         model.appendRow(item);
     });
-    recalculateType();
+    recalculateRaidType();
 }
 
 void CreateRaidDialog::removeElements()
@@ -287,7 +287,7 @@ void CreateRaidDialog::removeElements()
         else
             delete item;
     });
-    recalculateType();
+    recalculateRaidType();
 }
 
 void CreateRaidDialog::addSpares()
@@ -297,7 +297,7 @@ void CreateRaidDialog::addSpares()
     {
         model.appendRow(item);
     });
-    recalculateType();
+    recalculateRaidType();
 }
 
 void CreateRaidDialog::removeSpares()
@@ -307,10 +307,10 @@ void CreateRaidDialog::removeSpares()
     {
         model.appendRow(item);
     });
-    recalculateType();
+    recalculateRaidType();
 }
 
-void CreateRaidDialog::recalculateType()
+void CreateRaidDialog::recalculateRaidType()
 {
     const QStandardItemModel* model =
             qobject_cast<const QStandardItemModel*>(m_cbTypes->model());
