@@ -44,11 +44,11 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     m_cbTypes(nullptr),
     m_sbDevNumber(nullptr),
     m_labelDiskCount(nullptr),
-    m_raidTypes({{"RAID0", {1,0}},
-                 {"RAID1", {2,127}},
-                 {"RAID4", {3,1}},
-                 {"RAID5", {3,1}},
-                 {"RAID6", {4,2}}})
+    m_raidTypes({{RAID0, {1,0}},
+                 {RAID1, {2,127}},
+                 {RAID4, {3,1}},
+                 {RAID5, {3,1}},
+                 {RAID6, {4,2}}})
 {
     QVBoxLayout *systemDisksLayout = new QVBoxLayout;
     QVBoxLayout *buttonDiskLayout = new QVBoxLayout;
@@ -76,7 +76,11 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     buttonRemoveSpare->setDisabled(true);
 
     m_cbTypes = new QComboBox;
-    m_cbTypes->addItems(m_raidTypes.keys());
+    m_cbTypes->addItem(tr("RAID0"), RAID0);
+    m_cbTypes->addItem(tr("RAID1"), RAID1);
+    m_cbTypes->addItem(tr("RAID4"), RAID4);
+    m_cbTypes->addItem(tr("RAID5"), RAID5);
+    m_cbTypes->addItem(tr("RAID6"), RAID6);
     m_cbTypes->setDisabled(true);
 
     m_sbDevNumber = new QSpinBox;
@@ -311,7 +315,7 @@ void CreateRaidDialog::recalculateType()
     const QStandardItemModel* model =
             qobject_cast<const QStandardItemModel*>(m_cbTypes->model());
 
-    const auto& total = static_cast<unsigned>(m_selectedDisksModel.rowCount());
+    const auto total = static_cast<unsigned>(m_selectedDisksModel.rowCount());
     const auto spares = m_spareDisksModel.rowCount() > 0;
     unsigned missing = getMissingCount();
 
@@ -328,13 +332,14 @@ void CreateRaidDialog::recalculateType()
 
         for (int i=0; i< m_cbTypes->count(); ++i)
         {
-            const QString &type = m_cbTypes->itemText(i);
+            const RaidType type =
+                    static_cast<RaidType>(m_cbTypes->itemData(i).toInt());
 
             Q_ASSERT(m_raidTypes.contains(type));
             auto item = model->item(i);
             if (total < m_raidTypes.value(type).m_total ||
                     missing > m_raidTypes.value(type).m_missing ||
-                    (type == "RAID0" && spares))
+                    (type == RAID0 && spares))
             {
                 item->setFlags(item->flags() & ~Qt::ItemIsEnabled);
                 if (i == current)
@@ -378,9 +383,9 @@ QStringList CreateRaidDialog::getSelectedSpares() const {
     return getDisksFromModel(m_spareDisksModel);
 }
 
-QString CreateRaidDialog::getType() const
+CreateRaidDialog::RaidType CreateRaidDialog::getType() const
 {
-    return m_cbTypes->currentText();
+    return static_cast<RaidType>(m_cbTypes->currentData().toInt());
 }
 
 unsigned CreateRaidDialog::getMDNumber() const
@@ -391,7 +396,7 @@ unsigned CreateRaidDialog::getMDNumber() const
 unsigned CreateRaidDialog::getMissingCount() const
 {
     unsigned missing = 0;
-    const auto& total = m_selectedDisksModel.rowCount();
+    const auto total = m_selectedDisksModel.rowCount();
     for (int i = 0; i < total; ++i) {
         auto item = m_selectedDisksModel.item(i, 0);
         if (!item->data(DiskItemData::IsPhysical).toBool()) {

@@ -196,13 +196,13 @@ void MainWindow::createRaid()
 
     if (ret == QDialog::Accepted)
     {
-        const QMap<QString, MDAdmController::Type> typeMap =
+        const QMap<CreateRaidDialog::RaidType, MDAdmController::Type> typeMap =
         {
-            { "RAID0", MDAdmController::Type::Raid0 },
-            { "RAID1", MDAdmController::Type::Raid1 },
-            { "RAID4", MDAdmController::Type::Raid4 },
-            { "RAID5", MDAdmController::Type::Raid5 },
-            { "RAID6", MDAdmController::Type::Raid6 }
+            { CreateRaidDialog::RaidType::RAID0, MDAdmController::Type::Raid0 },
+            { CreateRaidDialog::RaidType::RAID1, MDAdmController::Type::Raid1 },
+            { CreateRaidDialog::RaidType::RAID4, MDAdmController::Type::Raid4 },
+            { CreateRaidDialog::RaidType::RAID5, MDAdmController::Type::Raid5 },
+            { CreateRaidDialog::RaidType::RAID6, MDAdmController::Type::Raid6 }
         };
         const auto disks = createRaidDialog.getSelectedDisks();
         const auto spares = createRaidDialog.getSelectedSpares();

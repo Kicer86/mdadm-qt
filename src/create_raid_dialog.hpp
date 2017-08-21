@@ -38,6 +38,21 @@ struct RaidLimits {
 
 class CreateRaidDialog : public QDialog
 {
+public:
+    enum RaidType { RAID0, RAID1, RAID4, RAID5, RAID6 };
+
+    CreateRaidDialog(IFileSystem *, QWidget *parent = Q_NULLPTR);
+    CreateRaidDialog(const CreateRaidDialog &) = delete;
+    CreateRaidDialog& operator=(const CreateRaidDialog &) = delete;
+
+    QStringList getSelectedDisks() const;
+    QStringList getSelectedSpares() const;
+    RaidType getType() const;
+    unsigned getMDNumber() const;
+    unsigned getMissingCount() const;
+    void updateCounters(unsigned, unsigned);
+
+private:
     enum DiskItemData { Path = Qt::UserRole,
                         IsPhysical };
 
@@ -52,7 +67,7 @@ class CreateRaidDialog : public QDialog
     QSpinBox *m_sbDevNumber;
     QLabel *m_labelDiskCount;
 
-    const QMap<QString, RaidLimits> m_raidTypes;
+    const QMap<RaidType, RaidLimits> m_raidTypes;
 
     void move(const QListView*, QStandardItemModel&, QStandardItemModel&,
               void (*)(QStandardItemModel &, QStandardItem*));
@@ -68,18 +83,6 @@ class CreateRaidDialog : public QDialog
     QStringList getDisksFromModel(const QStandardItemModel&) const;
 
     void recalculateType();
-
-public:
-    CreateRaidDialog(IFileSystem *, QWidget *parent = Q_NULLPTR);
-    CreateRaidDialog(const CreateRaidDialog &) = delete;
-    CreateRaidDialog& operator=(const CreateRaidDialog &) = delete;
-
-    QStringList getSelectedDisks() const;
-    QStringList getSelectedSpares() const;
-    QString getType() const;
-    unsigned getMDNumber() const;
-    unsigned getMissingCount() const;
-    void updateCounters(unsigned, unsigned);
 };
 
 #endif // CREATE_RAID_DIALOG_HPP
