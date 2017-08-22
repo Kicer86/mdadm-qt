@@ -63,8 +63,8 @@ private:
     QStandardItemModel m_selectedDisksModel;
     QStandardItemModel m_spareDisksModel;
 
-    QComboBox *m_cbTypes;
-    QSpinBox *m_sbDevNumber;
+    QComboBox *m_raidTypesComboBox;
+    QSpinBox *m_DevNumberSpinBox;
     QLabel *m_labelDiskCount;
 
     const QMap<RaidType, RaidLimits> m_raidTypes;

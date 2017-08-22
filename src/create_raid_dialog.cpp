@@ -41,8 +41,8 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     m_disksModel(),
     m_selectedDisksModel(),
     m_spareDisksModel(),
-    m_cbTypes(nullptr),
-    m_sbDevNumber(nullptr),
+    m_raidTypesComboBox(nullptr),
+    m_DevNumberSpinBox(nullptr),
     m_labelDiskCount(nullptr),
     m_raidTypes({{RAID0, {1,0}},
                  {RAID1, {2,127}},
@@ -75,18 +75,18 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     buttonAddSpare->setDisabled(true);
     buttonRemoveSpare->setDisabled(true);
 
-    m_cbTypes = new QComboBox;
-    m_cbTypes->addItem(tr("RAID0"), RAID0);
-    m_cbTypes->addItem(tr("RAID1"), RAID1);
-    m_cbTypes->addItem(tr("RAID4"), RAID4);
-    m_cbTypes->addItem(tr("RAID5"), RAID5);
-    m_cbTypes->addItem(tr("RAID6"), RAID6);
-    m_cbTypes->setDisabled(true);
+    m_raidTypesComboBox = new QComboBox;
+    m_raidTypesComboBox->addItem(tr("RAID0"), RAID0);
+    m_raidTypesComboBox->addItem(tr("RAID1"), RAID1);
+    m_raidTypesComboBox->addItem(tr("RAID4"), RAID4);
+    m_raidTypesComboBox->addItem(tr("RAID5"), RAID5);
+    m_raidTypesComboBox->addItem(tr("RAID6"), RAID6);
+    m_raidTypesComboBox->setDisabled(true);
 
-    m_sbDevNumber = new QSpinBox;
+    m_DevNumberSpinBox = new QSpinBox;
 
     /* TODO: get ranges from other class */
-    m_sbDevNumber->setRange(0, 127);
+    m_DevNumberSpinBox->setRange(0, 127);
 
     m_labelDiskCount = new QLabel();
 
@@ -118,9 +118,9 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     disksLayout->addLayout(buttonDiskLayout);
     disksLayout->addLayout(selectedDisksLayout);
 
-    optionsLayout->addRow(new QLabel(tr("Type:")), m_cbTypes);
+    optionsLayout->addRow(new QLabel(tr("Type:")), m_raidTypesComboBox);
     optionsLayout->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-    optionsLayout->addRow(new QLabel(tr("MD device:")), m_sbDevNumber);
+    optionsLayout->addRow(new QLabel(tr("MD device:")), m_DevNumberSpinBox);
 
     buttonCreateLayout->addStretch();
     buttonCreateLayout->addWidget(buttonCancel);
@@ -172,7 +172,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     connect(buttonCreate, &QPushButton::clicked, this,
             &CreateRaidDialog::accept);
 
-    connect(m_cbTypes,
+    connect(m_raidTypesComboBox,
             static_cast<void(QComboBox::*)(const QString&)>
                 (&QComboBox::currentIndexChanged),
             [buttonAddSpare](const QString& type)
@@ -200,8 +200,11 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     {
         const auto selection = this->m_disksView->selectionModel()->selection();
         const auto add_disabled = selection.empty();
+        const auto current_type =
+                static_cast<RaidType>(
+                    this->m_raidTypesComboBox->currentData().toInt());
         const auto spare_disabled = (selection.empty() ||
-                                     this->m_cbTypes->currentText() == "RAID0");
+                                      current_type == RAID0);
         buttonAdd->setDisabled(add_disabled);
         buttonAddSpare->setDisabled(spare_disabled);
     });
@@ -313,7 +316,8 @@ void CreateRaidDialog::removeSpares()
 void CreateRaidDialog::recalculateRaidType()
 {
     const QStandardItemModel* model =
-            qobject_cast<const QStandardItemModel*>(m_cbTypes->model());
+            qobject_cast<const QStandardItemModel*>(
+                m_raidTypesComboBox->model());
 
     const auto total = static_cast<unsigned>(m_selectedDisksModel.rowCount());
     const auto spares = m_spareDisksModel.rowCount() > 0;
@@ -322,18 +326,19 @@ void CreateRaidDialog::recalculateRaidType()
     const auto& disable = (total == 0 || missing == total ||
                            (spares && total == 1));
 
-    m_cbTypes->setDisabled(disable);
+    m_raidTypesComboBox->setDisabled(disable);
 
     if (!disable)
     {
         int last_enabled = 0;
         bool current_disabled = false;
-        const int current = m_cbTypes->currentIndex();
+        const int current = m_raidTypesComboBox->currentIndex();
 
-        for (int i=0; i< m_cbTypes->count(); ++i)
+        for (int i=0; i< m_raidTypesComboBox->count(); ++i)
         {
             const RaidType type =
-                    static_cast<RaidType>(m_cbTypes->itemData(i).toInt());
+                    static_cast<RaidType>(
+                        m_raidTypesComboBox->itemData(i).toInt());
 
             Q_ASSERT(m_raidTypes.contains(type));
             auto item = model->item(i);
@@ -353,7 +358,7 @@ void CreateRaidDialog::recalculateRaidType()
         }
 
         if (current_disabled)
-            m_cbTypes->setCurrentIndex(last_enabled);
+            m_raidTypesComboBox->setCurrentIndex(last_enabled);
     }
 
     updateCounters(total, missing);
@@ -385,12 +390,12 @@ QStringList CreateRaidDialog::getSelectedSpares() const {
 
 CreateRaidDialog::RaidType CreateRaidDialog::getType() const
 {
-    return static_cast<RaidType>(m_cbTypes->currentData().toInt());
+    return static_cast<RaidType>(m_raidTypesComboBox->currentData().toInt());
 }
 
 unsigned CreateRaidDialog::getMDNumber() const
 {
-    return static_cast<unsigned>(m_sbDevNumber->value());
+    return static_cast<unsigned>(m_DevNumberSpinBox->value());
 }
 
 unsigned CreateRaidDialog::getMissingCount() const
