@@ -30,6 +30,46 @@
 #include "disk_controller.hpp"
 #include "empty_filter.hpp"
 
+namespace
+{
+    class CreateOutputParser
+    {
+    public:
+        CreateOutputParser() : message() {}
+
+        QString operator()(const QString &output)
+        {
+            /* prompt is the same for all warning messages
+             * taken from Create.c file in mdadm sources
+             */
+            const char prompt[] = "Continue creating array?";
+            QString formatted(output);
+            formatted.replace("mdadm: ","");
+            formatted.replace(QRegExp("\n[ ]+"), " ");
+            formatted.replace('\n', "<br />");
+            formatted.replace(QRegExp("^([a-zA-Z]+:)"), "<b>\\1</b>");
+            formatted.replace(prompt, QString("<br /><b>%1</b>").arg(prompt));
+
+            message.append(formatted);
+
+            if (message.contains(prompt)) {
+
+                QMessageBox::StandardButton result =
+                QMessageBox::warning(nullptr, "Warning", message,
+                                 QMessageBox::Yes | QMessageBox::No,
+                                 QMessageBox::No);
+                message.clear();
+                return (result == QMessageBox::Yes) ? "y" : "n";
+            }
+            message.append("<br />");
+
+            return "";
+        }
+
+    private:
+        QString message;
+    };
+}
 
 MainWindow::MainWindow():
     QMainWindow(),
@@ -211,38 +251,13 @@ void MainWindow::createRaid()
 
         Q_ASSERT(typeMap.contains(type));
 
+        ::CreateOutputParser outputParser;
+
         m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
                                      typeMap.value(type),
                                      disks,
                                      spares,
-                                     [](const QString &output)->QString
-        {
-            static QString message("");
-            /* prompt is the same for all warning messages
-             * taken from Create.c file in mdadm sources
-             */
-            const char prompt[] = "Continue creating array?";
-            QString formatted(output);
-            formatted.replace("mdadm: ","");
-            formatted.replace(QRegExp("\n[ ]+"), " ");
-            formatted.replace('\n', "<br />");
-            formatted.replace(QRegExp("^([a-zA-Z]+:)"), "<b>\\1</b>");
-            formatted.replace(prompt, QString("<br /><b>%1</b>").arg(prompt));
-
-            message.append(formatted);
-
-            if (message.contains(prompt)) {
-
-                QMessageBox::StandardButton result =
-                QMessageBox::warning(nullptr, "Warning", message,
-                                 QMessageBox::Yes | QMessageBox::No,
-                                 QMessageBox::No);
-                message.clear();
-                return (result == QMessageBox::Yes) ? "y" : "n";
-            }
-            message.append("<br />");
-
-            return "";
-        });
+                                     outputParser);
     }
 }
+
