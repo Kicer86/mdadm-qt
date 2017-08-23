@@ -31,7 +31,15 @@
 #include "create_raid_dialog.hpp"
 #include "disk_controller.hpp"
 #include "exclude_used_filter.hpp"
-#include "missing.hpp"
+
+namespace
+{
+    struct MissingDevice {
+        const char* path = "missing";
+        const QString representation =
+                QObject::tr("Missing Device Representation");
+    };
+}
 
 CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     QDialog(parent),
@@ -140,7 +148,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     {
         QStandardItem* item = new QStandardItem(disk->toString());
         item->setData(disk->devPath(), DiskItemData::Path);
-        item->setData(disk->isPhysical(), DiskItemData::IsPhysical);
+        item->setData(DeviceType::Physical, DiskItemData::DeviceType);
         m_disksModel.appendRow(item);
     }
 
@@ -149,10 +157,10 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     connect(buttonAddMissing, &QPushButton::clicked,
             [this, buttonAddMissing, &dc]()
     {
-        std::unique_ptr<Missing> missing(new Missing());
-        QStandardItem* item = new QStandardItem(missing->toString());
-        item->setData(missing->devPath(), DiskItemData::Path);
-        item->setData(missing->isPhysical(), DiskItemData::IsPhysical);
+        MissingDevice missing;
+        QStandardItem* item = new QStandardItem(missing.representation);
+        item->setData(missing.path, DiskItemData::Path);
+        item->setData(DeviceType::Virtual, DiskItemData::DeviceType);
         m_selectedDisksModel.appendRow(item);
 
         this->recalculateRaidType();
@@ -285,7 +293,8 @@ void CreateRaidDialog::removeElements()
     move(m_selectedDisksView, m_selectedDisksModel, m_disksModel,
          [](QStandardItemModel& model, QStandardItem* item)
     {
-        if (item->data(DiskItemData::IsPhysical).toBool())
+        if (static_cast<enum DeviceType>(
+                    item->data(DiskItemData::DeviceType).toInt()) == Physical)
             model.appendRow(item);
         else
             delete item;
@@ -404,7 +413,9 @@ unsigned CreateRaidDialog::getMissingCount() const
     const auto total = m_selectedDisksModel.rowCount();
     for (int i = 0; i < total; ++i) {
         auto item = m_selectedDisksModel.item(i, 0);
-        if (!item->data(DiskItemData::IsPhysical).toBool()) {
+        if (static_cast<enum DeviceType>(
+                    item->data(DiskItemData::DeviceType).toInt()) == Virtual)
+        {
             ++missing;
         }
     }

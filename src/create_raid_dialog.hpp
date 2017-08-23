@@ -53,8 +53,9 @@ public:
     void updateCounters(unsigned, unsigned);
 
 private:
+    enum DeviceType { Physical, Virtual };
     enum DiskItemData { Path = Qt::UserRole,
-                        IsPhysical };
+                        DeviceType };
 
     QListView* m_disksView;
     QListView* m_selectedDisksView;
