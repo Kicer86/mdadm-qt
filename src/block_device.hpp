@@ -37,7 +37,6 @@ public:
     size_t sizeInSectorUnits() const;
     unsigned logicalBlockSize() const;
     bool isUsed() const;
-    bool isPhysical() const;
 
 protected:
     const QString m_name;
