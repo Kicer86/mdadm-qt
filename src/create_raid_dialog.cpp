@@ -88,20 +88,9 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     QPushButton *buttonCancel = new QPushButton(tr("Cancel"));
     QPushButton *buttonCreate = new QPushButton(tr("Create"));
 
-    m_disksView = new QListView;
-    m_selectedDisksView = new QListView;
-    m_spareDisksView = new QListView;
-
-    m_disksView->setModel(&m_disksModel);
-    m_selectedDisksView->setModel(&m_selectedDisksModel);
-    m_spareDisksView->setModel(&m_spareDisksModel);
-
-    m_disksView->setSelectionMode(QAbstractItemView::MultiSelection);
-    m_disksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_selectedDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
-    m_selectedDisksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_spareDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
-    m_spareDisksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_disksView = constructViewAndAttachModel(&m_disksModel);
+    m_selectedDisksView = constructViewAndAttachModel(&m_selectedDisksModel);
+    m_spareDisksView = constructViewAndAttachModel(&m_spareDisksModel);
 
     systemDisksLayout->addWidget(labelDisks);
     systemDisksLayout->addWidget(m_disksView);
@@ -151,6 +140,18 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     updateCounters(0, 0);
 
     setLayout(mainLayout);
+}
+
+QListView*
+CreateRaidDialog::constructViewAndAttachModel(QStandardItemModel *model)
+{
+    QListView* listView = new QListView;
+    listView->setModel(model);
+
+    listView->setSelectionMode(QAbstractItemView::MultiSelection);
+    listView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    return listView;
 }
 
 QBoxLayout* CreateRaidDialog::createDiskManagementButtons()

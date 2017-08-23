@@ -71,6 +71,7 @@ private:
 
     const QMap<RaidType, RaidLimits> m_raidTypes;
 
+    QListView* constructViewAndAttachModel(QStandardItemModel *);
     QBoxLayout* createDiskManagementButtons();
 
     void move(const QListView*, QStandardItemModel&, QStandardItemModel&,
