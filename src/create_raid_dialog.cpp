@@ -59,7 +59,6 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
                  {RAID6, {4,2}}})
 {
     QVBoxLayout *systemDisksLayout = new QVBoxLayout;
-    QVBoxLayout *buttonDiskLayout = new QVBoxLayout;
     QVBoxLayout *selectedDisksLayout = new QVBoxLayout;
     QHBoxLayout *disksLayout = new QHBoxLayout;
     QFormLayout *optionsLayout = new QFormLayout;
@@ -70,18 +69,6 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     QLabel *labelDisks = new QLabel(tr("available disks:"));
     QLabel *labelSelectedDisks = new QLabel(tr("disks for RAID:"));
     QLabel *labelSpareDisks = new QLabel(tr("spare disks:"));
-
-    QPushButton *buttonAdd = new QPushButton(tr("->"));
-    QPushButton *buttonRemove = new QPushButton(tr("<-"));
-    QPushButton *buttonAddMissing = new QPushButton(tr("+ MISSING"));
-
-    QPushButton *buttonAddSpare = new QPushButton(tr("+ SPARE"));
-    QPushButton *buttonRemoveSpare = new QPushButton(tr("- SPARE"));
-
-    buttonAdd->setDisabled(true);
-    buttonRemove->setDisabled(true);
-    buttonAddSpare->setDisabled(true);
-    buttonRemoveSpare->setDisabled(true);
 
     m_raidTypesComboBox = new QComboBox;
     m_raidTypesComboBox->addItem(tr("RAID0"), RAID0);
@@ -105,17 +92,19 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     m_selectedDisksView = new QListView;
     m_spareDisksView = new QListView;
 
+    m_disksView->setModel(&m_disksModel);
+    m_selectedDisksView->setModel(&m_selectedDisksModel);
+    m_spareDisksView->setModel(&m_spareDisksModel);
+
+    m_disksView->setSelectionMode(QAbstractItemView::MultiSelection);
+    m_disksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_selectedDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
+    m_selectedDisksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_spareDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
+    m_spareDisksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
     systemDisksLayout->addWidget(labelDisks);
     systemDisksLayout->addWidget(m_disksView);
-
-    buttonDiskLayout->addStretch();
-    buttonDiskLayout->addWidget(buttonAdd);
-    buttonDiskLayout->addWidget(buttonRemove);
-    buttonDiskLayout->addWidget(buttonAddMissing);
-    buttonDiskLayout->addStretch();
-    buttonDiskLayout->addWidget(buttonAddSpare);
-    buttonDiskLayout->addWidget(buttonRemoveSpare);
-    buttonDiskLayout->addStretch();
 
     selectedDisksLayout->addWidget(labelSelectedDisks);
     selectedDisksLayout->addWidget(m_selectedDisksView);
@@ -123,7 +112,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     selectedDisksLayout->addWidget(m_spareDisksView);
 
     disksLayout->addLayout(systemDisksLayout);
-    disksLayout->addLayout(buttonDiskLayout);
+    disksLayout->addLayout(createDiskManagementButtons());
     disksLayout->addLayout(selectedDisksLayout);
 
     optionsLayout->addRow(new QLabel(tr("Type:")), m_raidTypesComboBox);
@@ -154,8 +143,42 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     m_disksModel.sort(0);
 
+    connect(buttonCancel, &QPushButton::clicked, this,
+            &CreateRaidDialog::reject);
+    connect(buttonCreate, &QPushButton::clicked, this,
+            &CreateRaidDialog::accept);
+
+    updateCounters(0, 0);
+
+    setLayout(mainLayout);
+}
+
+QBoxLayout* CreateRaidDialog::createDiskManagementButtons()
+{
+    QVBoxLayout *buttonDiskLayout = new QVBoxLayout;
+
+    QPushButton *buttonAdd = new QPushButton(tr("->"));
+    QPushButton *buttonRemove = new QPushButton(tr("<-"));
+    QPushButton *buttonAddMissing = new QPushButton(tr("+ MISSING"));
+    QPushButton *buttonAddSpare = new QPushButton(tr("+ SPARE"));
+    QPushButton *buttonRemoveSpare = new QPushButton(tr("- SPARE"));
+
+    buttonAdd->setDisabled(true);
+    buttonRemove->setDisabled(true);
+    buttonAddSpare->setDisabled(true);
+    buttonRemoveSpare->setDisabled(true);
+
+    buttonDiskLayout->addStretch();
+    buttonDiskLayout->addWidget(buttonAdd);
+    buttonDiskLayout->addWidget(buttonRemove);
+    buttonDiskLayout->addWidget(buttonAddMissing);
+    buttonDiskLayout->addStretch();
+    buttonDiskLayout->addWidget(buttonAddSpare);
+    buttonDiskLayout->addWidget(buttonRemoveSpare);
+    buttonDiskLayout->addStretch();
+
     connect(buttonAddMissing, &QPushButton::clicked,
-            [this, buttonAddMissing, &dc]()
+            [this]()
     {
         MissingDevice missing;
         QStandardItem* item = new QStandardItem(missing.representation);
@@ -175,11 +198,6 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     connect(buttonRemoveSpare, &QPushButton::clicked, this,
             &CreateRaidDialog::removeSpares);
 
-    connect(buttonCancel, &QPushButton::clicked, this,
-            &CreateRaidDialog::reject);
-    connect(buttonCreate, &QPushButton::clicked, this,
-            &CreateRaidDialog::accept);
-
     connect(m_raidTypesComboBox,
             static_cast<void(QComboBox::*)(const QString&)>
                 (&QComboBox::currentIndexChanged),
@@ -187,17 +205,6 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     {
         buttonAddSpare->setDisabled(type == "RAID0");
     });
-
-    m_disksView->setModel(&m_disksModel);
-    m_selectedDisksView->setModel(&m_selectedDisksModel);
-    m_spareDisksView->setModel(&m_spareDisksModel);
-
-    m_disksView->setSelectionMode(QAbstractItemView::MultiSelection);
-    m_disksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_selectedDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
-    m_selectedDisksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    m_spareDisksView->setSelectionMode(QAbstractItemView::MultiSelection);
-    m_spareDisksView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     connect(m_disksView->selectionModel(),
             static_cast<void(QItemSelectionModel::*)(const QItemSelection&,
@@ -243,9 +250,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
 
     });
 
-    updateCounters(0, 0);
-
-    setLayout(mainLayout);
+    return buttonDiskLayout;
 }
 
 void CreateRaidDialog::move(const QListView* sourceView,

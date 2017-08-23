@@ -24,6 +24,7 @@
 #include <QStandardItemModel>
 #include <QMap>
 
+class QBoxLayout;
 class QLabel;
 class QListView;
 class QComboBox;
@@ -69,6 +70,8 @@ private:
     QLabel *m_labelDiskCount;
 
     const QMap<RaidType, RaidLimits> m_raidTypes;
+
+    QBoxLayout* createDiskManagementButtons();
 
     void move(const QListView*, QStandardItemModel&, QStandardItemModel&,
               void (*)(QStandardItemModel &, QStandardItem*));
