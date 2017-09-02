@@ -10,6 +10,8 @@ set(SRCS
         main_window.hpp
         mdadm_controller.cpp
         mdadm_controller.hpp
+        mdadm_debug_layer.cpp
+        mdadm_debug_layer.hpp
         mdadm_process.cpp
         mdadm_process.hpp
         utils.hpp
