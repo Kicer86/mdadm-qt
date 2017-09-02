@@ -19,7 +19,6 @@
 
 #include "mdadm_controller.hpp"
 
-#include <QDebug>
 #include <QRegExp>
 #include <QFileInfo>
 #include <QTextStream>
@@ -58,21 +57,8 @@ namespace
 
         return result;
     }
-
-
-    void dumpMDAdmProcessResult(const QByteArray& output,
-                                bool success,
-                                int exitCode)
-    {
-        if (success)
-        {
-            qDebug() << "mdadm exited normally with code: "
-                     << exitCode << " and output:";
-            qDebug() << output;
-        }
-        else
-            qDebug() << "mdadm crashed";
-    }
+    
+    void nullResultCallback(const QByteArray &, bool,int) {  }    
 }
 
 bool RaidInfo::operator==(const RaidInfo &other) const
@@ -179,19 +165,13 @@ bool MDAdmController::createRaid(const QString& raid_device,
                   .arg(block_devices.size())
                << block_devices;
 
-    qDebug() << "executing mdadm with args: " << mdadm_args;
-
     m_mdadmProcess->execute(mdadm_args,
                             [this](const QByteArray& output,
                                                bool success,
                                                int exitCode)
     {
-        dumpMDAdmProcessResult(output, success, exitCode);
-
         if (success)
             emit raidCreated();
-        else
-            qDebug() << "mdadm crashed";
     },
                             [callback](const QByteArray& output)->QString
     {
@@ -220,8 +200,6 @@ bool MDAdmController::removeRaid(const QString& raid_device)
                                                bool success,
                                                int exitCode)
     {
-        dumpMDAdmProcessResult(output, success, exitCode);
-
         if (success)
             emit raidRemoved();
     });
@@ -235,7 +213,7 @@ bool MDAdmController::stopRaid(const QString& raid_device)
 
     mdadm_args << "--stop" << "--verbose" << raid_device;
 
-    m_mdadmProcess->execute(mdadm_args, dumpMDAdmProcessResult);
+    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
 
     return true;
 }
@@ -249,7 +227,7 @@ bool MDAdmController::zeroSuperblock(const QStringList& raid_components)
 
     mdadm_args << "--zero-superblock" << raid_components;
 
-    m_mdadmProcess->execute(mdadm_args, dumpMDAdmProcessResult);
+    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
 
     return true;
 }

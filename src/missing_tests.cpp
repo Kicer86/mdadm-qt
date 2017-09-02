@@ -1,6 +1,4 @@
 
-#include <QDebug>
-
 #include <gmock/gmock.h>
 
 #include "missing.hpp"

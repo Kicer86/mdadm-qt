@@ -1,5 +1,5 @@
 
-#include <QDebug>
+#include <QTextStream>
 
 #include <gmock/gmock.h>
 
