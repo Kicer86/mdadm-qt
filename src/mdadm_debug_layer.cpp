@@ -1,5 +1,5 @@
 /*
- * Debug layer for MDAdmProcess
+ * Debug layer for MDAdmProcess - wrapper dumping details about mdadm execution
  * Copyright (C) 2017  Michał Walenciak <Kicer86@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -20,8 +20,10 @@
 
 #include "mdadm_debug_layer.hpp"
 
+#include <QDebug>
 
-MDAdmDebugLayer::MDAdmDebugLayer()
+
+MDAdmDebugLayer::MDAdmDebugLayer(IMDAdmProcess* to_wrap): m_wrapped(to_wrap)
 {
 
 }
@@ -33,7 +35,26 @@ MDAdmDebugLayer::~MDAdmDebugLayer()
 }
 
 
-bool MDAdmDebugLayer::execute(const QStringList& , const IMDAdmProcess::ExecutionResult& , const IMDAdmProcess::ReadChannelParser& parser)
+bool MDAdmDebugLayer::execute(const QStringList& args, const IMDAdmProcess::ExecutionResult& result_callback, const IMDAdmProcess::ReadChannelParser& parser)
 {
-
+    auto result_dumper = [result_callback](const QByteArray& output, bool success, int exitCode)
+    {
+        if (success)
+        {
+            qDebug() << "mdadm exited normally with code: "
+                     << exitCode << " and output:";
+            qDebug() << output;
+        }
+        else
+            qDebug() << "mdadm crashed";
+        
+        // pass result to original caller
+        result_callback(output, success, exitCode);
+    };    
+    
+    qDebug() << "executing mdadm with args:" << args;
+    
+    const bool result = m_wrapped->execute(args, result_dumper, parser);
+    
+    return result;
 }

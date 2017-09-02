@@ -1,5 +1,5 @@
 /*
- * Debug layer for MDAdmProcess
+ * Debug layer for MDAdmProcess - wrapper dumping details about mdadm execution
  * Copyright (C) 2017  Michał Walenciak <Kicer86@gmail.com>
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -22,12 +22,17 @@
 
 #include "imdadm_process.hpp"
 
+
 class MDAdmDebugLayer : public IMDAdmProcess
 {
     public:
-        MDAdmDebugLayer();
-        ~MDAdmDebugLayer();
+        MDAdmDebugLayer(IMDAdmProcess *);
+        virtual ~MDAdmDebugLayer();
+        
         virtual bool execute(const QStringList& , const IMDAdmProcess::ExecutionResult& , const IMDAdmProcess::ReadChannelParser& parser);
+        
+    private:
+        IMDAdmProcess* m_wrapped;
 };
 
 #endif // MDADMDEBUGLAYER_HPP
