@@ -30,6 +30,46 @@
 #include "disk_controller.hpp"
 #include "empty_filter.hpp"
 
+namespace
+{
+    class CreateOutputParser
+    {
+    public:
+        CreateOutputParser() : message() {}
+
+        QString operator()(const QString &output)
+        {
+            /* prompt is the same for all warning messages
+             * taken from Create.c file in mdadm sources
+             */
+            const char prompt[] = "Continue creating array?";
+            QString formatted(output);
+            formatted.replace("mdadm: ","");
+            formatted.replace(QRegExp("\n[ ]+"), " ");
+            formatted.replace('\n', "<br />");
+            formatted.replace(QRegExp("^([a-zA-Z]+:)"), "<b>\\1</b>");
+            formatted.replace(prompt, QString("<br /><b>%1</b>").arg(prompt));
+
+            message.append(formatted);
+
+            if (message.contains(prompt)) {
+
+                QMessageBox::StandardButton result =
+                QMessageBox::warning(nullptr, "Warning", message,
+                                 QMessageBox::Yes | QMessageBox::No,
+                                 QMessageBox::No);
+                message.clear();
+                return (result == QMessageBox::Yes) ? "y" : "n";
+            }
+            message.append("<br />");
+
+            return "";
+        }
+
+    private:
+        QString message;
+    };
+}
 
 MainWindow::MainWindow():
     QMainWindow(),
@@ -197,52 +237,28 @@ void MainWindow::createRaid()
 
     if (ret == QDialog::Accepted)
     {
-        const QMap<QString, MDAdmController::Type> typeMap =
+        const QMap<CreateRaidDialog::RaidType, MDAdmController::Type> typeMap =
         {
-            { "RAID0", MDAdmController::Type::Raid0 },
-            { "RAID1", MDAdmController::Type::Raid1 },
-            { "RAID4", MDAdmController::Type::Raid4 },
-            { "RAID5", MDAdmController::Type::Raid5 },
-            { "RAID6", MDAdmController::Type::Raid6 }
+            { CreateRaidDialog::RaidType::RAID0, MDAdmController::Type::Raid0 },
+            { CreateRaidDialog::RaidType::RAID1, MDAdmController::Type::Raid1 },
+            { CreateRaidDialog::RaidType::RAID4, MDAdmController::Type::Raid4 },
+            { CreateRaidDialog::RaidType::RAID5, MDAdmController::Type::Raid5 },
+            { CreateRaidDialog::RaidType::RAID6, MDAdmController::Type::Raid6 }
         };
         const auto disks = createRaidDialog.getSelectedDisks();
+        const auto spares = createRaidDialog.getSelectedSpares();
         const auto type = createRaidDialog.getType();
         const auto mdNumber = createRaidDialog.getMDNumber();
 
         Q_ASSERT(typeMap.contains(type));
-        QString message;
+
+        ::CreateOutputParser outputParser;
 
         m_mdadmController.createRaid(QString("/dev/md%1").arg(mdNumber),
                                      typeMap.value(type),
                                      disks,
-                                     [message](const QString &output) mutable
-                                            ->QString
-        {
-            /* prompt is the same for all warning messages
-             * taken from Create.c file in mdadm sources
-             */
-            const char prompt[] = "Continue creating array?";
-            QString formatted(output);
-            formatted.replace("mdadm: ","");
-            formatted.replace(QRegExp("\n[ ]+"), " ");
-            formatted.replace('\n', "<br />");
-            formatted.replace(QRegExp("^([a-zA-Z]+:)"), "<b>\\1</b>");
-            formatted.replace(prompt, QString("<br /><b>%1</b>").arg(prompt));
-
-            message.append(formatted);
-
-            if (message.contains(prompt)) {
-
-                QMessageBox::StandardButton result =
-                QMessageBox::warning(nullptr, "Warning", message,
-                                 QMessageBox::Yes | QMessageBox::No,
-                                 QMessageBox::No);
-                message.clear();
-                return (result == QMessageBox::Yes) ? "y" : "n";
-            }
-            message.append("<br />");
-
-            return "";
-        });
+                                     spares,
+                                     outputParser);
     }
 }
+

@@ -24,6 +24,7 @@
 #include <QStandardItemModel>
 #include <QMap>
 
+class QBoxLayout;
 class QLabel;
 class QListView;
 class QComboBox;
@@ -38,35 +39,55 @@ struct RaidLimits {
 
 class CreateRaidDialog : public QDialog
 {
-    enum DiskItemData { Path = Qt::UserRole,
-                        IsPhysical };
-
-    QListView* m_disksView;
-    QListView* m_selectedDisksView;
-    QStandardItemModel m_disksModel;
-    QStandardItemModel m_selectedDisksModel;
-
-    QComboBox *m_cbTypes;
-    QSpinBox *m_sbDevNumber;
-    QLabel *m_labelDiskCount;
-
-    const QMap<QString, RaidLimits> m_raidTypes;
-
-    void addElements();
-    void removeElements();
-
-    void recalculateType();
-
 public:
+    enum RaidType { RAID0, RAID1, RAID4, RAID5, RAID6 };
+
     CreateRaidDialog(IFileSystem *, QWidget *parent = Q_NULLPTR);
     CreateRaidDialog(const CreateRaidDialog &) = delete;
     CreateRaidDialog& operator=(const CreateRaidDialog &) = delete;
 
     QStringList getSelectedDisks() const;
-    QString getType() const;
+    QStringList getSelectedSpares() const;
+    RaidType getType() const;
     unsigned getMDNumber() const;
     unsigned getMissingCount() const;
     void updateCounters(unsigned, unsigned);
+
+private:
+    enum DeviceType { Physical, Virtual };
+    enum DiskItemData { Path = Qt::UserRole,
+                        DeviceType };
+
+    QListView* m_disksView;
+    QListView* m_selectedDisksView;
+    QListView* m_spareDisksView;
+    QStandardItemModel m_disksModel;
+    QStandardItemModel m_selectedDisksModel;
+    QStandardItemModel m_spareDisksModel;
+
+    QComboBox *m_raidTypesComboBox;
+    QSpinBox *m_DevNumberSpinBox;
+    QLabel *m_labelDiskCount;
+
+    const QMap<RaidType, RaidLimits> m_raidTypes;
+
+    QListView* constructViewAndAttachModel(QStandardItemModel *);
+    QBoxLayout* createDiskManagementButtons();
+
+    void move(const QListView*, QStandardItemModel&, QStandardItemModel&,
+              void (*)(QStandardItemModel &, QStandardItem*));
+
+    /* array components management */
+    void addElements();
+    void removeElements();
+
+    /* spare management */
+    void addSpares();
+    void removeSpares();
+
+    QStringList getDisksFromModel(const QStandardItemModel&) const;
+
+    void recalculateRaidType();
 };
 
 #endif // CREATE_RAID_DIALOG_HPP

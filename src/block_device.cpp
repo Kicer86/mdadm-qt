@@ -85,8 +85,3 @@ bool BlockDevice::isUsed() const
 
     return used;
 }
-
-bool BlockDevice::isPhysical() const
-{
-    return true;
-}

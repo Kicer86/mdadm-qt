@@ -36,8 +36,6 @@ set(SRCS
         block_device.hpp
         disk.cpp
         disk.hpp
-        missing.cpp
-        missing.hpp
 )
 
 qt5_wrap_cpp(WRAPPED mdadm_controller.hpp)
@@ -69,7 +67,6 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             block_device.cpp
             device_type_visitor.cpp
             disk.cpp
-            missing.cpp
             disk_controller.cpp
             empty_filter.cpp
             exclude_used_filter.cpp
