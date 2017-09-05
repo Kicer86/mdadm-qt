@@ -126,7 +126,7 @@ CreateRaidDialog::CreateRaidDialog(IFileSystem* fs, QWidget* parent) :
     {
         QStandardItem* item = new QStandardItem(disk->toString());
         item->setData(disk->devPath(), DiskItemData::Path);
-        item->setData(DeviceType::Physical, DiskItemData::DeviceType);
+        item->setData(DeviceType::Physical, DiskItemData::Type);
         m_disksModel.appendRow(item);
     }
 
@@ -184,7 +184,7 @@ QBoxLayout* CreateRaidDialog::createDiskManagementButtons()
         MissingDevice missing;
         QStandardItem* item = new QStandardItem(missing.representation);
         item->setData(missing.path, DiskItemData::Path);
-        item->setData(DeviceType::Virtual, DiskItemData::DeviceType);
+        item->setData(DeviceType::Virtual, DiskItemData::Type);
         m_selectedDisksModel.appendRow(item);
 
         this->recalculateRaidType();
@@ -303,7 +303,7 @@ void CreateRaidDialog::removeElements()
          [](QStandardItemModel& model, QStandardItem* item)
     {
         if (static_cast<enum DeviceType>(
-                    item->data(DiskItemData::DeviceType).toInt()) == Physical)
+                    item->data(DiskItemData::Type).toInt()) == Physical)
             model.appendRow(item);
         else
             delete item;
@@ -423,7 +423,7 @@ unsigned CreateRaidDialog::getMissingCount() const
     for (int i = 0; i < total; ++i) {
         auto item = m_selectedDisksModel.item(i, 0);
         if (static_cast<enum DeviceType>(
-                    item->data(DiskItemData::DeviceType).toInt()) == Virtual)
+                    item->data(DiskItemData::Type).toInt()) == Virtual)
         {
             ++missing;
         }

@@ -56,7 +56,7 @@ public:
 private:
     enum DeviceType { Physical, Virtual };
     enum DiskItemData { Path = Qt::UserRole,
-                        DeviceType };
+                        Type };
 
     QListView* m_disksView;
     QListView* m_selectedDisksView;
