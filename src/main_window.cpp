@@ -21,6 +21,7 @@
 #include "main_window.hpp"
 
 #include <QInputDialog>
+#include <QSettings>
 #include <QTabWidget>
 #include <QTableView>
 #include <QMenuBar>
@@ -81,7 +82,8 @@ MainWindow::MainWindow():
     m_disksModel(),
     m_viewTabs(nullptr),
     m_raidsView(nullptr),
-    m_disksView(nullptr)
+    m_disksView(nullptr),
+    m_settings(nullptr)
 {
     // raids tab
     m_raidsView = new QTableView(this);
@@ -138,6 +140,11 @@ MainWindow::MainWindow():
     m_disksView->sortByColumn(0, Qt::AscendingOrder);
     m_disksView->setSortingEnabled(true);
 
+    m_settings = new QSettings(QDir::currentPath() + "/mdadm-qt.conf",
+                               QSettings::IniFormat, this);
+
+    loadSettings();
+
     connect(&m_mdadmController, &MDAdmController::raidCreated, this,
             &MainWindow::refreshArraysList);
     connect(&m_mdadmController, &MDAdmController::raidRemoved, this,
@@ -149,7 +156,7 @@ MainWindow::MainWindow():
 
 MainWindow::~MainWindow()
 {
-
+    saveSettings();
 }
 
 
@@ -262,3 +269,18 @@ void MainWindow::createRaid()
     }
 }
 
+void MainWindow::loadSettings()
+{
+    m_settings->beginGroup("MainWindow");
+    this->setGeometry(m_settings->value("geometry",
+                                        QRect(500, 200, 600, 500)).toRect());
+    m_settings->endGroup();
+}
+
+
+void MainWindow::saveSettings()
+{
+    m_settings->beginGroup("MainWindow");
+    m_settings->setValue("geometry", this->geometry());
+    m_settings->endGroup();
+}

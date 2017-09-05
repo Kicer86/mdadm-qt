@@ -30,6 +30,7 @@
 
 class QTabWidget;
 class QTableView;
+class QSettings;
 
 class MainWindow: public QMainWindow
 {
@@ -51,12 +52,16 @@ class MainWindow: public QMainWindow
         QTabWidget* m_viewTabs;
         QTableView* m_raidsView;
         QTableView* m_disksView;
+        QSettings* m_settings;
 
         void contextMenu(const QPoint&);
         bool removeRaid(const QString&);
         void refreshArraysList();
         void refreshDisksList();
         void createRaid();
+
+        void loadSettings();
+        void saveSettings();
 };
 
 #endif // MAINWINDOW_HPP
