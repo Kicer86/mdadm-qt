@@ -84,7 +84,6 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             disk_controller_tests.cpp
             filters_tests.cpp
             mdadm_controller_tests.cpp
-            missing_tests.cpp
     )
 
     add_executable(mdadm_unit_tests ${tests_sources})        # regular unit tests
