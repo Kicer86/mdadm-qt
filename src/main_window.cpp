@@ -22,6 +22,7 @@
 
 #include <QInputDialog>
 #include <QSettings>
+#include <QStandardPaths>
 #include <QTabWidget>
 #include <QTableView>
 #include <QMenuBar>
@@ -82,8 +83,7 @@ MainWindow::MainWindow():
     m_disksModel(),
     m_viewTabs(nullptr),
     m_raidsView(nullptr),
-    m_disksView(nullptr),
-    m_settings(nullptr)
+    m_disksView(nullptr)
 {
     // raids tab
     m_raidsView = new QTableView(this);
@@ -139,9 +139,6 @@ MainWindow::MainWindow():
 
     m_disksView->sortByColumn(0, Qt::AscendingOrder);
     m_disksView->setSortingEnabled(true);
-
-    m_settings = new QSettings(QDir::currentPath() + "/mdadm-qt.conf",
-                               QSettings::IniFormat, this);
 
     loadSettings();
 
@@ -269,18 +266,25 @@ void MainWindow::createRaid()
     }
 }
 
+QString MainWindow::getSettingsLocation()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+}
+
 void MainWindow::loadSettings()
 {
-    m_settings->beginGroup("MainWindow");
-    this->setGeometry(m_settings->value("geometry",
-                                        QRect(500, 200, 600, 500)).toRect());
-    m_settings->endGroup();
+    QSettings settings(getSettingsLocation(), QSettings::IniFormat);
+    settings.beginGroup("MainWindow");
+    this->setGeometry(settings.value("geometry",
+                                     QRect(500, 200, 600, 500)).toRect());
+    settings.endGroup();
 }
 
 
 void MainWindow::saveSettings()
 {
-    m_settings->beginGroup("MainWindow");
-    m_settings->setValue("geometry", this->geometry());
-    m_settings->endGroup();
+    QSettings settings(getSettingsLocation(), QSettings::IniFormat);
+    settings.beginGroup("MainWindow");
+    settings.setValue("geometry", this->geometry());
+    settings.endGroup();
 }

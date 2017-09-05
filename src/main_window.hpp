@@ -52,7 +52,6 @@ class MainWindow: public QMainWindow
         QTabWidget* m_viewTabs;
         QTableView* m_raidsView;
         QTableView* m_disksView;
-        QSettings* m_settings;
 
         void contextMenu(const QPoint&);
         bool removeRaid(const QString&);
@@ -60,6 +59,7 @@ class MainWindow: public QMainWindow
         void refreshDisksList();
         void createRaid();
 
+        QString getSettingsLocation();
         void loadSettings();
         void saveSettings();
 };
