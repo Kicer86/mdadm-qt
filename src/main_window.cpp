@@ -21,6 +21,8 @@
 #include "main_window.hpp"
 
 #include <QInputDialog>
+#include <QSettings>
+#include <QStandardPaths>
 #include <QTabWidget>
 #include <QTableView>
 #include <QMenuBar>
@@ -138,6 +140,8 @@ MainWindow::MainWindow():
     m_disksView->sortByColumn(0, Qt::AscendingOrder);
     m_disksView->setSortingEnabled(true);
 
+    loadSettings();
+
     connect(&m_mdadmController, &MDAdmController::raidCreated, this,
             &MainWindow::refreshArraysList);
     connect(&m_mdadmController, &MDAdmController::raidRemoved, this,
@@ -149,7 +153,7 @@ MainWindow::MainWindow():
 
 MainWindow::~MainWindow()
 {
-
+    saveSettings();
 }
 
 
@@ -262,3 +266,26 @@ void MainWindow::createRaid()
     }
 }
 
+QString MainWindow::getSettingsLocation()
+{
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+}
+
+void MainWindow::loadSettings()
+{
+    QSettings settings(getSettingsLocation(), QSettings::IniFormat);
+    settings.beginGroup("MainWindow");
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("state").toByteArray());
+    settings.endGroup();
+}
+
+
+void MainWindow::saveSettings()
+{
+    QSettings settings(getSettingsLocation(), QSettings::IniFormat);
+    settings.beginGroup("MainWindow");
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("state", saveState());
+    settings.endGroup();
+}

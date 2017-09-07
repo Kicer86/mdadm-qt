@@ -30,6 +30,7 @@
 
 class QTabWidget;
 class QTableView;
+class QSettings;
 
 class MainWindow: public QMainWindow
 {
@@ -57,6 +58,10 @@ class MainWindow: public QMainWindow
         void refreshArraysList();
         void refreshDisksList();
         void createRaid();
+
+        QString getSettingsLocation();
+        void loadSettings();
+        void saveSettings();
 };
 
 #endif // MAINWINDOW_HPP
