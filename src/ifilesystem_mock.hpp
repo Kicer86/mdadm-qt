@@ -13,6 +13,7 @@ struct IFileSystemMock : public IFileSystem
     };
 
     MOCK_METHOD2(openFile, std::unique_ptr<IFile>(const QString&, const QIODevice::OpenMode&));
+    MOCK_METHOD1(isDeviceUsed, bool(const QString &));
     MOCK_METHOD3(listDir, std::deque<QString>(const QString&, const char*, QDir::Filters));
 };
 

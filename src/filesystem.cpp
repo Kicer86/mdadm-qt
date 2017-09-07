@@ -20,6 +20,10 @@
 
 #include "filesystem.hpp"
 
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 #include <QDirIterator>
 #include <QFile>
 #include <QString>
@@ -68,6 +72,24 @@ std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path, co
     std::unique_ptr<IFileSystem::IFile> file = std::make_unique<File>(path, mode);
 
     return file;
+}
+
+
+bool FileSystem::isDeviceUsed(const QString& dev_path)
+{
+    bool result = true;
+    
+    if (dev_path.left(5) == "/dev/")
+    {
+        const int fd = open(QFile::encodeName(dev_path), O_RDONLY | O_EXCL);
+        if (fd > 0) 
+        {
+            result = false;
+            close(fd);
+        }
+    }
+    
+    return result;
 }
 
 

@@ -44,6 +44,9 @@ void FakeFileSystem::addFile(const QString& path, const QString& content)
 
         return file;
     }));
+        
+    EXPECT_CALL(m_fs, isDeviceUsed(path))
+        .WillRepeatedly(Return(false));
 }
 
 
@@ -66,6 +69,9 @@ void FakeFileSystem::addInaccessibleFile(const QString& path)
 
         return file;
     }));
+        
+    EXPECT_CALL(m_fs, isDeviceUsed(path))
+        .WillRepeatedly(Return(true));
 }
 
 

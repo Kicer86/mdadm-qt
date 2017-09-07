@@ -17,10 +17,6 @@
  *
  */
 
-#include <errno.h>
-#include <fcntl.h>
-#include <unistd.h>
-
 #include "block_device.hpp"
 #include "ifilesystem.hpp"
 #include "utils.hpp"
@@ -79,9 +75,8 @@ inline unsigned BlockDevice::logicalBlockSize() const
 
 bool BlockDevice::isUsed() const
 {
-
     const QString dev_path("/dev/" + m_name);
-    const bool used = m_fileSystem->openFile(dev_path)->getStream() == nullptr;
+    const bool used = m_fileSystem->isDeviceUsed(dev_path);
 
     return used;
 }
