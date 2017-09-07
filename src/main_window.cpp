@@ -275,8 +275,8 @@ void MainWindow::loadSettings()
 {
     QSettings settings(getSettingsLocation(), QSettings::IniFormat);
     settings.beginGroup("MainWindow");
-    this->setGeometry(settings.value("geometry",
-                                     QRect(500, 200, 600, 500)).toRect());
+    restoreGeometry(settings.value("geometry").toByteArray());
+    restoreState(settings.value("state").toByteArray());
     settings.endGroup();
 }
 
@@ -285,6 +285,7 @@ void MainWindow::saveSettings()
 {
     QSettings settings(getSettingsLocation(), QSettings::IniFormat);
     settings.beginGroup("MainWindow");
-    settings.setValue("geometry", this->geometry());
+    settings.setValue("geometry", saveGeometry());
+    settings.setValue("state", saveState());
     settings.endGroup();
 }
