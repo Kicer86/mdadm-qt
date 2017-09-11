@@ -25,6 +25,7 @@
 #include <QStandardPaths>
 #include <QTabWidget>
 #include <QTableView>
+#include <QTreeView>
 #include <QMenuBar>
 #include <QMessageBox>
 
@@ -86,7 +87,7 @@ MainWindow::MainWindow():
     m_disksView(nullptr)
 {
     // raids tab
-    m_raidsView = new QTableView(this);
+    m_raidsView = new QTreeView(this);
     m_raidsView->setModel(m_raidsModel.model());
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_raidsView->setSelectionMode(QAbstractItemView::SingleSelection);
