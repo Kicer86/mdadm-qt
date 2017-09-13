@@ -29,6 +29,8 @@
 class RaidsModel: public QObject
 {
     public:
+        enum ItemType { Array = Qt::UserRole, Component };
+
         RaidsModel();
         RaidsModel(const RaidsModel &) = delete;
         ~RaidsModel();

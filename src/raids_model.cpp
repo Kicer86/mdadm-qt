@@ -47,6 +47,8 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
         QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
         QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
 
+        raid_device_item->setData(ItemType::Array, Qt::UserRole);
+
         const QList<QStandardItem *> row =
         {
             raid_device_item,
@@ -57,6 +59,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
         for (const auto& blkdev : raid.block_devices)
         {
             QStandardItem* component_item = new QStandardItem(blkdev);
+            component_item->setData(ItemType::Component, Qt::UserRole);
             row.first()->appendRow(component_item);
         }
 

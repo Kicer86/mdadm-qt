@@ -165,21 +165,35 @@ void MainWindow::contextMenu(const QPoint& pos)
     if (!index.isValid())
         return;
 
-    const RaidInfo& raid = m_raidsModel.infoForRow(index.row());
-    const QString& device = raid.raid_device;
+    auto selected_type = static_cast<RaidsModel::ItemType>(
+            index.data(Qt::UserRole).toInt());
 
-    QMenu *raidOptions = new QMenu(this);
-    QAction *actionRemove = new QAction("Remove " + device, this);
-
-    connect(actionRemove, &QAction::triggered,
-            [device, this](bool)
+    if (selected_type == RaidsModel::ItemType::Array)
     {
-        if (!device.isNull())
-            this->removeRaid(device);
-    });
+        const RaidInfo& raid = m_raidsModel.infoForRow(index.row());
+        const QString& device = raid.raid_device;
 
-    raidOptions->addAction(actionRemove);
-    raidOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
+        QMenu *raidOptions = new QMenu(this);
+        QAction *actionRemove = new QAction("Remove " + device, this);
+
+        connect(actionRemove, &QAction::triggered,
+                [device, this](bool)
+        {
+            if (!device.isNull())
+                this->removeRaid(device);
+        });
+
+        raidOptions->addAction(actionRemove);
+        raidOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
+    }
+    else if (selected_type == RaidsModel::ItemType::Component)
+    {
+        QMenu *diskOptions = new QMenu(this);
+        QAction *dummy = new QAction("Dummy", this);
+
+        diskOptions->addAction(dummy);
+        diskOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
+    }
 
 }
 
