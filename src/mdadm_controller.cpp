@@ -244,7 +244,7 @@ bool MDAdmController::markAsFaulty(const QString& raid_device,
 {
     QStringList mdadm_args;
 
-    mdadm_args << raid_device << "--faulty" << component;
+    mdadm_args << raid_device << "--fail" << component;
 
     m_mdadmProcess->execute(mdadm_args, nullResultCallback);
 

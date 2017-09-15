@@ -25,11 +25,15 @@
 
 #include "mdadm_controller.hpp"
 
+struct RaidData
+{
+    const RaidInfo& raid_info;
+    const QString selected_component;
+};
 
 class RaidsModel: public QObject
 {
     public:
-        enum ItemType { Array = Qt::UserRole, Component };
 
         RaidsModel();
         RaidsModel(const RaidsModel &) = delete;
@@ -39,7 +43,7 @@ class RaidsModel: public QObject
 
         void load(const std::vector<RaidInfo> &);
 
-        const RaidInfo& infoForRow(int) const;
+        RaidData infoForIndex(const QModelIndex&) const;
         QAbstractItemModel* model();
 
     private:

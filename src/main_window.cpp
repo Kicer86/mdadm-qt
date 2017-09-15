@@ -165,12 +165,11 @@ void MainWindow::contextMenu(const QPoint& pos)
     if (!index.isValid())
         return;
 
-    auto selected_type = static_cast<RaidsModel::ItemType>(
-            index.data(Qt::UserRole).toInt());
+    const auto raid_data = m_raidsModel.infoForIndex(index);
 
-    if (selected_type == RaidsModel::ItemType::Array)
+    if (raid_data.selected_component.isEmpty())
     {
-        const RaidInfo& raid = m_raidsModel.infoForRow(index.row());
+        const RaidInfo& raid = raid_data.raid_info;
         const QString& device = raid.raid_device;
 
         QMenu *raidOptions = new QMenu(this);
@@ -186,12 +185,23 @@ void MainWindow::contextMenu(const QPoint& pos)
         raidOptions->addAction(actionRemove);
         raidOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
     }
-    else if (selected_type == RaidsModel::ItemType::Component)
+    else
     {
         QMenu *diskOptions = new QMenu(this);
-        QAction *dummy = new QAction("Dummy", this);
+        QAction *actionSetFaulty = new QAction("Set faulty", this);
 
-        diskOptions->addAction(dummy);
+        const RaidInfo& raid = raid_data.raid_info;
+        const QString& raid_device = raid.raid_device;
+        const QString component = raid_data.selected_component;
+
+        connect(actionSetFaulty, &QAction::triggered,
+                [raid_device, component, this](bool)
+        {
+            this->m_mdadmController.markAsFaulty("/dev/" + raid_device,
+                                                 "/dev/" + component);
+        });
+
+        diskOptions->addAction(actionSetFaulty);
         diskOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
     }
 

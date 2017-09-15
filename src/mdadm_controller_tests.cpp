@@ -619,7 +619,7 @@ TEST(MDAdmControllerTest, usesRightParameterForMarkAsFaulty)
 
     const QStringList expected_args = {
         "/dev/md10",
-        "--faulty",
+        "--fail",
         "/dev/sdo"
     };
 
