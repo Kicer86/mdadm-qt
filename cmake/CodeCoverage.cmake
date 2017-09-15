@@ -67,28 +67,43 @@
 #
 #
 
-# Check prereqs
-FIND_PROGRAM( GCOV_PATH gcov )
-FIND_PROGRAM( LCOV_PATH lcov )
-FIND_PROGRAM( GENHTML_PATH genhtml )
-FIND_PROGRAM( GCOVR_PATH gcovr PATHS ${CMAKE_SOURCE_DIR}/tests)
+function(setup_code_coverage)
 
-IF(NOT GCOV_PATH)
-	MESSAGE(FATAL_ERROR "gcov not found! Aborting...")
-ENDIF() # NOT GCOV_PATH
+    # Check prereqs
+    FIND_PROGRAM( GCOV_PATH gcov )
+    FIND_PROGRAM( LCOV_PATH lcov )
+    FIND_PROGRAM( GENHTML_PATH genhtml )
 
-IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
-	IF("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 3)
-		MESSAGE(FATAL_ERROR "Clang version must be 3.0.0 or greater! Aborting...")
-	ENDIF()
-ELSEIF(NOT CMAKE_COMPILER_IS_GNUCXX)
-	MESSAGE(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
-ENDIF() # CHECK VALID COMPILER
+    IF(NOT GCOV_PATH)
+        MESSAGE(WARNING "gcov not found!")
+        return()
+    ENDIF() # NOT GCOV_PATH
 
-IF ( NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Coverage"))
-  MESSAGE( WARNING "Code coverage results with an optimized (non-Debug) build may be misleading" )
-ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
+    IF(NOT LCOV_PATH)
+        MESSAGE(WARNING "lcov not found!")
+        return()
+    ENDIF() # NOT LCOV_PATH
 
+    IF(NOT GENHTML_PATH)
+        MESSAGE(WARNING "genhtml not found!")
+        return()
+    ENDIF() # NOT GENHTML_PATH
+
+    IF("${CMAKE_CXX_COMPILER_ID}" MATCHES "(Apple)?[Cc]lang")
+        IF("${CMAKE_CXX_COMPILER_VERSION}" VERSION_LESS 3)
+            MESSAGE(WARNING "Clang version must be 3.0.0 or greater!")
+            return()
+        ENDIF()
+    ELSEIF(NOT CMAKE_COMPILER_IS_GNUCXX)
+        MESSAGE(WARNING "Compiler is not GNU gcc!")
+        return()
+    ENDIF() # CHECK VALID COMPILER
+
+    IF ( NOT (CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "Coverage"))
+        MESSAGE( WARNING "Code coverage results with an optimized (non-Debug) build may be misleading" )
+    ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
+
+endfunction()
 
 # Param _targetname     The name of new the custom make target
 # Param _testrunner     The name of the target which runs the tests.
@@ -100,13 +115,7 @@ ENDIF() # NOT CMAKE_BUILD_TYPE STREQUAL "Debug"
 #   Pass them in list form, e.g.: "-j;2" for -j 2
 FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname)
 
-	IF(NOT LCOV_PATH)
-		MESSAGE(FATAL_ERROR "lcov not found! Aborting...")
-	ENDIF() # NOT LCOV_PATH
-
-	IF(NOT GENHTML_PATH)
-		MESSAGE(FATAL_ERROR "genhtml not found! Aborting...")
-	ENDIF() # NOT GENHTML_PATH
+    IF (GCOV_PATH AND LCOV_PATH AND GENHTML_PATH)
 
 	SET(coverage_info "${CMAKE_BINARY_DIR}/${_outputname}.info")
 	SET(coverage_cleaned "${coverage_info}.cleaned")
@@ -137,5 +146,7 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname)
 		COMMAND ;
 		COMMENT "Open ./${_outputname}/index.html in your browser to view the coverage report."
 	)
+
+    ENDIF()
 
 ENDFUNCTION() # SETUP_TARGET_FOR_COVERAGE

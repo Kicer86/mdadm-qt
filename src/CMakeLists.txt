@@ -143,6 +143,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
     # test coverage
     include(CodeCoverage)
 
+    setup_code_coverage()
     setup_target_for_coverage(run_unit_tests_code_coverage mdadm_unit_tests_cc coverage)
 
 endif()
