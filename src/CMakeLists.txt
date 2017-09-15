@@ -1,6 +1,8 @@
 
 find_package(Qt5Widgets REQUIRED)
 
+option(RUN_UNIT_TESTS "Run unit test in post build step" ON)
+
 set(SRCS
         device_type_visitor.cpp
         device_type_visitor.hpp
@@ -131,14 +133,17 @@ if(GMOCK_FOUND AND GTEST_FOUND)
     enable_testing()
 
     # run unit tests after all build steps
-    add_custom_command(TARGET mdadm_unit_tests POST_BUILD
-                       COMMAND ctest
-                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    )
+    if(RUN_UNIT_TESTS)
+        add_custom_command(TARGET mdadm_unit_tests POST_BUILD
+                        COMMAND ctest
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        )
+    endif()
 
     # test coverage
     include(CodeCoverage)
 
+    setup_code_coverage()
     setup_target_for_coverage(run_unit_tests_code_coverage mdadm_unit_tests_cc coverage)
 
 endif()
