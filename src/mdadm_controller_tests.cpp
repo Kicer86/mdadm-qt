@@ -611,3 +611,22 @@ TEST(MDAdmControllerTest, listDegradedRaid)
 
     compareListOutput(controller, expectedOutput);
 }
+
+
+TEST(MDAdmControllerTest, usesRightParameterForMarkAsFaulty)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args = {
+        "/dev/md10",
+        "--faulty",
+        "/dev/sdo"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
+                            Return(true)));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.markAsFaulty("/dev/md10", "/dev/sdo");
+}

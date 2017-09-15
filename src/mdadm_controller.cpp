@@ -238,3 +238,15 @@ bool MDAdmController::zeroSuperblock(const QStringList& raid_components)
 
     return true;
 }
+
+bool MDAdmController::markAsFaulty(const QString& raid_device,
+                                   const QString& component)
+{
+    QStringList mdadm_args;
+
+    mdadm_args << raid_device << "--faulty" << component;
+
+    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
+
+    return true;
+}
