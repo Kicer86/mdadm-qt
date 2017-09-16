@@ -60,6 +60,9 @@ class MainWindow: public QMainWindow
         void refreshDisksList();
         void createRaid();
 
+        bool confirmDialog(const QString& title, const QString& message,
+                           const QString& confirmWord);
+
         QString getSettingsLocation();
         void loadSettings();
         void saveSettings();

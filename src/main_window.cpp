@@ -197,8 +197,19 @@ void MainWindow::contextMenu(const QPoint& pos)
         connect(actionSetFaulty, &QAction::triggered,
                 [raid_device, component, this](bool)
         {
-            this->m_mdadmController.markAsFaulty("/dev/" + raid_device,
-                                                 "/dev/" + component);
+            const QString confirmWord("confirm");
+            const QString message(
+                       tr("<b>Warning!</b><br /><br />"
+                       "This operation will mark device <b>%1</b> in RAID"
+                       " <b>%2</b> as faulty.")
+                        .arg(component).arg(raid_device));
+
+            bool ret = confirmDialog(tr("Remove software RAID"),
+                                     message,
+                                     confirmWord);
+            if (ret)
+                this->m_mdadmController.markAsFaulty("/dev/" + raid_device,
+                                                     "/dev/" + component);
         });
 
         diskOptions->addAction(actionSetFaulty);
@@ -209,27 +220,24 @@ void MainWindow::contextMenu(const QPoint& pos)
 
 bool MainWindow::removeRaid(const QString& raidDevice)
 {
-    /* FIXME temporary solution */
-    const QString CONFIRM_TEXT = tr("confirm");
-    bool ret;
 
-    const QString text = QInputDialog::getText(this,
-                       tr("Remove software RAID"),
-                       tr("<b>Warning!</b><br /><br />"
-                          "This operation will remove <b>%1</b> RAID device"
-                          " from the system and clear metadata on all of its "
-                          "components.<br /><br />Please enter <b>%2</b> word"
-                          " to confirm this operation")
-                                         .arg(raidDevice)
-                                         .arg(CONFIRM_TEXT),
-                       QLineEdit::Normal,
-                       "",
-                       &ret);
-     if (ret && text == CONFIRM_TEXT)
-     {
+    const QString confirmWord("create");
+    const QString message(
+               tr("<b>Warning!</b><br /><br />"
+               "This operation will remove <b>%1</b> RAID device"
+               " from the system and clear metadata on all of its "
+               "components.")
+                .arg(raidDevice));
+
+    bool ret = confirmDialog(tr("Remove software RAID"),
+                             message,
+                             confirmWord);
+
+    if (ret)
+    {
         ret = m_mdadmController.removeRaid("/dev/" + raidDevice);
-     }
-     return ret;
+    }
+    return ret;
 }
 
 void MainWindow::refreshArraysList()
@@ -313,4 +321,22 @@ void MainWindow::saveSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.endGroup();
+}
+
+
+bool MainWindow::confirmDialog(const QString &title, const QString& message,
+                               const QString &confirmWord)
+{
+    bool ret = false;
+    QString dialogMessage = message +
+            tr("<br /><br />Please enter <b>%2</b> word to confirm "
+               "this operation.").arg(confirmWord);
+
+    const QString text = QInputDialog::getText(this,
+                                               title,
+                                               dialogMessage,
+                                               QLineEdit::Normal,
+                                               "",
+                                               &ret);
+    return (ret && text == confirmWord);
 }
