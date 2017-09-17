@@ -48,7 +48,9 @@ class RaidsModel: public QObject
 
     private:
         QStandardItemModel m_model;
-        std::vector<RaidInfo> m_infos;
+        std::map<QStandardItem *, RaidInfo> m_infos;
+        
+        const RaidInfo& infoFor(const QModelIndex &) const;
 };
 
 #endif // RAIDSMODEL_HPP

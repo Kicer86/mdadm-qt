@@ -301,12 +301,12 @@ void MainWindow::createRaid()
 
 QString MainWindow::getSettingsLocation()
 {
-    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    return QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QDir::separator();
 }
 
 void MainWindow::loadSettings()
 {
-    QSettings settings(getSettingsLocation(), QSettings::IniFormat);
+    QSettings settings(getSettingsLocation() + "config", QSettings::IniFormat);
     settings.beginGroup("MainWindow");
     restoreGeometry(settings.value("geometry").toByteArray());
     restoreState(settings.value("state").toByteArray());
@@ -316,7 +316,7 @@ void MainWindow::loadSettings()
 
 void MainWindow::saveSettings()
 {
-    QSettings settings(getSettingsLocation(), QSettings::IniFormat);
+    QSettings settings(getSettingsLocation() + "config", QSettings::IniFormat);
     settings.beginGroup("MainWindow");
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
