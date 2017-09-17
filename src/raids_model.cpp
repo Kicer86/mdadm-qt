@@ -37,7 +37,7 @@ RaidsModel::~RaidsModel()
 
 void RaidsModel::load(const std::vector<RaidInfo>& raids)
 {
-    m_infos = raids;
+    m_infos.clear();
     const int rows = m_model.rowCount();
     m_model.removeRows(0, rows);     // .clear() would clear headers also
 
@@ -47,6 +47,8 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
         QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
         QStandardItem* raid_blk_devices_item = new QStandardItem(raid.block_devices.join(", "));
 
+        m_infos.emplace(raid_device_item, raid);
+        
         const QList<QStandardItem *> row = { raid_device_item, raid_type_item, raid_blk_devices_item };
         m_model.appendRow(row);
     }
@@ -57,7 +59,14 @@ const RaidInfo& RaidsModel::infoForRow(int row) const
 {
     assert(row < m_infos.size());
 
-    return m_infos[row];
+    const QModelIndex idx = m_model.index(row, 0, QModelIndex());
+    QStandardItem* item = m_model.itemFromIndex(idx);    
+    assert(item != nullptr);
+    
+    const auto it = m_infos.find(item);
+    assert(it != m_infos.end());
+    
+    return it->second;
 }
 
 
