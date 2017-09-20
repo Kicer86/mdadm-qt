@@ -204,7 +204,7 @@ void MainWindow::contextMenu(const QPoint& pos)
                        " <b>%2</b> as faulty.")
                         .arg(component).arg(raid_device));
 
-            bool ret = confirmDialog(tr("Remove software RAID"),
+            bool ret = confirmDialog(tr("Mark device as faulty"),
                                      message,
                                      confirmWord);
             if (ret)
@@ -221,7 +221,7 @@ void MainWindow::contextMenu(const QPoint& pos)
 bool MainWindow::removeRaid(const QString& raidDevice)
 {
 
-    const QString confirmWord("create");
+    const QString confirmWord("remove");
     const QString message(
                tr("<b>Warning!</b><br /><br />"
                "This operation will remove <b>%1</b> RAID device"
