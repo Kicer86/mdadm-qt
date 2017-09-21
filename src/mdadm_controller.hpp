@@ -30,7 +30,7 @@
 struct IMDAdmProcess;
 struct IFileSystem;
 
-struct RaidComponent
+struct RaidComponentInfo
 {
     enum class Type {
         Normal,
@@ -45,19 +45,19 @@ struct RaidComponent
     Type type;
     int descriptor_index;
 
-    RaidComponent(const QString& _name, Type _type, int _descr_nr) :
+    RaidComponentInfo(const QString& _name, Type _type, int _descr_nr) :
         name(_name),
         type(_type),
         descriptor_index(_descr_nr)
     {
     }
 
-    RaidComponent(const RaidComponent &) = default;
-    RaidComponent(RaidComponent &&) = default;
-    RaidComponent& operator=(const RaidComponent &) = default;
-    RaidComponent& operator=(RaidComponent &&) = default;
+    RaidComponentInfo(const RaidComponentInfo &) = default;
+    RaidComponentInfo(RaidComponentInfo &&) = default;
+    RaidComponentInfo& operator=(const RaidComponentInfo &) = default;
+    RaidComponentInfo& operator=(RaidComponentInfo &&) = default;
 
-    bool operator==(const RaidComponent&) const;
+    bool operator==(const RaidComponentInfo&) const;
 };
 
 struct RaidInfo
@@ -68,11 +68,11 @@ struct RaidInfo
      */
 
     QString raid_device;
-    QList<RaidComponent> block_devices;
+    QList<RaidComponentInfo> block_devices;
     QString raid_type;
 
     RaidInfo (const QString& _raid_device,
-              const QList<RaidComponent>& _block_devices,
+              const QList<RaidComponentInfo>& _block_devices,
               const QString& _type):
         raid_device(_raid_device),
         block_devices(_block_devices),

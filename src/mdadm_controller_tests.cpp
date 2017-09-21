@@ -494,9 +494,9 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(nullptr, &filesystem);
 
-    const QList<RaidComponent> components =
+    const QList<RaidComponentInfo> components =
     {
-        RaidComponent("sdf", RaidComponent::Type::Spare, 1)
+        RaidComponentInfo("sdf", RaidComponentInfo::Type::Spare, 1)
     };
     const std::vector<RaidInfo> expectedOutput =
     {
@@ -524,11 +524,11 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(nullptr, &filesystem);
 
-    const QList<RaidComponent> components =
+    const QList<RaidComponentInfo> components =
     {
-        RaidComponent("sdb", RaidComponent::Type::Normal, 1),
-        RaidComponent("sdc", RaidComponent::Type::Normal, 3),
-        RaidComponent("sdd", RaidComponent::Type::Normal, 0),
+        RaidComponentInfo("sdb", RaidComponentInfo::Type::Normal, 1),
+        RaidComponentInfo("sdc", RaidComponentInfo::Type::Normal, 3),
+        RaidComponentInfo("sdd", RaidComponentInfo::Type::Normal, 0),
     };
     const std::vector<RaidInfo> expectedOutput =
     {
@@ -563,22 +563,22 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(nullptr, &filesystem);
 
-    const QList<RaidComponent> components1 =
+    const QList<RaidComponentInfo> components1 =
     {
-        RaidComponent("sdm", RaidComponent::Type::Normal, 1),
-        RaidComponent("sdl", RaidComponent::Type::Normal, 0),
+        RaidComponentInfo("sdm", RaidComponentInfo::Type::Normal, 1),
+        RaidComponentInfo("sdl", RaidComponentInfo::Type::Normal, 0),
     };
-    const QList<RaidComponent> components2 =
+    const QList<RaidComponentInfo> components2 =
     {
-        RaidComponent("sdk", RaidComponent::Type::Normal, 3),
-        RaidComponent("sdj", RaidComponent::Type::Normal, 2),
-        RaidComponent("sdi", RaidComponent::Type::Normal, 1),
-        RaidComponent("sdh", RaidComponent::Type::Normal, 0),
+        RaidComponentInfo("sdk", RaidComponentInfo::Type::Normal, 3),
+        RaidComponentInfo("sdj", RaidComponentInfo::Type::Normal, 2),
+        RaidComponentInfo("sdi", RaidComponentInfo::Type::Normal, 1),
+        RaidComponentInfo("sdh", RaidComponentInfo::Type::Normal, 0),
     };
-    const QList<RaidComponent> components3=
+    const QList<RaidComponentInfo> components3=
     {
-        RaidComponent("sdg", RaidComponent::Type::Normal, 1),
-        RaidComponent("sdf", RaidComponent::Type::Normal, 0),
+        RaidComponentInfo("sdg", RaidComponentInfo::Type::Normal, 1),
+        RaidComponentInfo("sdf", RaidComponentInfo::Type::Normal, 0),
     };
     const std::vector<RaidInfo> expectedOutput =
     {
@@ -631,11 +631,11 @@ TEST(MDAdmControllerTest, listDegradedRaid)
 
     MDAdmController controller(nullptr, &filesystem);
 
-    const QList<RaidComponent> components =
+    const QList<RaidComponentInfo> components =
     {
-        RaidComponent("sdk", RaidComponent::Type::Normal, 3),
-        RaidComponent("sdj", RaidComponent::Type::Normal, 2),
-        RaidComponent("sdh", RaidComponent::Type::Normal, 0),
+        RaidComponentInfo("sdk", RaidComponentInfo::Type::Normal, 3),
+        RaidComponentInfo("sdj", RaidComponentInfo::Type::Normal, 2),
+        RaidComponentInfo("sdh", RaidComponentInfo::Type::Normal, 0),
     };
     const std::vector<RaidInfo> expectedOutput =
     {

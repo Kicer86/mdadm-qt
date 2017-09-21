@@ -61,7 +61,7 @@ namespace
     void nullResultCallback(const QByteArray &, bool,int) {  }    
 }
 
-bool RaidComponent::operator==(const RaidComponent& other) const
+bool RaidComponentInfo::operator==(const RaidComponentInfo& other) const
 {
     return this->name == other.name &&
            this->type == other.type &&
@@ -126,20 +126,20 @@ bool MDAdmController::listRaids(const ListResult& result)
                 const QStringList devices_list_raw = devices.split(" ");
 
                 //drop role numbers (convert sda1[0] to sda1)
-                QList<RaidComponent> devices_list;
+                QList<RaidComponentInfo> devices_list;
                 for(const QString& device_with_role: devices_list_raw)
                 {
                     if (device_info.exactMatch(device_with_role)) {
                         QString device = device_info.cap(1);
                         int descr_nr = device_info.cap(2).toInt();
                         QString tmp = device_info.cap(3);
-                        RaidComponent::Type type =
+                        RaidComponentInfo::Type type =
                                 (tmp.isEmpty() ?
-                                     RaidComponent::Type::Normal :
-                                     static_cast<RaidComponent::Type>(
+                                     RaidComponentInfo::Type::Normal :
+                                     static_cast<RaidComponentInfo::Type>(
                                          tmp.toStdString().c_str()[0]));
                         devices_list.append(
-                                    RaidComponent(device, type, descr_nr)
+                                    RaidComponentInfo(device, type, descr_nr)
                                     );
                     }
                 }

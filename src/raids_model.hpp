@@ -45,14 +45,14 @@ class RaidsModel: public QObject
 
         ItemType getTypeFor(const QModelIndex &) const;
         const RaidInfo& infoForRaid(const QModelIndex &) const;
-        const RaidComponent& infoForComponent(const QModelIndex &) const;
+        const RaidComponentInfo& infoForComponent(const QModelIndex &) const;
         QAbstractItemModel* model();
 
     private:
         QStandardItemModel m_model;
         std::map<QStandardItem *, RaidInfo> m_infos;
-        std::map<QStandardItem *, RaidComponent> m_componentInfos;
-        const QMap<RaidComponent::Type, QString> m_diskType;
+        std::map<QStandardItem *, RaidComponentInfo> m_componentInfos;
+        const QMap<RaidComponentInfo::Type, QString> m_diskType;
 };
 
 #endif // RAIDSMODEL_HPP

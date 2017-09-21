@@ -192,7 +192,7 @@ void MainWindow::contextMenu(const QPoint& pos)
 
         const QModelIndex raidIndex = index.parent();
         const RaidInfo& raid = m_raidsModel.infoForRaid(raidIndex);
-        const RaidComponent& componentInfo = m_raidsModel.infoForComponent(index);
+        const RaidComponentInfo& componentInfo = m_raidsModel.infoForComponent(index);
         const QString& raid_device = raid.raid_device;
         const QString component = componentInfo.name;
 

@@ -27,12 +27,12 @@ RaidsModel::RaidsModel():
     m_model(), 
     m_infos(), 
     m_componentInfos(),
-    m_diskType({{ RaidComponent::Type::Normal, "active" },
-                { RaidComponent::Type::Faulty, "faulty" },
-                { RaidComponent::Type::Journal, "journal" },
-                { RaidComponent::Type::Replacement, "replacement" },
-                { RaidComponent::Type::Spare, "spare" },
-                { RaidComponent::Type::WriteMostly, "write mostly" },
+    m_diskType({{ RaidComponentInfo::Type::Normal, "active" },
+                { RaidComponentInfo::Type::Faulty, "faulty" },
+                { RaidComponentInfo::Type::Journal, "journal" },
+                { RaidComponentInfo::Type::Replacement, "replacement" },
+                { RaidComponentInfo::Type::Spare, "spare" },
+                { RaidComponentInfo::Type::WriteMostly, "write mostly" },
                })
 {
     m_model.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
@@ -117,7 +117,7 @@ const RaidInfo& RaidsModel::infoForRaid(const QModelIndex& index) const
 }
 
 
-const RaidComponent& RaidsModel::infoForComponent(const QModelIndex& index) const
+const RaidComponentInfo& RaidsModel::infoForComponent(const QModelIndex& index) const
 {
     assert(index.isValid());
     assert(getTypeFor(index) == Component);
@@ -130,7 +130,7 @@ const RaidComponent& RaidsModel::infoForComponent(const QModelIndex& index) cons
     const auto it = m_componentInfos.find(item);
     assert(it != m_componentInfos.end());
             
-    const RaidComponent& info = it->second;
+    const RaidComponentInfo& info = it->second;
     
     return info;    
 }
