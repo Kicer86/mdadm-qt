@@ -118,6 +118,16 @@ QAbstractItemModel* RaidsModel::model()
 }
 
 
+RaidsModel::ItemType RaidsModel::getTypeFor(const QModelIndex& index) const
+{
+    const ItemType result = index.parent().isValid()? 
+        ItemType::RaidComponent: 
+        Raid;
+    
+    return result;
+}
+
+
 const RaidInfo& RaidsModel::infoFor(const QModelIndex& index) const
 {
     QStandardItem* item = m_model.itemFromIndex(index);    

@@ -34,7 +34,12 @@ struct RaidData
 class RaidsModel: public QObject
 {
     public:
-
+        enum ItemType
+        {
+            Raid,
+            RaidComponent,
+        };
+        
         RaidsModel();
         RaidsModel(const RaidsModel &) = delete;
         ~RaidsModel();
@@ -50,7 +55,8 @@ class RaidsModel: public QObject
         QStandardItemModel m_model;
         std::map<QStandardItem *, RaidInfo> m_infos;
         const QMap<RaidComponent::Type, QString> m_diskType;
-        
+
+        ItemType getTypeFor(const QModelIndex &) const;
         const RaidInfo& infoFor(const QModelIndex &) const;
 };
 
