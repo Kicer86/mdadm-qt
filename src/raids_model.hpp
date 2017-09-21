@@ -49,6 +49,7 @@ class RaidsModel: public QObject
     private:
         QStandardItemModel m_model;
         std::map<QStandardItem *, RaidInfo> m_infos;
+        const QMap<RaidComponent::Type, QString> m_diskType;
         
         const RaidInfo& infoFor(const QModelIndex &) const;
 };

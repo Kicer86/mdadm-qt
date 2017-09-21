@@ -61,6 +61,13 @@ namespace
     void nullResultCallback(const QByteArray &, bool,int) {  }    
 }
 
+bool RaidComponent::operator==(const RaidComponent& other) const
+{
+    return this->name == other.name &&
+           this->type == other.type &&
+           this->descriptor_index == other.descriptor_index;
+}
+
 bool RaidInfo::operator==(const RaidInfo &other) const
 {
     return this->block_devices == other.block_devices &&
@@ -103,6 +110,8 @@ bool MDAdmController::listRaids(const ListResult& result)
         // and  http://doc.qt.io/qt-5/qfile.html#details
         // for details
 
+        const QRegExp device_info("([a-zA-Z0-9]+)\\[([0-9]+)\\](?:\\(([A-Z])\\))?");
+
         for(QString outputLine = mdstat_stream->readLine();
             outputLine.isNull() == false;
             outputLine = mdstat_stream->readLine())
@@ -117,13 +126,22 @@ bool MDAdmController::listRaids(const ListResult& result)
                 const QStringList devices_list_raw = devices.split(" ");
 
                 //drop role numbers (convert sda1[0] to sda1)
-                QStringList devices_list;
+                QList<RaidComponent> devices_list;
                 for(const QString& device_with_role: devices_list_raw)
                 {
-                    const int l = device_with_role.lastIndexOf('[');
-                    const QString device = device_with_role.left(l);
-
-                    devices_list.append(device);
+                    if (device_info.exactMatch(device_with_role)) {
+                        QString device = device_info.cap(1);
+                        int descr_nr = device_info.cap(2).toInt();
+                        QString tmp = device_info.cap(3);
+                        RaidComponent::Type type =
+                                (tmp.isEmpty() ?
+                                     RaidComponent::Type::Normal :
+                                     static_cast<RaidComponent::Type>(
+                                         tmp.toStdString().c_str()[0]));
+                        devices_list.append(
+                                    RaidComponent(device, type, descr_nr)
+                                    );
+                    }
                 }
 
                 results.emplace_back(dev, devices_list, type);

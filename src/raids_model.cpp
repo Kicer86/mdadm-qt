@@ -23,7 +23,14 @@
 #include <cassert>
 
 
-RaidsModel::RaidsModel(): m_model(), m_infos()
+RaidsModel::RaidsModel(): m_model(), m_infos(),
+    m_diskType({{ RaidComponent::Type::Normal, "active" },
+                { RaidComponent::Type::Faulty, "faulty" },
+                { RaidComponent::Type::Journal, "journal" },
+                { RaidComponent::Type::Replacement, "replacement" },
+                { RaidComponent::Type::Spare, "spare" },
+                { RaidComponent::Type::WriteMostly, "write mostly" },
+               })
 {
     m_model.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
 }
@@ -56,8 +63,18 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
 
         for (const auto& blkdev : raid.block_devices)
         {
-            QStandardItem* component_item = new QStandardItem(blkdev);
-            row.first()->appendRow(component_item);
+            QStandardItem* component_item = new QStandardItem(blkdev.name);
+            QStandardItem* component_status =
+                    new QStandardItem(m_diskType[blkdev.type]);
+
+            const QList<QStandardItem *> leaf =
+            {
+                component_item,
+                new QStandardItem(),
+                component_status
+            };
+
+            row.first()->appendRow(leaf);
         }
 
         m_infos.emplace(raid_device_item, raid);
@@ -80,7 +97,7 @@ RaidData RaidsModel::infoForIndex(const QModelIndex& index) const
         
         RaidData data = {
             info,
-            info.block_devices[index.row()]
+            info.block_devices[index.row()].name
         };
         return data;
     }

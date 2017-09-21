@@ -30,14 +30,49 @@
 struct IMDAdmProcess;
 struct IFileSystem;
 
+struct RaidComponent
+{
+    enum class Type {
+        Normal,
+        WriteMostly = 'W',
+        Journal = 'J',
+        Faulty = 'F',
+        Spare = 'S',
+        Replacement ='R',
+    };
+
+    QString name;
+    Type type;
+    int descriptor_index;
+
+    RaidComponent(const QString& _name, Type _type, int _descr_nr) :
+        name(_name),
+        type(_type),
+        descriptor_index(_descr_nr)
+    {
+    }
+
+    RaidComponent(const RaidComponent &) = default;
+    RaidComponent(RaidComponent &&) = default;
+    RaidComponent& operator=(const RaidComponent &) = default;
+    RaidComponent& operator=(RaidComponent &&) = default;
+
+    bool operator==(const RaidComponent&) const;
+};
+
 struct RaidInfo
 {
+    /*
+     * device types in mdstat:
+     * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/md/md.c#n7711
+     */
+
     QString raid_device;
-    QStringList block_devices;
+    QList<RaidComponent> block_devices;
     QString raid_type;
 
     RaidInfo (const QString& _raid_device,
-              const QStringList& _block_devices,
+              const QList<RaidComponent>& _block_devices,
               const QString& _type):
         raid_device(_raid_device),
         block_devices(_block_devices),
