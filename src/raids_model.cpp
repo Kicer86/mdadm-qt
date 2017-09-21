@@ -23,7 +23,10 @@
 #include <cassert>
 
 
-RaidsModel::RaidsModel(): m_model(), m_infos(),
+RaidsModel::RaidsModel(): 
+    m_model(), 
+    m_infos(), 
+    m_componentInfos(),
     m_diskType({{ RaidComponent::Type::Normal, "active" },
                 { RaidComponent::Type::Faulty, "faulty" },
                 { RaidComponent::Type::Journal, "journal" },
@@ -45,6 +48,7 @@ RaidsModel::~RaidsModel()
 void RaidsModel::load(const std::vector<RaidInfo>& raids)
 {
     m_infos.clear();
+    m_componentInfos.clear();
     const int rows = m_model.rowCount();
     m_model.removeRows(0, rows);     // .clear() would clear headers also
 
@@ -73,12 +77,12 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
                 new QStandardItem(),
                 component_status
             };
-
+            
+            m_componentInfos.emplace(component_item, blkdev);
             row.first()->appendRow(leaf);
         }
 
-        m_infos.emplace(raid_device_item, raid);
-        
+        m_infos.emplace(raid_device_item, raid);        
         m_model.appendRow(row);
     }
 }
@@ -87,54 +91,52 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
 RaidsModel::ItemType RaidsModel::getTypeFor(const QModelIndex& index) const
 {
     const ItemType result = index.parent().isValid()? 
-        ItemType::RaidComponent: 
+        ItemType::Component: 
         Raid;
     
     return result;
 }
 
 
-RaidData RaidsModel::infoForIndex(const QModelIndex& index) const
+const RaidInfo& RaidsModel::infoForRaid(const QModelIndex& index) const
 {
     assert(index.isValid());
+    assert(getTypeFor(index) == Raid);
 
-    auto parent = index.parent();
+    const QModelIndex first_in_row = index.sibling(index.row(), 0);    
+    
+    QStandardItem* item = m_model.itemFromIndex(first_in_row);    
+    assert(item != nullptr);
+    
+    const auto it = m_infos.find(item);
+    assert(it != m_infos.end());
+            
+    const RaidInfo& info = it->second;
+    
+    return info;    
+}
 
-    if (parent.isValid()) /* this is RAID component */
-    {        
-        const QModelIndex parent = index.parent();
-        const RaidInfo& info = infoFor(parent);        
-        
-        RaidData data = {
-            info,
-            info.block_devices[index.row()].name
-        };
-        return data;
-    }
-    else
-    {
-        const QModelIndex first_in_row = index.sibling(index.row(), 0);
-        const RaidInfo& info = infoFor(first_in_row);        
-        
-        RaidData data = { info, QString() };
-        return data;
-    }
+
+const RaidComponent& RaidsModel::infoForComponent(const QModelIndex& index) const
+{
+    assert(index.isValid());
+    assert(getTypeFor(index) == Component);
+    
+    const QModelIndex first_in_row = index.sibling(index.row(), 0);    
+    
+    QStandardItem* item = m_model.itemFromIndex(first_in_row);    
+    assert(item != nullptr);
+    
+    const auto it = m_componentInfos.find(item);
+    assert(it != m_componentInfos.end());
+            
+    const RaidComponent& info = it->second;
+    
+    return info;    
 }
 
 
 QAbstractItemModel* RaidsModel::model()
 {
     return &m_model;
-}
-
-
-const RaidInfo& RaidsModel::infoFor(const QModelIndex& index) const
-{
-    QStandardItem* item = m_model.itemFromIndex(index);    
-    assert(item != nullptr);
-    
-    const auto it = m_infos.find(item);
-    assert(it != m_infos.end());
-        
-    return it->second;
 }

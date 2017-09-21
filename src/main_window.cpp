@@ -165,11 +165,11 @@ void MainWindow::contextMenu(const QPoint& pos)
     if (!index.isValid())
         return;
 
-    const auto raid_data = m_raidsModel.infoForIndex(index);
+    const RaidsModel::ItemType type = m_raidsModel.getTypeFor(index);
 
-    if (raid_data.selected_component.isEmpty())
-    {
-        const RaidInfo& raid = raid_data.raid_info;
+    if (type == RaidsModel::Raid)
+    {        
+        const RaidInfo& raid = m_raidsModel.infoForRaid(index);
         const QString& device = raid.raid_device;
 
         QMenu *raidOptions = new QMenu(this);
@@ -190,9 +190,11 @@ void MainWindow::contextMenu(const QPoint& pos)
         QMenu *diskOptions = new QMenu(this);
         QAction *actionSetFaulty = new QAction("Set faulty", this);
 
-        const RaidInfo& raid = raid_data.raid_info;
+        const QModelIndex raidIndex = index.parent();
+        const RaidInfo& raid = m_raidsModel.infoForRaid(raidIndex);
+        const RaidComponent& componentInfo = m_raidsModel.infoForComponent(index);
         const QString& raid_device = raid.raid_device;
-        const QString component = raid_data.selected_component;
+        const QString component = componentInfo.name;
 
         connect(actionSetFaulty, &QAction::triggered,
                 [raid_device, component, this](bool)

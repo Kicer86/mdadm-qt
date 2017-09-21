@@ -25,11 +25,6 @@
 
 #include "mdadm_controller.hpp"
 
-struct RaidData
-{
-    const RaidInfo& raid_info;
-    const QString selected_component;
-};
 
 class RaidsModel: public QObject
 {
@@ -37,7 +32,7 @@ class RaidsModel: public QObject
         enum ItemType
         {
             Raid,
-            RaidComponent,
+            Component,
         };
         
         RaidsModel();
@@ -49,15 +44,15 @@ class RaidsModel: public QObject
         void load(const std::vector<RaidInfo> &);
 
         ItemType getTypeFor(const QModelIndex &) const;
-        RaidData infoForIndex(const QModelIndex&) const;
+        const RaidInfo& infoForRaid(const QModelIndex &) const;
+        const RaidComponent& infoForComponent(const QModelIndex &) const;
         QAbstractItemModel* model();
 
     private:
         QStandardItemModel m_model;
         std::map<QStandardItem *, RaidInfo> m_infos;
+        std::map<QStandardItem *, RaidComponent> m_componentInfos;
         const QMap<RaidComponent::Type, QString> m_diskType;
-
-        const RaidInfo& infoFor(const QModelIndex &) const;
 };
 
 #endif // RAIDSMODEL_HPP
