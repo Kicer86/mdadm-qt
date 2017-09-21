@@ -84,6 +84,16 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
 }
 
 
+RaidsModel::ItemType RaidsModel::getTypeFor(const QModelIndex& index) const
+{
+    const ItemType result = index.parent().isValid()? 
+        ItemType::RaidComponent: 
+        Raid;
+    
+    return result;
+}
+
+
 RaidData RaidsModel::infoForIndex(const QModelIndex& index) const
 {
     assert(index.isValid());
@@ -115,16 +125,6 @@ RaidData RaidsModel::infoForIndex(const QModelIndex& index) const
 QAbstractItemModel* RaidsModel::model()
 {
     return &m_model;
-}
-
-
-RaidsModel::ItemType RaidsModel::getTypeFor(const QModelIndex& index) const
-{
-    const ItemType result = index.parent().isValid()? 
-        ItemType::RaidComponent: 
-        Raid;
-    
-    return result;
 }
 
 

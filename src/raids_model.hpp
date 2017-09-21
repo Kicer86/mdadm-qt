@@ -48,6 +48,7 @@ class RaidsModel: public QObject
 
         void load(const std::vector<RaidInfo> &);
 
+        ItemType getTypeFor(const QModelIndex &) const;
         RaidData infoForIndex(const QModelIndex&) const;
         QAbstractItemModel* model();
 
@@ -56,7 +57,6 @@ class RaidsModel: public QObject
         std::map<QStandardItem *, RaidInfo> m_infos;
         const QMap<RaidComponent::Type, QString> m_diskType;
 
-        ItemType getTypeFor(const QModelIndex &) const;
         const RaidInfo& infoFor(const QModelIndex &) const;
 };
 
