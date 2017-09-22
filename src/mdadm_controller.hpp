@@ -126,6 +126,7 @@ class MDAdmController: public QObject
         bool stopRaid(const QString& raid_device);
         bool zeroSuperblock(const QStringList& raid_components);
         bool markAsFaulty(const QString& raid_device, const QString& component);
+        bool reAdd(const QString& raid_device, const QString& component);
 
     private:
         IMDAdmProcess* m_mdadmProcess;

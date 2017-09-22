@@ -268,3 +268,15 @@ bool MDAdmController::markAsFaulty(const QString& raid_device,
 
     return true;
 }
+
+bool MDAdmController::reAdd(const QString& raid_device,
+                            const QString& component)
+{
+    QStringList mdadm_args;
+
+    mdadm_args << raid_device << "--re-add" << component;
+
+    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
+
+    return true;
+}
