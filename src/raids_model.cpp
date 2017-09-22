@@ -23,7 +23,17 @@
 #include <cassert>
 
 
-RaidsModel::RaidsModel(): m_model(), m_infos()
+RaidsModel::RaidsModel(): 
+    m_model(), 
+    m_infos(), 
+    m_componentInfos(),
+    m_diskType({{ RaidComponentInfo::Type::Normal, "active" },
+                { RaidComponentInfo::Type::Faulty, "faulty" },
+                { RaidComponentInfo::Type::Journal, "journal" },
+                { RaidComponentInfo::Type::Replacement, "replacement" },
+                { RaidComponentInfo::Type::Spare, "spare" },
+                { RaidComponentInfo::Type::WriteMostly, "write mostly" },
+               })
 {
     m_model.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
 }
@@ -38,6 +48,7 @@ RaidsModel::~RaidsModel()
 void RaidsModel::load(const std::vector<RaidInfo>& raids)
 {
     m_infos.clear();
+    m_componentInfos.clear();
     const int rows = m_model.rowCount();
     m_model.removeRows(0, rows);     // .clear() would clear headers also
 
@@ -45,28 +56,83 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
     {
         QStandardItem* raid_device_item = new QStandardItem(raid.raid_device);
         QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
-        QStandardItem* raid_blk_devices_item = new QStandardItem(raid.block_devices.join(", "));
+        QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
 
-        m_infos.emplace(raid_device_item, raid);
-        
-        const QList<QStandardItem *> row = { raid_device_item, raid_type_item, raid_blk_devices_item };
+        const QList<QStandardItem *> row =
+        {
+            raid_device_item,
+            raid_type_item,
+            raid_status,
+        };
+
+        for (const auto& blkdev : raid.block_devices)
+        {
+            QStandardItem* component_item = new QStandardItem(blkdev.name);
+            QStandardItem* component_status =
+                    new QStandardItem(m_diskType[blkdev.type]);
+
+            const QList<QStandardItem *> leaf =
+            {
+                component_item,
+                new QStandardItem(),
+                component_status
+            };
+            
+            m_componentInfos.emplace(component_item, blkdev);
+            row.first()->appendRow(leaf);
+        }
+
+        m_infos.emplace(raid_device_item, raid);        
         m_model.appendRow(row);
     }
 }
 
 
-const RaidInfo& RaidsModel::infoForRow(int row) const
+RaidsModel::ItemType RaidsModel::getTypeFor(const QModelIndex& index) const
 {
-    assert(row < m_infos.size());
+    const ItemType result = index.parent().isValid()? 
+        ItemType::Component: 
+        Raid;
+    
+    return result;
+}
 
-    const QModelIndex idx = m_model.index(row, 0, QModelIndex());
-    QStandardItem* item = m_model.itemFromIndex(idx);    
+
+const RaidInfo& RaidsModel::infoForRaid(const QModelIndex& index) const
+{
+    assert(index.isValid());
+    assert(getTypeFor(index) == Raid);
+
+    const QModelIndex first_in_row = index.sibling(index.row(), 0);    
+    
+    QStandardItem* item = m_model.itemFromIndex(first_in_row);    
     assert(item != nullptr);
     
     const auto it = m_infos.find(item);
     assert(it != m_infos.end());
+            
+    const RaidInfo& info = it->second;
     
-    return it->second;
+    return info;    
+}
+
+
+const RaidComponentInfo& RaidsModel::infoForComponent(const QModelIndex& index) const
+{
+    assert(index.isValid());
+    assert(getTypeFor(index) == Component);
+    
+    const QModelIndex first_in_row = index.sibling(index.row(), 0);    
+    
+    QStandardItem* item = m_model.itemFromIndex(first_in_row);    
+    assert(item != nullptr);
+    
+    const auto it = m_componentInfos.find(item);
+    assert(it != m_componentInfos.end());
+            
+    const RaidComponentInfo& info = it->second;
+    
+    return info;    
 }
 
 

@@ -30,6 +30,7 @@
 
 class QTabWidget;
 class QTableView;
+class QTreeView;
 class QSettings;
 
 class MainWindow: public QMainWindow
@@ -50,7 +51,7 @@ class MainWindow: public QMainWindow
         RaidsModel m_raidsModel;
         QStandardItemModel m_disksModel;
         QTabWidget* m_viewTabs;
-        QTableView* m_raidsView;
+        QTreeView* m_raidsView;
         QTableView* m_disksView;
 
         void contextMenu(const QPoint&);
@@ -58,6 +59,9 @@ class MainWindow: public QMainWindow
         void refreshArraysList();
         void refreshDisksList();
         void createRaid();
+
+        bool confirmDialog(const QString& title, const QString& message,
+                           const QString& confirmWord);
 
         QString getSettingsLocation();
         void loadSettings();

@@ -30,14 +30,49 @@
 struct IMDAdmProcess;
 struct IFileSystem;
 
+struct RaidComponentInfo
+{
+    enum class Type {
+        Normal,
+        WriteMostly = 'W',
+        Journal = 'J',
+        Faulty = 'F',
+        Spare = 'S',
+        Replacement ='R',
+    };
+
+    QString name;
+    Type type;
+    int descriptor_index;
+
+    RaidComponentInfo(const QString& _name, Type _type, int _descr_nr) :
+        name(_name),
+        type(_type),
+        descriptor_index(_descr_nr)
+    {
+    }
+
+    RaidComponentInfo(const RaidComponentInfo &) = default;
+    RaidComponentInfo(RaidComponentInfo &&) = default;
+    RaidComponentInfo& operator=(const RaidComponentInfo &) = default;
+    RaidComponentInfo& operator=(RaidComponentInfo &&) = default;
+
+    bool operator==(const RaidComponentInfo&) const;
+};
+
 struct RaidInfo
 {
+    /*
+     * device types in mdstat:
+     * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/md/md.c#n7711
+     */
+
     QString raid_device;
-    QStringList block_devices;
+    QList<RaidComponentInfo> block_devices;
     QString raid_type;
 
     RaidInfo (const QString& _raid_device,
-              const QStringList& _block_devices,
+              const QList<RaidComponentInfo>& _block_devices,
               const QString& _type):
         raid_device(_raid_device),
         block_devices(_block_devices),
@@ -90,6 +125,8 @@ class MDAdmController: public QObject
         bool removeRaid(const QString& raid_device);
         bool stopRaid(const QString& raid_device);
         bool zeroSuperblock(const QStringList& raid_components);
+        bool markAsFaulty(const QString& raid_device, const QString& component);
+        bool reAdd(const QString& raid_device, const QString& component);
 
     private:
         IMDAdmProcess* m_mdadmProcess;

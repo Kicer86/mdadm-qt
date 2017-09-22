@@ -25,6 +25,7 @@
 #include <QStandardPaths>
 #include <QTabWidget>
 #include <QTableView>
+#include <QTreeView>
 #include <QMenuBar>
 #include <QMessageBox>
 
@@ -86,7 +87,7 @@ MainWindow::MainWindow():
     m_disksView(nullptr)
 {
     // raids tab
-    m_raidsView = new QTableView(this);
+    m_raidsView = new QTreeView(this);
     m_raidsView->setModel(m_raidsModel.model());
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_raidsView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -164,47 +165,95 @@ void MainWindow::contextMenu(const QPoint& pos)
     if (!index.isValid())
         return;
 
-    const RaidInfo& raid = m_raidsModel.infoForRow(index.row());
-    const QString& device = raid.raid_device;
+    const RaidsModel::ItemType type = m_raidsModel.getTypeFor(index);
 
-    QMenu *raidOptions = new QMenu(this);
-    QAction *actionRemove = new QAction("Remove " + device, this);
+    if (type == RaidsModel::Raid)
+    {        
+        const RaidInfo& raid = m_raidsModel.infoForRaid(index);
+        const QString& device = raid.raid_device;
 
-    connect(actionRemove, &QAction::triggered,
-            [device, this](bool)
+        QMenu *raidOptions = new QMenu(this);
+        QAction *actionRemove = new QAction("Remove " + device, this);
+
+        connect(actionRemove, &QAction::triggered,
+                [device, this](bool)
+        {
+            if (!device.isNull())
+                this->removeRaid(device);
+        });
+
+        raidOptions->addAction(actionRemove);
+        raidOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
+    }
+    else
     {
-        if (!device.isNull())
-            this->removeRaid(device);
-    });
+        QMenu *diskOptions = new QMenu(this);
+        QAction *actionSetFaulty = new QAction("Set faulty", this);
+        QAction *actionReAdd = new QAction("Re-add", this);
 
-    raidOptions->addAction(actionRemove);
-    raidOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
+        const QModelIndex raidIndex = index.parent();
+        const RaidInfo& raid = m_raidsModel.infoForRaid(raidIndex);
+        const RaidComponentInfo& componentInfo =
+                m_raidsModel.infoForComponent(index);
+        const QString& raid_device = raid.raid_device;
+        const QString component = componentInfo.name;
+
+        bool isFaulty = componentInfo.type == RaidComponentInfo::Type::Faulty;
+        actionReAdd->setEnabled(isFaulty);
+        actionSetFaulty->setDisabled(isFaulty);
+
+        connect(actionSetFaulty, &QAction::triggered,
+                [raid_device, component, this](bool)
+        {
+            const QString confirmWord("confirm");
+            const QString message(
+                       tr("<b>Warning!</b><br /><br />"
+                       "This operation will mark device <b>%1</b> in RAID"
+                       " <b>%2</b> as faulty.")
+                        .arg(component).arg(raid_device));
+
+            bool ret = confirmDialog(tr("Mark device as faulty"),
+                                     message,
+                                     confirmWord);
+            if (ret)
+                this->m_mdadmController.markAsFaulty("/dev/" + raid_device,
+                                                     "/dev/" + component);
+        });
+
+        connect(actionReAdd, &QAction::triggered,
+                [raid_device, component, this](bool)
+        {
+           this->m_mdadmController.reAdd("/dev/" + raid_device,
+                                         "/dev/" + component);
+        });
+
+        diskOptions->addAction(actionSetFaulty);
+        diskOptions->addAction(actionReAdd);
+        diskOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
+    }
 
 }
 
 bool MainWindow::removeRaid(const QString& raidDevice)
 {
-    /* FIXME temporary solution */
-    const QString CONFIRM_TEXT = tr("confirm");
-    bool ret;
 
-    const QString text = QInputDialog::getText(this,
-                       tr("Remove software RAID"),
-                       tr("<b>Warning!</b><br /><br />"
-                          "This operation will remove <b>%1</b> RAID device"
-                          " from the system and clear metadata on all of its "
-                          "components.<br /><br />Please enter <b>%2</b> word"
-                          " to confirm this operation")
-                                         .arg(raidDevice)
-                                         .arg(CONFIRM_TEXT),
-                       QLineEdit::Normal,
-                       "",
-                       &ret);
-     if (ret && text == CONFIRM_TEXT)
-     {
+    const QString confirmWord("remove");
+    const QString message(
+               tr("<b>Warning!</b><br /><br />"
+               "This operation will remove <b>%1</b> RAID device"
+               " from the system and clear metadata on all of its "
+               "components.")
+                .arg(raidDevice));
+
+    bool ret = confirmDialog(tr("Remove software RAID"),
+                             message,
+                             confirmWord);
+
+    if (ret)
+    {
         ret = m_mdadmController.removeRaid("/dev/" + raidDevice);
-     }
-     return ret;
+    }
+    return ret;
 }
 
 void MainWindow::refreshArraysList()
@@ -288,4 +337,22 @@ void MainWindow::saveSettings()
     settings.setValue("geometry", saveGeometry());
     settings.setValue("state", saveState());
     settings.endGroup();
+}
+
+
+bool MainWindow::confirmDialog(const QString &title, const QString& message,
+                               const QString &confirmWord)
+{
+    bool ret = false;
+    QString dialogMessage = message +
+            tr("<br /><br />Please enter <b>%2</b> word to confirm "
+               "this operation.").arg(confirmWord);
+
+    const QString text = QInputDialog::getText(this,
+                                               title,
+                                               dialogMessage,
+                                               QLineEdit::Normal,
+                                               "",
+                                               &ret);
+    return (ret && text == confirmWord);
 }

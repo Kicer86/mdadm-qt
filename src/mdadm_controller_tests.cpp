@@ -494,9 +494,13 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(nullptr, &filesystem);
 
+    const QList<RaidComponentInfo> components =
+    {
+        RaidComponentInfo("sdf", RaidComponentInfo::Type::Spare, 1)
+    };
     const std::vector<RaidInfo> expectedOutput =
     {
-        RaidInfo("md1", QStringList("sdf"), "")
+        RaidInfo("md1", components, "")
     };
 
     compareListOutput(controller, expectedOutput);
@@ -520,9 +524,15 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(nullptr, &filesystem);
 
+    const QList<RaidComponentInfo> components =
+    {
+        RaidComponentInfo("sdb", RaidComponentInfo::Type::Normal, 1),
+        RaidComponentInfo("sdc", RaidComponentInfo::Type::Normal, 3),
+        RaidComponentInfo("sdd", RaidComponentInfo::Type::Normal, 0),
+    };
     const std::vector<RaidInfo> expectedOutput =
     {
-        RaidInfo("md0", QStringList({"sdb", "sdc", "sdd"}), "raid5")
+        RaidInfo("md0", components, "raid5")
     };
 
     compareListOutput(controller, expectedOutput);
@@ -553,11 +563,28 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(nullptr, &filesystem);
 
+    const QList<RaidComponentInfo> components1 =
+    {
+        RaidComponentInfo("sdm", RaidComponentInfo::Type::Normal, 1),
+        RaidComponentInfo("sdl", RaidComponentInfo::Type::Normal, 0),
+    };
+    const QList<RaidComponentInfo> components2 =
+    {
+        RaidComponentInfo("sdk", RaidComponentInfo::Type::Normal, 3),
+        RaidComponentInfo("sdj", RaidComponentInfo::Type::Normal, 2),
+        RaidComponentInfo("sdi", RaidComponentInfo::Type::Normal, 1),
+        RaidComponentInfo("sdh", RaidComponentInfo::Type::Normal, 0),
+    };
+    const QList<RaidComponentInfo> components3=
+    {
+        RaidComponentInfo("sdg", RaidComponentInfo::Type::Normal, 1),
+        RaidComponentInfo("sdf", RaidComponentInfo::Type::Normal, 0),
+    };
     const std::vector<RaidInfo> expectedOutput =
     {
-        RaidInfo("md11", QStringList({"sdm", "sdl"}), "raid0"),
-        RaidInfo("md8", QStringList({"sdk", "sdj", "sdi", "sdh"}), "raid6"),
-        RaidInfo("md3", QStringList({"sdg", "sdf"}), "raid1")
+        RaidInfo("md11", components1, "raid0"),
+        RaidInfo("md8", components2, "raid6"),
+        RaidInfo("md3", components3, "raid1")
     };
 
     compareListOutput(controller, expectedOutput);
@@ -604,10 +631,54 @@ TEST(MDAdmControllerTest, listDegradedRaid)
 
     MDAdmController controller(nullptr, &filesystem);
 
+    const QList<RaidComponentInfo> components =
+    {
+        RaidComponentInfo("sdk", RaidComponentInfo::Type::Normal, 3),
+        RaidComponentInfo("sdj", RaidComponentInfo::Type::Normal, 2),
+        RaidComponentInfo("sdh", RaidComponentInfo::Type::Normal, 0),
+    };
     const std::vector<RaidInfo> expectedOutput =
     {
-        RaidInfo("md8", QStringList({"sdk", "sdj", "sdh"}), "raid6"),
+        RaidInfo("md8", components, "raid6"),
     };
 
     compareListOutput(controller, expectedOutput);
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForMarkAsFaulty)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args = {
+        "/dev/md10",
+        "--fail",
+        "/dev/sdo"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
+                            Return(true)));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.markAsFaulty("/dev/md10", "/dev/sdo");
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForReAdd)
+{
+    IMDAdmProcessMock mdadm_process;
+
+    const QStringList expected_args = {
+        "/dev/md2",
+        "--re-add",
+        "/dev/sdc"
+    };
+
+    EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
+            .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
+                            Return(true)));
+
+    MDAdmController controller(&mdadm_process, nullptr);
+    controller.reAdd("/dev/md2", "/dev/sdc");
 }

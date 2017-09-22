@@ -29,6 +29,12 @@
 class RaidsModel: public QObject
 {
     public:
+        enum ItemType
+        {
+            Raid,
+            Component,
+        };
+        
         RaidsModel();
         RaidsModel(const RaidsModel &) = delete;
         ~RaidsModel();
@@ -37,12 +43,16 @@ class RaidsModel: public QObject
 
         void load(const std::vector<RaidInfo> &);
 
-        const RaidInfo& infoForRow(int) const;
+        ItemType getTypeFor(const QModelIndex &) const;
+        const RaidInfo& infoForRaid(const QModelIndex &) const;
+        const RaidComponentInfo& infoForComponent(const QModelIndex &) const;
         QAbstractItemModel* model();
 
     private:
         QStandardItemModel m_model;
         std::map<QStandardItem *, RaidInfo> m_infos;
+        std::map<QStandardItem *, RaidComponentInfo> m_componentInfos;
+        const QMap<RaidComponentInfo::Type, QString> m_diskType;
 };
 
 #endif // RAIDSMODEL_HPP
