@@ -189,6 +189,7 @@ void MainWindow::contextMenu(const QPoint& pos)
     {
         QMenu *diskOptions = new QMenu(this);
         QAction *actionSetFaulty = new QAction("Set faulty", this);
+        QAction *actionReAdd = new QAction("Re-add", this);
 
         const QModelIndex raidIndex = index.parent();
         const RaidInfo& raid = m_raidsModel.infoForRaid(raidIndex);
@@ -214,7 +215,15 @@ void MainWindow::contextMenu(const QPoint& pos)
                                                      "/dev/" + component);
         });
 
+        connect(actionReAdd, &QAction::triggered,
+                [raid_device, component, this](bool)
+        {
+           this->m_mdadmController.reAdd("/dev/" + raid_device,
+                                         "/dev/" + component);
+        });
+
         diskOptions->addAction(actionSetFaulty);
+        diskOptions->addAction(actionReAdd);
         diskOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
     }
 
