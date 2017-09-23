@@ -204,10 +204,11 @@ QBoxLayout* CreateRaidDialog::createDiskManagementButtons()
                 (&QComboBox::currentIndexChanged),
             [this, buttonAddSpare](int)
     {
+        const auto selection = this->m_disksView->selectionModel()->selection();
         auto type =
                 static_cast<RaidType>(
                     m_raidTypesComboBox->currentData().toInt());
-        buttonAddSpare->setDisabled(type == RAID0);
+        buttonAddSpare->setDisabled(type == RAID0 || selection.empty());
     });
 
     connect(m_disksView->selectionModel(),
