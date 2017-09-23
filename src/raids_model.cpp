@@ -66,21 +66,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
         };
 
         for (const auto& blkdev : raid.block_devices)
-        {
-            QStandardItem* component_item = new QStandardItem(blkdev.name);
-            QStandardItem* component_status =
-                    new QStandardItem(m_diskType[blkdev.type]);
-
-            const QList<QStandardItem *> leaf =
-            {
-                component_item,
-                new QStandardItem(),
-                component_status
-            };
-            
-            m_componentInfos.emplace(component_item, blkdev);
-            row.first()->appendRow(leaf);
-        }
+            appendComponent(raid_device_item, blkdev);
 
         m_infos.emplace(raid_device_item, raid);        
         m_model.appendRow(row);
@@ -139,4 +125,22 @@ const RaidComponentInfo& RaidsModel::infoForComponent(const QModelIndex& index) 
 QAbstractItemModel* RaidsModel::model()
 {
     return &m_model;
+}
+
+
+void RaidsModel::appendComponent(QStandardItem* raidItem, const RaidComponentInfo& blkdev)
+{
+    QStandardItem* component_item = new QStandardItem(blkdev.name);
+    QStandardItem* component_status =
+            new QStandardItem(m_diskType[blkdev.type]);
+
+    const QList<QStandardItem *> leaf =
+    {
+        component_item,
+        new QStandardItem(),
+        component_status
+    };
+    
+    m_componentInfos.emplace(component_item, blkdev);
+    raidItem->appendRow(leaf);
 }

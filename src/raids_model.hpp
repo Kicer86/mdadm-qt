@@ -53,6 +53,8 @@ class RaidsModel: public QObject
         std::map<QStandardItem *, RaidInfo> m_infos;
         std::map<QStandardItem *, RaidComponentInfo> m_componentInfos;
         const QMap<RaidComponentInfo::Type, QString> m_diskType;
+        
+        void appendComponent(QStandardItem *, const RaidComponentInfo &);
 };
 
 #endif // RAIDSMODEL_HPP
