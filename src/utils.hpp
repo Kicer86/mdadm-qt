@@ -50,6 +50,25 @@ T readValueFromFile(IFileSystem* fs, const QString& path)
     return value;
 }
 
+template <typename T>
+void writeValueToFile(QTextStream& file_stream, const T& value)
+{
+    file_stream << value << endl; // XXX: consider passing value with \n
+}
+
+template <typename T>
+bool writeValueToFile(IFileSystem* fs, const QString& path, const T& value)
+{
+    auto file = fs->openFile(path, QIODevice::WriteOnly);
+
+    QTextStream* file_stream = file->getStream();
+
+    if (file_stream != nullptr)
+        writeValueToFile(*file_stream, value);
+
+    return file_stream != nullptr;
+}
+
 } // namespace utils
 
 #endif // UTILS_HPP
