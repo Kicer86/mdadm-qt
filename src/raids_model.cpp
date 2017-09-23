@@ -53,24 +53,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
     m_model.removeRows(0, rows);     // .clear() would clear headers also
 
     for(const RaidInfo& raid: raids)
-    {
-        QStandardItem* raid_device_item = new QStandardItem(raid.raid_device);
-        QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
-        QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
-
-        const QList<QStandardItem *> row =
-        {
-            raid_device_item,
-            raid_type_item,
-            raid_status,
-        };
-
-        for (const auto& blkdev : raid.block_devices)
-            appendComponent(raid_device_item, blkdev);
-
-        m_infos.emplace(raid_device_item, raid);        
-        m_model.appendRow(row);
-    }
+        appendRaid(raid);
 }
 
 
@@ -125,6 +108,27 @@ const RaidComponentInfo& RaidsModel::infoForComponent(const QModelIndex& index) 
 QAbstractItemModel* RaidsModel::model()
 {
     return &m_model;
+}
+
+
+void RaidsModel::appendRaid(const RaidInfo& raidInfo)
+{
+    QStandardItem* raid_device_item = new QStandardItem(raidInfo.raid_device);
+    QStandardItem* raid_type_item = new QStandardItem(raidInfo.raid_type);
+    QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
+
+    const QList<QStandardItem *> row =
+    {
+        raid_device_item,
+        raid_type_item,
+        raid_status,
+    };
+
+    for (const auto& blkdev : raidInfo.block_devices)
+        appendComponent(raid_device_item, blkdev);
+
+    m_infos.emplace(raid_device_item, raidInfo);        
+    m_model.appendRow(row);
 }
 
 
