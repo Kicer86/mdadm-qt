@@ -120,7 +120,7 @@ MainWindow::MainWindow():
 
     actionReload->setShortcut(Qt::Key_F5);
 
-    connect(actionReload, &QAction::triggered, this, &MainWindow::refreshArraysList);
+    connect(actionReload, &QAction::triggered, this, &MainWindow::refreshAll);
 
     viewMenu->addAction(actionReload);
 
@@ -144,9 +144,9 @@ MainWindow::MainWindow():
     loadSettings();
 
     connect(&m_mdadmController, &MDAdmController::raidCreated, this,
-            &MainWindow::refreshArraysList);
+            &MainWindow::refreshAll);
     connect(&m_mdadmController, &MDAdmController::raidRemoved, this,
-            &MainWindow::refreshArraysList);
+            &MainWindow::refreshAll);
     connect(m_raidsView, &QTableView::customContextMenuRequested, this,
             &MainWindow::contextMenu);
 }
@@ -282,6 +282,14 @@ void MainWindow::refreshDisksList()
         m_disksModel.appendRow(row);
     }
 }
+
+
+void MainWindow::refreshAll()
+{
+    refreshArraysList();
+    refreshDisksList();
+}
+
 
 void MainWindow::createRaid()
 {

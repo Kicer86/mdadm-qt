@@ -58,6 +58,7 @@ class MainWindow: public QMainWindow
         bool removeRaid(const QString&);
         void refreshArraysList();
         void refreshDisksList();
+        void refreshAll();
         void createRaid();
 
         bool confirmDialog(const QString& title, const QString& message,
