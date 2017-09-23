@@ -324,3 +324,14 @@ bool MDAdmController::runScan(const QString& raid_device,
     return utils::writeValueToFile(m_fileSystem, scan_action_path,
                                    scanTypeToString(scan_type));
 }
+
+MDAdmController::ScanType
+MDAdmController::getScanType(const QString& raid_device)
+{
+    const QString scan_action_path =
+            "/sys/block/" + raid_device + "/md/sync_action";
+
+    return scanStringToType(
+            utils::readValueFromFile<QString>(m_fileSystem, scan_action_path));
+
+}

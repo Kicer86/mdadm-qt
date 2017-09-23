@@ -154,6 +154,7 @@ class MDAdmController: public QObject
         bool markAsFaulty(const QString& raid_device, const QString& component);
         bool reAdd(const QString& raid_device, const QString& component);
         bool runScan(const QString& raid_device, const ScanType scan_type);
+        ScanType getScanType(const QString&);
 
     private:
         IMDAdmProcess* m_mdadmProcess;
