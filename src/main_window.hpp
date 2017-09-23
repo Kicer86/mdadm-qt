@@ -28,10 +28,13 @@
 #include "mdadm_process.hpp"
 #include "raids_model.hpp"
 
+
 class QTabWidget;
 class QTableView;
 class QTreeView;
 class QSettings;
+class QSortFilterProxyModel;
+
 
 class MainWindow: public QMainWindow
 {
@@ -53,6 +56,7 @@ class MainWindow: public QMainWindow
         QTabWidget* m_viewTabs;
         QTreeView* m_raidsView;
         QTableView* m_disksView;
+        QSortFilterProxyModel* m_raidsSortProxy;
 
         void contextMenu(const QPoint&);
         bool removeRaid(const QString&);
