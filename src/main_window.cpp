@@ -139,8 +139,7 @@ MainWindow::MainWindow():
     setCentralWidget(m_viewTabs);
 
     // refresh stuf
-    refreshArraysList();
-    refreshDisksList();
+    refreshAll();
 
     m_raidsView->sortByColumn(0, Qt::AscendingOrder);
     m_raidsView->setSortingEnabled(true);
