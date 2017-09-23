@@ -682,3 +682,81 @@ TEST(MDAdmControllerTest, usesRightParameterForReAdd)
     MDAdmController controller(&mdadm_process, nullptr);
     controller.reAdd("/dev/md2", "/dev/sdc");
 }
+
+
+TEST(MDAdmControllerTest, usesRightParameterForIntegrityCheck)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/md2/md/sync_action", "idle");
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_TRUE(controller.runScan("md2", MDAdmController::ScanType::Check));
+
+    EXPECT_TRUE(controller.getScanType("md2") ==
+                MDAdmController::ScanType::Check);
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForRepair)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/md2/md/sync_action", "idle");
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_TRUE(controller.runScan("md2", MDAdmController::ScanType::Repair));
+
+    EXPECT_TRUE(controller.getScanType("md2") ==
+                MDAdmController::ScanType::Repair);
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForResync)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/md2/md/sync_action", "resync");
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_TRUE(controller.runScan("md2", MDAdmController::ScanType::Resync));
+
+    EXPECT_TRUE(controller.getScanType("md2") ==
+                MDAdmController::ScanType::Resync);
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForStopScan)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/md2/md/sync_action", "check");
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_TRUE(controller.runScan("md2", MDAdmController::ScanType::Idle));
+
+    EXPECT_TRUE(controller.getScanType("md2") ==
+                MDAdmController::ScanType::Idle);
+}
+
+
+TEST(MDAdmControllerTest, getsCorrectRecoverScanType)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/md2/md/sync_action", "recover");
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_TRUE(controller.getScanType("md2") ==
+                MDAdmController::ScanType::Recover);
+}
