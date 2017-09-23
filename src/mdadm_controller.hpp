@@ -107,6 +107,32 @@ class MDAdmController: public QObject
             Raid6,
         };
 
+        /* scan types:
+        *   resync
+        *      redundancy is being recalculated after unclean shutdown or creation
+        *   recover
+        *      a hot spare is being built to replace a failed/missing device
+        *   idle
+        *     nothing is happening
+        *   check
+        *     A full check of redundancy was requested and is happening. This reads
+        *     all blocks and checks them. A repair may also happen for some raid
+        *     levels.
+        *   repair
+        *     A full check and repair is happening. This is similar to resync,
+        *     but was requested by the user, and the write-intent bitmap is NOT used
+        *     to optimise the process.
+        */
+
+        enum class ScanType
+        {
+            Idle,
+            Check,
+            Repair,
+            Recover,
+            Resync
+        };
+
         MDAdmController(IMDAdmProcess *, IFileSystem *);
         MDAdmController(const MDAdmController &) = delete;
         ~MDAdmController();
@@ -127,10 +153,14 @@ class MDAdmController: public QObject
         bool zeroSuperblock(const QStringList& raid_components);
         bool markAsFaulty(const QString& raid_device, const QString& component);
         bool reAdd(const QString& raid_device, const QString& component);
+        bool runScan(const QString& raid_device, const ScanType scan_type);
 
     private:
         IMDAdmProcess* m_mdadmProcess;
         IFileSystem* m_fileSystem;
+
+        QString scanTypeToString(const ScanType) const;
+        ScanType scanStringToType(const QString &) const;
 
     signals:
         void raidCreated();

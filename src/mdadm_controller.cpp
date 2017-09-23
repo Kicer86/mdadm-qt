@@ -25,6 +25,7 @@
 
 #include "ifilesystem.hpp"
 #include "imdadm_process.hpp"
+#include "utils.hpp"
 
 namespace
 {
@@ -279,4 +280,47 @@ bool MDAdmController::reAdd(const QString& raid_device,
     m_mdadmProcess->execute(mdadm_args, nullResultCallback);
 
     return true;
+}
+
+/*
+ * Scan functions
+ */
+
+QString MDAdmController::scanTypeToString(const ScanType type) const
+{
+    QMap<ScanType, QString> scanTypes =
+    {
+        { ScanType::Idle, "idle" },
+        { ScanType::Check, "check" },
+        { ScanType::Recover, "recover" },
+        { ScanType::Repair, "repair" },
+        { ScanType::Resync, "resync" }
+    };
+
+    return scanTypes.value(type);
+}
+
+MDAdmController::ScanType
+MDAdmController::scanStringToType(const QString& type) const
+{
+    QMap<QString, ScanType> scanTypes =
+    {
+        { "idle", ScanType::Idle },
+        { "check", ScanType::Check },
+        { "recover", ScanType::Recover },
+        { "repair", ScanType::Repair },
+        { "resync", ScanType::Resync }
+    };
+
+    return scanTypes.value(type, ScanType::Idle);
+}
+
+bool MDAdmController::runScan(const QString& raid_device,
+                              const ScanType scan_type)
+{
+    const QString scan_action_path =
+            "/sys/block/" + raid_device + "/md/sync_action";
+
+    return utils::writeValueToFile(m_fileSystem, scan_action_path,
+                                   scanTypeToString(scan_type));
 }
