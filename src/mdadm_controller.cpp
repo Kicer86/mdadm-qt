@@ -87,9 +87,9 @@ bool RaidComponentInfo::operator<(const RaidComponentInfo& other) const
 
 bool RaidInfo::operator==(const RaidInfo &other) const
 {
-    return this->block_devices == other.block_devices &&
-           this->raid_device == other.raid_device &&
-           this->raid_type == other.raid_type;
+    return this->raid_device == other.raid_device &&
+           this->raid_type == other.raid_type &&
+           this->block_devices == other.block_devices;
 }
 
 bool RaidInfo::operator<(const RaidInfo& other) const
