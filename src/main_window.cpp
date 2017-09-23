@@ -28,6 +28,7 @@
 #include <QTreeView>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QSortFilterProxyModel>
 
 #include "create_raid_dialog.hpp"
 #include "disk_controller.hpp"
@@ -87,17 +88,23 @@ MainWindow::MainWindow():
     m_disksView(nullptr)
 {
     // raids tab
+    QSortFilterProxyModel* raidsSortProxy = new QSortFilterProxyModel(this);
+    raidsSortProxy->setSourceModel(m_raidsModel.model());
+    
     m_raidsView = new QTreeView(this);
-    m_raidsView->setModel(m_raidsModel.model());
+    m_raidsView->setModel(raidsSortProxy);
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_raidsView->setSelectionMode(QAbstractItemView::SingleSelection);
     m_raidsView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // disks tab
+    QSortFilterProxyModel* disksSortProxy = new QSortFilterProxyModel(this);
+    disksSortProxy->setSourceModel(&m_disksModel);
+    
     m_disksModel.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
 
     m_disksView = new QTableView(this);
-    m_disksView->setModel(&m_disksModel);
+    m_disksView->setModel(disksSortProxy);
     m_disksView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_disksView->setSelectionMode(QAbstractItemView::SingleSelection);
 
