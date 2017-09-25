@@ -21,6 +21,70 @@
 #include "raids_model.hpp"
 
 #include <cassert>
+#include <set>
+
+
+namespace
+{
+    // NOTE: taken from:
+    // https://github.com/Kicer86/photobroom/blob/master/src/core/iterator_wrapper.hpp
+    // https://github.com/Kicer86/photobroom/blob/master/src/core/map_iterator.hpp
+    // TODO: share it in a common library
+    
+    template<typename R, typename B, typename T>
+    struct iterator_wrapper: B
+    {
+        iterator_wrapper(): B(), m_operation()
+        {
+
+        }
+
+        iterator_wrapper(const B& base): B(base), m_operation()
+        {
+
+        }
+
+        iterator_wrapper(const iterator_wrapper &) = default;
+
+        ~iterator_wrapper()
+        {
+        }
+
+        R operator*() const
+        {
+            return m_operation(*this);
+        }
+
+        private:
+            T m_operation;
+    };
+    
+    template<typename T>
+    struct MapKeyAccessor
+    {
+        typename T::value_type::first_type operator()(const typename T::const_iterator& v) const
+        {
+            return v->first;
+        }
+    };
+
+    template<typename T>
+    struct MapValueAccessor
+    {
+        typename T::value_type::second_type operator()(const typename T::const_iterator& v) const
+        {
+            return v->second;
+        }
+    };
+
+
+    template<typename T>
+    using key_map_iterator = iterator_wrapper<typename T::value_type::first_type, typename T::const_iterator, MapKeyAccessor<T>>;
+
+    template<typename T>
+    using value_map_iterator = iterator_wrapper<typename T::value_type::second_type, typename T::const_iterator, MapValueAccessor<T>>;
+
+}
 
 
 RaidsModel::RaidsModel(): 
@@ -47,6 +111,42 @@ RaidsModel::~RaidsModel()
 
 void RaidsModel::load(const std::vector<RaidInfo>& raids)
 {
+    // check for raids to be removed
+    const std::set<RaidInfo> newRaids(raids.cbegin(), raids.cend());    
+    const std::set<RaidInfo> oldRaids(value_map_iterator<RaidsMap>(m_infos.cbegin()), 
+                                      value_map_iterator<RaidsMap>(m_infos.cend()));
+        
+    std::vector<RaidInfo> removed;
+    std::set_difference(oldRaids.cbegin(), oldRaids.cend(),
+                        newRaids.cbegin(), newRaids.cend(),
+                        std::inserter(removed, removed.end()), 
+                        [](const RaidInfo& lhs, const RaidInfo& rhs)
+                        { return lhs.raid_device < rhs.raid_device; });
+    
+    for (const RaidInfo& raid: removed)
+    {
+        RaidsMap::iterator it = std::find_if(m_infos.begin(), m_infos.end(),
+            [&raid](const auto& item) { return item.second.raid_device == raid.raid_device; }
+        );
+        
+        assert(it != m_infos.end());
+        
+        // remove related components 
+        for(const RaidComponentInfo& component: raid.block_devices)
+        {
+            ComponentsMap::iterator it = std::find_if(m_componentInfos.begin(), m_componentInfos.end(),
+                [&component](const auto& item) { return item.second.name == component.name; }
+            );
+            
+            assert(it != m_componentInfos.end());
+            m_componentInfos.erase(it);
+        }
+        
+        const QModelIndex raidIndex = m_model.indexFromItem(it->first);
+        m_model.removeRow(raidIndex.row(), raidIndex.parent());
+        m_infos.erase(it);
+    }
+    
     m_infos.clear();
     m_componentInfos.clear();
     const int rows = m_model.rowCount();

@@ -49,6 +49,9 @@ class RaidsModel: public QObject
         QAbstractItemModel* model();
 
     private:
+        typedef std::map<QStandardItem *, RaidInfo> RaidsMap;
+        typedef std::map<QStandardItem *, RaidComponentInfo> ComponentsMap;
+        
         QStandardItemModel m_model;
         std::map<QStandardItem *, RaidInfo> m_infos;
         std::map<QStandardItem *, RaidComponentInfo> m_componentInfos;
