@@ -59,6 +59,7 @@ class RaidsModel: public QObject
         
         void appendRaid(const RaidInfo &);
         void appendComponent(QStandardItem *, const RaidComponentInfo &);
+        void removeComponent(const RaidComponentInfo &);
 };
 
 #endif // RAIDSMODEL_HPP

@@ -133,14 +133,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
         
         // remove related components 
         for(const RaidComponentInfo& component: raid.block_devices)
-        {
-            ComponentsMap::iterator it = std::find_if(m_componentInfos.begin(), m_componentInfos.end(),
-                [&component](const auto& item) { return item.second.name == component.name; }
-            );
-            
-            assert(it != m_componentInfos.end());
-            m_componentInfos.erase(it);
-        }
+            removeComponent(component);
         
         const QModelIndex raidIndex = m_model.indexFromItem(it->first);
         m_model.removeRow(raidIndex.row(), raidIndex.parent());
@@ -250,4 +243,18 @@ void RaidsModel::appendComponent(QStandardItem* raidItem, const RaidComponentInf
     
     m_componentInfos.emplace(component_item, blkdev);
     raidItem->appendRow(leaf);
+}
+
+
+void RaidsModel::removeComponent(const RaidComponentInfo& component)
+{
+    ComponentsMap::iterator it = std::find_if(m_componentInfos.begin(), m_componentInfos.end(),
+        [&component](const auto& item) { return item.second.name == component.name; }
+    );
+    
+    assert(it != m_componentInfos.end());
+    
+    const QModelIndex componentIndex = m_model.indexFromItem(it->first);
+    m_model.removeRow(componentIndex.row(), componentIndex.parent());
+    m_componentInfos.erase(it);
 }
