@@ -21,7 +21,6 @@
 #include "raids_model.hpp"
 
 #include <cassert>
-#include <set>
 
 
 namespace
@@ -111,20 +110,11 @@ RaidsModel::~RaidsModel()
 
 void RaidsModel::load(const std::vector<RaidInfo>& raids)
 {
-    // check for raids to be removed
     const std::set<RaidInfo> newRaids(raids.cbegin(), raids.cend());    
     const std::set<RaidInfo> oldRaids(value_map_iterator<RaidsMap>(m_infos.cbegin()), 
                                       value_map_iterator<RaidsMap>(m_infos.cend()));
         
-    std::vector<RaidInfo> removed;
-    std::set_difference(oldRaids.cbegin(), oldRaids.cend(),
-                        newRaids.cbegin(), newRaids.cend(),
-                        std::back_inserter(removed), 
-                        [](const RaidInfo& lhs, const RaidInfo& rhs)
-                        { return lhs.raid_device < rhs.raid_device; });
-    
-    for (const RaidInfo& raid: removed)
-        removeRaid(raid);
+    eraseRemoved(oldRaids, newRaids);
     
     // check for raids to be added
     std::vector<RaidInfo> added;
@@ -279,4 +269,18 @@ void RaidsModel::removeComponent(const RaidComponentInfo& component)
     const QModelIndex componentIndex = m_model.indexFromItem(it->first);
     m_model.removeRow(componentIndex.row(), componentIndex.parent());
     m_componentInfos.erase(it);
+}
+
+
+void RaidsModel::eraseRemoved(const std::set<RaidInfo>& oldRaids, const std::set<RaidInfo>& newRaids)
+{
+    std::vector<RaidInfo> removed;
+    std::set_difference(oldRaids.cbegin(), oldRaids.cend(),
+                        newRaids.cbegin(), newRaids.cend(),
+                        std::back_inserter(removed), 
+                        [](const RaidInfo& lhs, const RaidInfo& rhs)
+                        { return lhs.raid_device < rhs.raid_device; });
+    
+    for (const RaidInfo& raid: removed)
+        removeRaid(raid);
 }

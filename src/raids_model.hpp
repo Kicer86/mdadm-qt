@@ -21,6 +21,8 @@
 #define RAIDSMODEL_HPP
 
 
+#include <set>
+
 #include <QStandardItemModel>
 
 #include "mdadm_controller.hpp"
@@ -61,6 +63,8 @@ class RaidsModel: public QObject
         void removeRaid(const RaidInfo &);
         void appendComponent(QStandardItem *, const RaidComponentInfo &);
         void removeComponent(const RaidComponentInfo &);
+        
+        void eraseRemoved(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
 };
 
 #endif // RAIDSMODEL_HPP
