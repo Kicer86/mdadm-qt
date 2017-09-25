@@ -147,6 +147,17 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
         m_infos.erase(it);
     }
     
+    // check for raids to be added
+    std::vector<RaidInfo> added;
+    std::set_difference(newRaids.cbegin(), newRaids.cend(),
+                        oldRaids.cbegin(), oldRaids.cend(),
+                        std::inserter(added, added.end()), 
+                        [](const RaidInfo& lhs, const RaidInfo& rhs)
+                        { return lhs.raid_device < rhs.raid_device; });
+    
+    for (const RaidInfo& raid: added)
+        appendRaid(raid);
+    
     m_infos.clear();
     m_componentInfos.clear();
     const int rows = m_model.rowCount();
