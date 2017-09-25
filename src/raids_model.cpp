@@ -136,6 +136,24 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
     
     for (const RaidInfo& raid: added)
         appendRaid(raid);
+    
+    // check for raids to be updated
+    std::vector<RaidInfo> modified;
+    std::set_symmetric_difference(newRaids.cbegin(), newRaids.cend(),
+                                  oldRaids.cbegin(), oldRaids.cend(),
+                                  std::back_inserter(modified));     
+    // Mind that 'modified' will contain 2 entries per raid device:
+    // old and new state.
+    
+    if (modified.empty() == false)
+    {
+        // Drop duplicates
+        auto last = std::unique(modified.begin(), modified.end(),
+                                [](const RaidInfo& lhs, const RaidInfo& rhs)
+                                { return lhs.raid_device == rhs.raid_device; });
+        
+        modified.erase(last, modified.end());
+    }
 }
 
 
