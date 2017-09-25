@@ -115,17 +115,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
                                       value_map_iterator<RaidsMap>(m_infos.cend()));
         
     eraseRemoved(oldRaids, newRaids);
-    
-    // check for raids to be added
-    std::vector<RaidInfo> added;
-    std::set_difference(newRaids.cbegin(), newRaids.cend(),
-                        oldRaids.cbegin(), oldRaids.cend(),
-                        std::back_inserter(added), 
-                        [](const RaidInfo& lhs, const RaidInfo& rhs)
-                        { return lhs.raid_device < rhs.raid_device; });
-    
-    for (const RaidInfo& raid: added)
-        appendRaid(raid);
+    appendAdded(oldRaids, newRaids);
     
     // check for raids to be updated
     std::vector<RaidInfo> modified;
@@ -283,4 +273,18 @@ void RaidsModel::eraseRemoved(const std::set<RaidInfo>& oldRaids, const std::set
     
     for (const RaidInfo& raid: removed)
         removeRaid(raid);
+}
+
+
+void RaidsModel::appendAdded(const std::set<RaidInfo>& oldRaids, const std::set<RaidInfo>& newRaids)
+{
+    std::vector<RaidInfo> added;
+    std::set_difference(newRaids.cbegin(), newRaids.cend(),
+                        oldRaids.cbegin(), oldRaids.cend(),
+                        std::back_inserter(added), 
+                        [](const RaidInfo& lhs, const RaidInfo& rhs)
+                        { return lhs.raid_device < rhs.raid_device; });
+    
+    for (const RaidInfo& raid: added)
+        appendRaid(raid);
 }
