@@ -119,7 +119,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
     std::vector<RaidInfo> removed;
     std::set_difference(oldRaids.cbegin(), oldRaids.cend(),
                         newRaids.cbegin(), newRaids.cend(),
-                        std::inserter(removed, removed.end()), 
+                        std::back_inserter(removed), 
                         [](const RaidInfo& lhs, const RaidInfo& rhs)
                         { return lhs.raid_device < rhs.raid_device; });
     
@@ -130,7 +130,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
     std::vector<RaidInfo> added;
     std::set_difference(newRaids.cbegin(), newRaids.cend(),
                         oldRaids.cbegin(), oldRaids.cend(),
-                        std::inserter(added, added.end()), 
+                        std::back_inserter(added), 
                         [](const RaidInfo& lhs, const RaidInfo& rhs)
                         { return lhs.raid_device < rhs.raid_device; });
     
