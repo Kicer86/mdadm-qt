@@ -82,7 +82,14 @@ namespace
 
     template<typename T>
     using value_map_iterator = iterator_wrapper<typename T::value_type::second_type, typename T::const_iterator, MapValueAccessor<T>>;
+    
+    ///////
 
+    bool raidNameLess(const RaidInfo& lhs, const RaidInfo& rhs)                                
+    { 
+        return lhs.raid_device < rhs.raid_device;         
+    }
+    
 }
 
 
@@ -268,8 +275,7 @@ void RaidsModel::eraseRemoved(const std::set<RaidInfo>& oldRaids, const std::set
     std::set_difference(oldRaids.cbegin(), oldRaids.cend(),
                         newRaids.cbegin(), newRaids.cend(),
                         std::back_inserter(removed), 
-                        [](const RaidInfo& lhs, const RaidInfo& rhs)
-                        { return lhs.raid_device < rhs.raid_device; });
+                        raidNameLess);
     
     for (const RaidInfo& raid: removed)
         removeRaid(raid);
@@ -282,8 +288,7 @@ void RaidsModel::appendAdded(const std::set<RaidInfo>& oldRaids, const std::set<
     std::set_difference(newRaids.cbegin(), newRaids.cend(),
                         oldRaids.cbegin(), oldRaids.cend(),
                         std::back_inserter(added), 
-                        [](const RaidInfo& lhs, const RaidInfo& rhs)
-                        { return lhs.raid_device < rhs.raid_device; });
+                        raidNameLess);
     
     for (const RaidInfo& raid: added)
         appendRaid(raid);
