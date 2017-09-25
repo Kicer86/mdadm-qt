@@ -87,6 +87,7 @@ struct RaidInfo
     RaidInfo& operator=(RaidInfo &&) = default;
 
     bool operator==(const RaidInfo&) const;
+    bool operator!=(const RaidInfo&) const;
     bool operator<(const RaidInfo&) const;
 };
 

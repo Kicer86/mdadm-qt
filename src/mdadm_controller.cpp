@@ -92,6 +92,15 @@ bool RaidInfo::operator==(const RaidInfo &other) const
            this->block_devices == other.block_devices;
 }
 
+
+bool RaidInfo::operator!=(const RaidInfo& other) const
+{
+    return this->raid_device != other.raid_device ||
+           this->raid_type != other.raid_type ||
+           this->block_devices != other.block_devices;
+}
+
+
 bool RaidInfo::operator<(const RaidInfo& other) const
 {
     bool less = false;
