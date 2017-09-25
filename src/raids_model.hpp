@@ -58,6 +58,7 @@ class RaidsModel: public QObject
         const QMap<RaidComponentInfo::Type, QString> m_diskType;
         
         void appendRaid(const RaidInfo &);
+        void removeRaid(const RaidInfo &);
         void appendComponent(QStandardItem *, const RaidComponentInfo &);
         void removeComponent(const RaidComponentInfo &);
 };

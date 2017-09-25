@@ -124,21 +124,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
                         { return lhs.raid_device < rhs.raid_device; });
     
     for (const RaidInfo& raid: removed)
-    {
-        RaidsMap::iterator it = std::find_if(m_infos.begin(), m_infos.end(),
-            [&raid](const auto& item) { return item.second.raid_device == raid.raid_device; }
-        );
-        
-        assert(it != m_infos.end());
-        
-        // remove related components 
-        for(const RaidComponentInfo& component: raid.block_devices)
-            removeComponent(component);
-        
-        const QModelIndex raidIndex = m_model.indexFromItem(it->first);
-        m_model.removeRow(raidIndex.row(), raidIndex.parent());
-        m_infos.erase(it);
-    }
+        removeRaid(raid);
     
     // check for raids to be added
     std::vector<RaidInfo> added;
@@ -225,6 +211,24 @@ void RaidsModel::appendRaid(const RaidInfo& raidInfo)
 
     m_infos.emplace(raid_device_item, raidInfo);        
     m_model.appendRow(row);
+}
+
+
+void RaidsModel::removeRaid(const RaidInfo& raid)
+{
+    RaidsMap::iterator it = std::find_if(m_infos.begin(), m_infos.end(),
+        [&raid](const auto& item) { return item.second.raid_device == raid.raid_device; }
+    );
+    
+    assert(it != m_infos.end());
+    
+    // remove related components 
+    for(const RaidComponentInfo& component: raid.block_devices)
+        removeComponent(component);
+    
+    const QModelIndex raidIndex = m_model.indexFromItem(it->first);
+    m_model.removeRow(raidIndex.row(), raidIndex.parent());
+    m_infos.erase(it);
 }
 
 
