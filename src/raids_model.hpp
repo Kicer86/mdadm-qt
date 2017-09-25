@@ -66,6 +66,7 @@ class RaidsModel: public QObject
         
         void eraseRemoved(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
         void appendAdded(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
+        void refreshChanged(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
 };
 
 #endif // RAIDSMODEL_HPP

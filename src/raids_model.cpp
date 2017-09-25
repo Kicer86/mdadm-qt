@@ -123,24 +123,7 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
         
     eraseRemoved(oldRaids, newRaids);
     appendAdded(oldRaids, newRaids);
-    
-    // check for raids to be updated
-    std::vector<RaidInfo> modified;
-    std::set_symmetric_difference(newRaids.cbegin(), newRaids.cend(),
-                                  oldRaids.cbegin(), oldRaids.cend(),
-                                  std::back_inserter(modified));     
-    // Mind that 'modified' will contain 2 entries per raid device:
-    // old and new state.
-    
-    if (modified.empty() == false)
-    {
-        // Drop duplicates
-        auto last = std::unique(modified.begin(), modified.end(),
-                                [](const RaidInfo& lhs, const RaidInfo& rhs)
-                                { return lhs.raid_device == rhs.raid_device; });
-        
-        modified.erase(last, modified.end());
-    }
+    refreshChanged(oldRaids, newRaids);    
 }
 
 
@@ -292,4 +275,19 @@ void RaidsModel::appendAdded(const std::set<RaidInfo>& oldRaids, const std::set<
     
     for (const RaidInfo& raid: added)
         appendRaid(raid);
+}
+
+
+void RaidsModel::refreshChanged(const std::set<RaidInfo>& oldRaids, const std::set<RaidInfo>& newRaids)
+{
+    std::vector<RaidInfo> modified;
+    std::set_union(newRaids.cbegin(), newRaids.cend(),
+                   oldRaids.cbegin(), oldRaids.cend(),
+                   std::back_inserter(modified),
+                   [](const RaidInfo& lhs, const RaidInfo& rhs)
+                   { 
+                       // Find raids which differ in anything but name
+                       return lhs != rhs && 
+                              lhs.raid_device == rhs.raid_device;                       
+                   });        
 }
