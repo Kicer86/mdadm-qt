@@ -157,14 +157,6 @@ void RaidsModel::load(const std::vector<RaidInfo>& raids)
     
     for (const RaidInfo& raid: added)
         appendRaid(raid);
-    
-    m_infos.clear();
-    m_componentInfos.clear();
-    const int rows = m_model.rowCount();
-    m_model.removeRows(0, rows);     // .clear() would clear headers also
-
-    for(const RaidInfo& raid: raids)
-        appendRaid(raid);
 }
 
 
