@@ -326,16 +326,23 @@ void RaidsModel::appendAdded(const std::set<RaidInfo>& oldRaids, const std::set<
 void RaidsModel::refreshChanged(const std::set<RaidInfo>& oldRaids, const std::set<RaidInfo>& newRaids)
 {
     std::vector<RaidInfo> modified;
-    std::set_union(newRaids.cbegin(), newRaids.cend(),
-                   oldRaids.cbegin(), oldRaids.cend(),
-                   std::back_inserter(modified),
-                   [](const RaidInfo& lhs, const RaidInfo& rhs)
-                   { 
-                       // Find raids which differ in anything but name
-                       return lhs != rhs && 
-                              lhs.raid_device == rhs.raid_device;                       
-                   });    
-
+    
+    // find all raids which changed (same name different content)
+    for (const RaidInfo& oldRaid: oldRaids)
+    {
+        const auto it =
+            std::find_if(newRaids.cbegin(), newRaids.cend(), 
+                         [&oldRaid](const RaidInfo& newRaid)
+                         {
+                             // Find raids which differ in anything but name
+                             return newRaid.raid_device == oldRaid.raid_device &&
+                                    newRaid != oldRaid;
+                         });
+        
+        if (it != newRaids.end())
+            modified.push_back(*it);
+    }
+    
     for (const RaidInfo& raid: modified)
         updateRaid(raid);
 }
