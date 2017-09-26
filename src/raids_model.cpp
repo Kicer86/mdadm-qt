@@ -230,21 +230,16 @@ void RaidsModel::appendRaid(const RaidInfo& raidInfo)
 }
 
 
-void RaidsModel::removeRaid(const RaidInfo& raid)
-{
-    RaidsMap::iterator it = std::find_if(m_infos.begin(), m_infos.end(),
-        [&raid](const auto& item) { return item.second.raid_device == raid.raid_device; }
-    );
-    
-    assert(it != m_infos.end());
-    
+void RaidsModel::removeRaid(const QString& raid_name)
+{    
     // remove related components 
-    for(const RaidComponentInfo& component: raid.block_devices)
-        removeComponent(component);
+    removeComponentsOf(raid_name);    
     
-    const QModelIndex raidIndex = m_model.indexFromItem(it->first);
+    QStandardItem* raidItem = itemFor(raid_name);
+    
+    const QModelIndex raidIndex = m_model.indexFromItem(raidItem);
     m_model.removeRow(raidIndex.row(), raidIndex.parent());
-    m_infos.erase(it);
+    m_infos.erase(raidItem);
 }
 
 
@@ -311,7 +306,7 @@ void RaidsModel::eraseRemoved(const std::set<RaidInfo>& oldRaids, const std::set
                         raidNameLess);
     
     for (const RaidInfo& raid: removed)
-        removeRaid(raid);
+        removeRaid(raid.raid_device);
 }
 
 

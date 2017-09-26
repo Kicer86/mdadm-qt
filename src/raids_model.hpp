@@ -63,7 +63,7 @@ class RaidsModel: public QObject
         QStandardItem* itemFor(const QString &) const;
         
         void appendRaid(const RaidInfo &);
-        void removeRaid(const RaidInfo &);
+        void removeRaid(const QString &);
         void updateRaid(const RaidInfo &);
         
         void removeComponentsOf(const QString &);
