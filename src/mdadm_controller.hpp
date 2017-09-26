@@ -88,6 +88,58 @@ struct RaidInfo
     bool operator==(const RaidInfo&) const;
 };
 
+struct ScanInfo
+{
+    /* scan details */
+    /* scan types:
+    *   resync
+    *      redundancy is being recalculated after unclean shutdown or creation
+    *   recover
+    *      a hot spare is being built to replace a failed/missing device
+    *   idle
+    *     nothing is happening
+    *   check
+    *     A full check of redundancy was requested and is happening. This reads
+    *     all blocks and checks them. A repair may also happen for some raid
+    *     levels.
+    *   repair
+    *     A full check and repair is happening. This is similar to resync,
+    *     but was requested by the user, and the write-intent bitmap is NOT used
+    *     to optimise the process.
+    */
+
+    enum class ScanType
+    {
+        Idle,
+        Check,
+        Repair,
+        Recover,
+        Resync,
+        Reshape,
+        Frozen,
+    };
+
+    enum class ReshapeDirection
+    {
+        Forward,
+        Backward
+    };
+
+    ScanType last_scan;
+    ScanType sync_action;
+
+    uint64_t mismatch_cnt;
+    ReshapeDirection reshape_direction;
+    uint64_t reshape_position;
+    uint64_t resync_start; /* start position */
+
+    std::tuple<uint64_t, uint64_t> progress; /* sync_completed */
+    std::tuple<uint64_t, uint64_t> scan_limits; /* sync_max, sync_min */
+    unsigned sync_speed;
+    std::tuple<unsigned, unsigned> speed_limits;
+
+};
+
 class MDAdmController: public QObject
 {
         Q_OBJECT
@@ -105,32 +157,6 @@ class MDAdmController: public QObject
             Raid4,
             Raid5,
             Raid6,
-        };
-
-        /* scan types:
-        *   resync
-        *      redundancy is being recalculated after unclean shutdown or creation
-        *   recover
-        *      a hot spare is being built to replace a failed/missing device
-        *   idle
-        *     nothing is happening
-        *   check
-        *     A full check of redundancy was requested and is happening. This reads
-        *     all blocks and checks them. A repair may also happen for some raid
-        *     levels.
-        *   repair
-        *     A full check and repair is happening. This is similar to resync,
-        *     but was requested by the user, and the write-intent bitmap is NOT used
-        *     to optimise the process.
-        */
-
-        enum class ScanType
-        {
-            Idle,
-            Check,
-            Repair,
-            Recover,
-            Resync
         };
 
         MDAdmController(IMDAdmProcess *, IFileSystem *);
@@ -153,15 +179,16 @@ class MDAdmController: public QObject
         bool zeroSuperblock(const QStringList& raid_components);
         bool markAsFaulty(const QString& raid_device, const QString& component);
         bool reAdd(const QString& raid_device, const QString& component);
-        bool runScan(const QString& raid_device, const ScanType scan_type);
-        ScanType getScanType(const QString&);
+        bool runScan(const QString& raid_device,
+                     const ScanInfo::ScanType scan_type);
+        ScanInfo::ScanType getScanType(const QString&);
 
     private:
         IMDAdmProcess* m_mdadmProcess;
         IFileSystem* m_fileSystem;
 
-        QString scanTypeToString(const ScanType) const;
-        ScanType scanStringToType(const QString &) const;
+        QString scanTypeToString(const ScanInfo::ScanType) const;
+        ScanInfo::ScanType scanStringToType(const QString &) const;
 
     signals:
         void raidCreated();

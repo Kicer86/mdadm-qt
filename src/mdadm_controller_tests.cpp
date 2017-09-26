@@ -693,10 +693,10 @@ TEST(MDAdmControllerTest, usesRightParameterForIntegrityCheck)
 
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
 
-    EXPECT_TRUE(controller.runScan("md2", MDAdmController::ScanType::Check));
+    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Check));
 
     EXPECT_TRUE(controller.getScanType("md2") ==
-                MDAdmController::ScanType::Check);
+                ScanInfo::ScanType::Check);
 }
 
 
@@ -709,10 +709,10 @@ TEST(MDAdmControllerTest, usesRightParameterForRepair)
 
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
 
-    EXPECT_TRUE(controller.runScan("md2", MDAdmController::ScanType::Repair));
+    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Repair));
 
     EXPECT_TRUE(controller.getScanType("md2") ==
-                MDAdmController::ScanType::Repair);
+                ScanInfo::ScanType::Repair);
 }
 
 
@@ -725,10 +725,10 @@ TEST(MDAdmControllerTest, usesRightParameterForResync)
 
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
 
-    EXPECT_TRUE(controller.runScan("md2", MDAdmController::ScanType::Resync));
+    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Resync));
 
     EXPECT_TRUE(controller.getScanType("md2") ==
-                MDAdmController::ScanType::Resync);
+                ScanInfo::ScanType::Resync);
 }
 
 
@@ -741,10 +741,10 @@ TEST(MDAdmControllerTest, usesRightParameterForStopScan)
 
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
 
-    EXPECT_TRUE(controller.runScan("md2", MDAdmController::ScanType::Idle));
+    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Idle));
 
     EXPECT_TRUE(controller.getScanType("md2") ==
-                MDAdmController::ScanType::Idle);
+                ScanInfo::ScanType::Idle);
 }
 
 
@@ -758,5 +758,5 @@ TEST(MDAdmControllerTest, getsCorrectRecoverScanType)
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
 
     EXPECT_TRUE(controller.getScanType("md2") ==
-                MDAdmController::ScanType::Recover);
+                ScanInfo::ScanType::Recover);
 }

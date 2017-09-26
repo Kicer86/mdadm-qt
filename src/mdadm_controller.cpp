@@ -286,37 +286,37 @@ bool MDAdmController::reAdd(const QString& raid_device,
  * Scan functions
  */
 
-QString MDAdmController::scanTypeToString(const ScanType type) const
+QString MDAdmController::scanTypeToString(const ScanInfo::ScanType type) const
 {
-    QMap<ScanType, QString> scanTypes =
+    QMap<ScanInfo::ScanType, QString> scanTypes =
     {
-        { ScanType::Idle, "idle" },
-        { ScanType::Check, "check" },
-        { ScanType::Recover, "recover" },
-        { ScanType::Repair, "repair" },
-        { ScanType::Resync, "resync" }
+        { ScanInfo::ScanType::Idle, "idle" },
+        { ScanInfo::ScanType::Check, "check" },
+        { ScanInfo::ScanType::Recover, "recover" },
+        { ScanInfo::ScanType::Repair, "repair" },
+        { ScanInfo::ScanType::Resync, "resync" },
     };
 
     return scanTypes.value(type);
 }
 
-MDAdmController::ScanType
+ScanInfo::ScanType
 MDAdmController::scanStringToType(const QString& type) const
 {
-    QMap<QString, ScanType> scanTypes =
+    QMap<QString, ScanInfo::ScanType> scanTypes =
     {
-        { "idle", ScanType::Idle },
-        { "check", ScanType::Check },
-        { "recover", ScanType::Recover },
-        { "repair", ScanType::Repair },
-        { "resync", ScanType::Resync }
+        { "idle", ScanInfo::ScanType::Idle },
+        { "check", ScanInfo::ScanType::Check },
+        { "recover", ScanInfo::ScanType::Recover },
+        { "repair", ScanInfo::ScanType::Repair },
+        { "resync", ScanInfo::ScanType::Resync },
     };
 
-    return scanTypes.value(type, ScanType::Idle);
+    return scanTypes.value(type, ScanInfo::ScanType::Idle);
 }
 
 bool MDAdmController::runScan(const QString& raid_device,
-                              const ScanType scan_type)
+                              const ScanInfo::ScanType scan_type)
 {
     const QString scan_action_path =
             "/sys/block/" + raid_device + "/md/sync_action";
@@ -325,7 +325,7 @@ bool MDAdmController::runScan(const QString& raid_device,
                                    scanTypeToString(scan_type));
 }
 
-MDAdmController::ScanType
+ScanInfo::ScanType
 MDAdmController::getScanType(const QString& raid_device)
 {
     const QString scan_action_path =

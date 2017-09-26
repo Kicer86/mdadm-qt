@@ -168,7 +168,7 @@ QMenu* MainWindow::createScanMenu(const RaidInfo& raid)
     QAction *actionStop = new QAction(tr("Stop"), this);
 
     auto scanType = m_mdadmController.getScanType(raid.raid_device);
-    bool isIdle = (scanType == MDAdmController::ScanType::Idle);
+    bool isIdle = (scanType == ScanInfo::ScanType::Idle);
     actionCheck->setEnabled(isIdle);
     actionRepair->setEnabled(isIdle);
     actionResync->setEnabled(isIdle);
@@ -178,28 +178,28 @@ QMenu* MainWindow::createScanMenu(const RaidInfo& raid)
             [&raid, this]
     {
        m_mdadmController.runScan(raid.raid_device,
-                                 MDAdmController::ScanType::Check);
+                                 ScanInfo::ScanType::Check);
     });
 
     connect(actionRepair, &QAction::triggered,
             [&raid, this]
     {
        m_mdadmController.runScan(raid.raid_device,
-                                 MDAdmController::ScanType::Repair);
+                                 ScanInfo::ScanType::Repair);
     });
 
     connect(actionResync, &QAction::triggered,
             [&raid, this]
     {
        m_mdadmController.runScan(raid.raid_device,
-                                 MDAdmController::ScanType::Resync);
+                                 ScanInfo::ScanType::Resync);
     });
 
     connect(actionStop, &QAction::triggered,
             [&raid, this]
     {
        m_mdadmController.runScan(raid.raid_device,
-                                 MDAdmController::ScanType::Idle);
+                                 ScanInfo::ScanType::Idle);
     });
 
     scanOptions->setTitle(tr("Scan options"));
