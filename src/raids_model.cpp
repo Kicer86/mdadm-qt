@@ -220,6 +220,14 @@ void RaidsModel::removeRaid(const RaidInfo& raid)
 }
 
 
+void RaidsModel::updateRaid(const RaidInfo& raid)
+{
+    // Re-add all components.
+    // This is not the nicest solution, but it is easy, and is good enough.
+    
+}
+
+
 void RaidsModel::appendComponent(QStandardItem* raidItem, const RaidComponentInfo& blkdev)
 {
     QStandardItem* component_item = new QStandardItem(blkdev.name);
@@ -289,5 +297,8 @@ void RaidsModel::refreshChanged(const std::set<RaidInfo>& oldRaids, const std::s
                        // Find raids which differ in anything but name
                        return lhs != rhs && 
                               lhs.raid_device == rhs.raid_device;                       
-                   });        
+                   });    
+
+    for (const RaidInfo& raid: modified)
+        updateRaid(raid);
 }
