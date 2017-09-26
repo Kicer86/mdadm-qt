@@ -197,6 +197,18 @@ const RaidInfo& RaidsModel::infoFor(const QString& name) const
 }
 
 
+QStandardItem* RaidsModel::itemFor(const QString& name) const
+{
+    RaidsMap::const_iterator it = std::find_if(m_infos.cbegin(), m_infos.cend(),
+        [&name](const auto& item) { return item.second.raid_device == name; }
+    );
+    
+    assert(it != m_infos.end());
+    
+    return it->first;
+}
+
+
 void RaidsModel::appendRaid(const RaidInfo& raidInfo)
 {
     QStandardItem* raid_device_item = new QStandardItem(raidInfo.raid_device);
@@ -241,6 +253,11 @@ void RaidsModel::updateRaid(const RaidInfo& raid)
     // Re-add all components.
     // This is not the nicest solution, but it is easy, and is good enough.
     
+    removeComponentsOf(raid.raid_device);
+    
+    QStandardItem* raidItem = itemFor(raid.raid_device);
+    for (const auto& blkdev : raid.block_devices)
+        appendComponent(raidItem, blkdev);
 }
 
 
