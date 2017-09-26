@@ -57,8 +57,8 @@ namespace
 
         return result;
     }
-    
-    void nullResultCallback(const QByteArray &, bool,int) {  }    
+
+    void nullResultCallback(const QByteArray &, bool,int) {  }
 }
 
 bool RaidComponentInfo::operator==(const RaidComponentInfo& other) const
@@ -71,7 +71,7 @@ bool RaidComponentInfo::operator==(const RaidComponentInfo& other) const
 bool RaidComponentInfo::operator<(const RaidComponentInfo& other) const
 {
     bool less = false;
-    
+
     if (this->name < other.name)
         less = true;
     else if (this->name == other.name)
@@ -81,7 +81,7 @@ bool RaidComponentInfo::operator<(const RaidComponentInfo& other) const
         else if (this->type == other.type)
             less = this->descriptor_index < other.descriptor_index;
     }
-    
+
     return less;
 }
 
@@ -104,7 +104,7 @@ bool RaidInfo::operator!=(const RaidInfo& other) const
 bool RaidInfo::operator<(const RaidInfo& other) const
 {
     bool less = false;
-    
+
     if (this->raid_device < other.raid_device)
         less = true;
     else if (this->raid_device == other.raid_device)
@@ -114,7 +114,7 @@ bool RaidInfo::operator<(const RaidInfo& other) const
         else if (this->raid_type == other.raid_type)
             less = this->block_devices < other.block_devices;
     }
-    
+
     return less;
 }
 
@@ -272,7 +272,7 @@ bool MDAdmController::removeRaid(const QString& raid_device)
         if (success)
             emit raidRemoved();
     });
-    
+
     return true;
 }
 

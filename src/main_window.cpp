@@ -91,7 +91,7 @@ MainWindow::MainWindow():
     // raids tab
     m_raidsSortProxy = new QSortFilterProxyModel(this);
     m_raidsSortProxy->setSourceModel(m_raidsModel.model());
-    
+
     m_raidsView = new QTreeView(this);
     m_raidsView->setModel(m_raidsSortProxy);
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -101,7 +101,7 @@ MainWindow::MainWindow():
     // disks tab
     QSortFilterProxyModel* disksSortProxy = new QSortFilterProxyModel(this);
     disksSortProxy->setSourceModel(&m_disksModel);
-    
+
     m_disksModel.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
 
     m_disksView = new QTableView(this);
@@ -176,7 +176,7 @@ void MainWindow::contextMenu(const QPoint& pos)
     const RaidsModel::ItemType type = m_raidsModel.getTypeFor(model_index);
 
     if (type == RaidsModel::Raid)
-    {        
+    {
         const RaidInfo& raid = m_raidsModel.infoForRaid(model_index);
         const QString& device = raid.raid_device;
 
