@@ -57,7 +57,8 @@ struct RaidComponentInfo
     RaidComponentInfo& operator=(const RaidComponentInfo &) = default;
     RaidComponentInfo& operator=(RaidComponentInfo &&) = default;
 
-    bool operator==(const RaidComponentInfo&) const;
+    bool operator==(const RaidComponentInfo &) const;
+    bool operator<(const RaidComponentInfo &) const;
 };
 
 struct RaidInfo
@@ -86,6 +87,8 @@ struct RaidInfo
     RaidInfo& operator=(RaidInfo &&) = default;
 
     bool operator==(const RaidInfo&) const;
+    bool operator!=(const RaidInfo&) const;
+    bool operator<(const RaidInfo&) const;
 };
 
 class MDAdmController: public QObject

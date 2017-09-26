@@ -23,6 +23,76 @@
 #include <cassert>
 
 
+namespace
+{
+    // NOTE: taken from:
+    // https://github.com/Kicer86/photobroom/blob/master/src/core/iterator_wrapper.hpp
+    // https://github.com/Kicer86/photobroom/blob/master/src/core/map_iterator.hpp
+    // TODO: share it in a common library
+    
+    template<typename R, typename B, typename T>
+    struct iterator_wrapper: B
+    {
+        iterator_wrapper(): B(), m_operation()
+        {
+
+        }
+
+        iterator_wrapper(const B& base): B(base), m_operation()
+        {
+
+        }
+
+        iterator_wrapper(const iterator_wrapper &) = default;
+
+        ~iterator_wrapper()
+        {
+        }
+
+        const R& operator*() const
+        {
+            return m_operation(*this);
+        }
+
+        private:
+            T m_operation;
+    };
+    
+    template<typename T>
+    struct MapKeyAccessor
+    {
+        const typename T::value_type::first_type& operator()(const typename T::const_iterator& v) const
+        {
+            return v->first;
+        }
+    };
+
+    template<typename T>
+    struct MapValueAccessor
+    {
+        const typename T::value_type::second_type& operator()(const typename T::const_iterator& v) const
+        {
+            return v->second;
+        }
+    };
+
+
+    template<typename T>
+    using key_map_iterator = iterator_wrapper<typename T::value_type::first_type, typename T::const_iterator, MapKeyAccessor<T>>;
+
+    template<typename T>
+    using value_map_iterator = iterator_wrapper<typename T::value_type::second_type, typename T::const_iterator, MapValueAccessor<T>>;
+    
+    ///////
+
+    bool raidNameLess(const RaidInfo& lhs, const RaidInfo& rhs)                                
+    { 
+        return lhs.raid_device < rhs.raid_device;         
+    }
+    
+}
+
+
 RaidsModel::RaidsModel(): 
     m_model(), 
     m_infos(), 
@@ -47,44 +117,13 @@ RaidsModel::~RaidsModel()
 
 void RaidsModel::load(const std::vector<RaidInfo>& raids)
 {
-    m_infos.clear();
-    m_componentInfos.clear();
-    const int rows = m_model.rowCount();
-    m_model.removeRows(0, rows);     // .clear() would clear headers also
-
-    for(const RaidInfo& raid: raids)
-    {
-        QStandardItem* raid_device_item = new QStandardItem(raid.raid_device);
-        QStandardItem* raid_type_item = new QStandardItem(raid.raid_type);
-        QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
-
-        const QList<QStandardItem *> row =
-        {
-            raid_device_item,
-            raid_type_item,
-            raid_status,
-        };
-
-        for (const auto& blkdev : raid.block_devices)
-        {
-            QStandardItem* component_item = new QStandardItem(blkdev.name);
-            QStandardItem* component_status =
-                    new QStandardItem(m_diskType[blkdev.type]);
-
-            const QList<QStandardItem *> leaf =
-            {
-                component_item,
-                new QStandardItem(),
-                component_status
-            };
-            
-            m_componentInfos.emplace(component_item, blkdev);
-            row.first()->appendRow(leaf);
-        }
-
-        m_infos.emplace(raid_device_item, raid);        
-        m_model.appendRow(row);
-    }
+    const std::set<RaidInfo> newRaids(raids.cbegin(), raids.cend());    
+    const std::set<RaidInfo> oldRaids(value_map_iterator<RaidsMap>(m_infos.cbegin()), 
+                                      value_map_iterator<RaidsMap>(m_infos.cend()));
+        
+    eraseRemoved(oldRaids, newRaids);
+    appendAdded(oldRaids, newRaids);
+    refreshChanged(oldRaids, newRaids);    
 }
 
 
@@ -139,4 +178,171 @@ const RaidComponentInfo& RaidsModel::infoForComponent(const QModelIndex& index) 
 QAbstractItemModel* RaidsModel::model()
 {
     return &m_model;
+}
+
+
+const RaidInfo& RaidsModel::infoFor(const QString& name) const
+{
+     value_map_iterator<RaidsMap> it = 
+        std::find_if(value_map_iterator<RaidsMap>(m_infos.cbegin()), 
+                     value_map_iterator<RaidsMap>(m_infos.cend()),
+                     [&name](const RaidInfo& raid) 
+                     { return name == raid.raid_device; });
+        
+    assert(it != value_map_iterator<RaidsMap>(m_infos.cend()));
+    
+    const RaidInfo& raidInfo = *it;
+    
+    return raidInfo;
+}
+
+
+QStandardItem* RaidsModel::itemFor(const QString& name) const
+{
+    RaidsMap::const_iterator it = std::find_if(m_infos.cbegin(), m_infos.cend(),
+        [&name](const auto& item) { return item.second.raid_device == name; }
+    );
+    
+    assert(it != m_infos.end());
+    
+    return it->first;
+}
+
+
+void RaidsModel::appendRaid(const RaidInfo& raidInfo)
+{
+    QStandardItem* raid_device_item = new QStandardItem(raidInfo.raid_device);
+    QStandardItem* raid_type_item = new QStandardItem(raidInfo.raid_type);
+    QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
+
+    const QList<QStandardItem *> row =
+    {
+        raid_device_item,
+        raid_type_item,
+        raid_status,
+    };
+
+    for (const auto& blkdev : raidInfo.block_devices)
+        appendComponent(raid_device_item, blkdev);
+
+    m_infos.emplace(raid_device_item, raidInfo);        
+    m_model.appendRow(row);
+}
+
+
+void RaidsModel::removeRaid(const QString& raid_name)
+{    
+    // remove related components 
+    removeComponentsOf(raid_name);    
+    
+    QStandardItem* raidItem = itemFor(raid_name);
+    
+    const QModelIndex raidIndex = m_model.indexFromItem(raidItem);
+    m_model.removeRow(raidIndex.row(), raidIndex.parent());
+    m_infos.erase(raidItem);
+}
+
+
+void RaidsModel::updateRaid(const RaidInfo& raid)
+{
+    // Re-add all components.
+    // This is not the nicest solution, but it is easy, and is good enough.
+    
+    removeComponentsOf(raid.raid_device);
+    
+    QStandardItem* raidItem = itemFor(raid.raid_device);
+    for (const auto& blkdev : raid.block_devices)
+        appendComponent(raidItem, blkdev);
+}
+
+
+void RaidsModel::removeComponentsOf(const QString& raid_name)
+{    
+    const RaidInfo& raidInfo = infoFor(raid_name);
+       
+    for(const RaidComponentInfo& component: raidInfo.block_devices)
+        removeComponent(component);
+}
+
+
+void RaidsModel::appendComponent(QStandardItem* raidItem, const RaidComponentInfo& blkdev)
+{
+    QStandardItem* component_item = new QStandardItem(blkdev.name);
+    QStandardItem* component_status =
+            new QStandardItem(m_diskType[blkdev.type]);
+
+    const QList<QStandardItem *> leaf =
+    {
+        component_item,
+        new QStandardItem(),
+        component_status
+    };
+    
+    m_componentInfos.emplace(component_item, blkdev);
+    raidItem->appendRow(leaf);
+}
+
+
+void RaidsModel::removeComponent(const RaidComponentInfo& component)
+{
+    ComponentsMap::iterator it = std::find_if(m_componentInfos.begin(), m_componentInfos.end(),
+        [&component](const auto& item) { return item.second.name == component.name; }
+    );
+    
+    assert(it != m_componentInfos.end());
+    
+    const QModelIndex componentIndex = m_model.indexFromItem(it->first);
+    m_model.removeRow(componentIndex.row(), componentIndex.parent());
+    m_componentInfos.erase(it);
+}
+
+
+void RaidsModel::eraseRemoved(const std::set<RaidInfo>& oldRaids, const std::set<RaidInfo>& newRaids)
+{
+    std::vector<RaidInfo> removed;
+    std::set_difference(oldRaids.cbegin(), oldRaids.cend(),
+                        newRaids.cbegin(), newRaids.cend(),
+                        std::back_inserter(removed), 
+                        raidNameLess);
+    
+    for (const RaidInfo& raid: removed)
+        removeRaid(raid.raid_device);
+}
+
+
+void RaidsModel::appendAdded(const std::set<RaidInfo>& oldRaids, const std::set<RaidInfo>& newRaids)
+{
+    std::vector<RaidInfo> added;
+    std::set_difference(newRaids.cbegin(), newRaids.cend(),
+                        oldRaids.cbegin(), oldRaids.cend(),
+                        std::back_inserter(added), 
+                        raidNameLess);
+    
+    for (const RaidInfo& raid: added)
+        appendRaid(raid);
+}
+
+
+void RaidsModel::refreshChanged(const std::set<RaidInfo>& oldRaids, const std::set<RaidInfo>& newRaids)
+{
+    std::vector<RaidInfo> modified;
+    
+    // find all raids which changed (same name different content)
+    for (const RaidInfo& oldRaid: oldRaids)
+    {
+        const auto it =
+            std::find_if(newRaids.cbegin(), newRaids.cend(), 
+                         [&oldRaid](const RaidInfo& newRaid)
+                         {
+                             // Find raids which differ in anything but name
+                             return newRaid.raid_device == oldRaid.raid_device &&
+                                    newRaid != oldRaid;
+                         });
+        
+        if (it != newRaids.end())
+            modified.push_back(*it);
+    }
+    
+    for (const RaidInfo& raid: modified)
+        updateRaid(raid);
 }

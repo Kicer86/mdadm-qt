@@ -28,6 +28,7 @@
 #include <QTreeView>
 #include <QMenuBar>
 #include <QMessageBox>
+#include <QSortFilterProxyModel>
 
 #include "create_raid_dialog.hpp"
 #include "disk_controller.hpp"
@@ -84,20 +85,27 @@ MainWindow::MainWindow():
     m_disksModel(),
     m_viewTabs(nullptr),
     m_raidsView(nullptr),
-    m_disksView(nullptr)
+    m_disksView(nullptr),
+    m_raidsSortProxy(nullptr)
 {
     // raids tab
+    m_raidsSortProxy = new QSortFilterProxyModel(this);
+    m_raidsSortProxy->setSourceModel(m_raidsModel.model());
+    
     m_raidsView = new QTreeView(this);
-    m_raidsView->setModel(m_raidsModel.model());
+    m_raidsView->setModel(m_raidsSortProxy);
     m_raidsView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_raidsView->setSelectionMode(QAbstractItemView::SingleSelection);
     m_raidsView->setContextMenuPolicy(Qt::CustomContextMenu);
 
     // disks tab
+    QSortFilterProxyModel* disksSortProxy = new QSortFilterProxyModel(this);
+    disksSortProxy->setSourceModel(&m_disksModel);
+    
     m_disksModel.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
 
     m_disksView = new QTableView(this);
-    m_disksView->setModel(&m_disksModel);
+    m_disksView->setModel(disksSortProxy);
     m_disksView->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_disksView->setSelectionMode(QAbstractItemView::SingleSelection);
 
@@ -120,7 +128,7 @@ MainWindow::MainWindow():
 
     actionReload->setShortcut(Qt::Key_F5);
 
-    connect(actionReload, &QAction::triggered, this, &MainWindow::refreshArraysList);
+    connect(actionReload, &QAction::triggered, this, &MainWindow::refreshAll);
 
     viewMenu->addAction(actionReload);
 
@@ -132,8 +140,7 @@ MainWindow::MainWindow():
     setCentralWidget(m_viewTabs);
 
     // refresh stuf
-    refreshArraysList();
-    refreshDisksList();
+    refreshAll();
 
     m_raidsView->sortByColumn(0, Qt::AscendingOrder);
     m_raidsView->setSortingEnabled(true);
@@ -144,9 +151,9 @@ MainWindow::MainWindow():
     loadSettings();
 
     connect(&m_mdadmController, &MDAdmController::raidCreated, this,
-            &MainWindow::refreshArraysList);
+            &MainWindow::refreshAll);
     connect(&m_mdadmController, &MDAdmController::raidRemoved, this,
-            &MainWindow::refreshArraysList);
+            &MainWindow::refreshAll);
     connect(m_raidsView, &QTableView::customContextMenuRequested, this,
             &MainWindow::contextMenu);
 }
@@ -160,16 +167,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::contextMenu(const QPoint& pos)
 {
-    const QModelIndex index = m_raidsView->indexAt(pos);
+    const QModelIndex view_index = m_raidsView->indexAt(pos);
+    const QModelIndex model_index = m_raidsSortProxy->mapToSource(view_index);
 
-    if (!index.isValid())
+    if (!model_index.isValid())
         return;
 
-    const RaidsModel::ItemType type = m_raidsModel.getTypeFor(index);
+    const RaidsModel::ItemType type = m_raidsModel.getTypeFor(model_index);
 
     if (type == RaidsModel::Raid)
     {        
-        const RaidInfo& raid = m_raidsModel.infoForRaid(index);
+        const RaidInfo& raid = m_raidsModel.infoForRaid(model_index);
         const QString& device = raid.raid_device;
 
         QMenu *raidOptions = new QMenu(this);
@@ -191,10 +199,10 @@ void MainWindow::contextMenu(const QPoint& pos)
         QAction *actionSetFaulty = new QAction("Set faulty", this);
         QAction *actionReAdd = new QAction("Re-add", this);
 
-        const QModelIndex raidIndex = index.parent();
+        const QModelIndex raidIndex = model_index.parent();
         const RaidInfo& raid = m_raidsModel.infoForRaid(raidIndex);
         const RaidComponentInfo& componentInfo =
-                m_raidsModel.infoForComponent(index);
+                m_raidsModel.infoForComponent(model_index);
         const QString& raid_device = raid.raid_device;
         const QString component = componentInfo.name;
 
@@ -282,6 +290,14 @@ void MainWindow::refreshDisksList()
         m_disksModel.appendRow(row);
     }
 }
+
+
+void MainWindow::refreshAll()
+{
+    refreshArraysList();
+    refreshDisksList();
+}
+
 
 void MainWindow::createRaid()
 {

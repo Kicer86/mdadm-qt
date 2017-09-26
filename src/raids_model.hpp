@@ -21,6 +21,8 @@
 #define RAIDSMODEL_HPP
 
 
+#include <set>
+
 #include <QStandardItemModel>
 
 #include "mdadm_controller.hpp"
@@ -49,10 +51,29 @@ class RaidsModel: public QObject
         QAbstractItemModel* model();
 
     private:
+        typedef std::map<QStandardItem *, RaidInfo> RaidsMap;
+        typedef std::map<QStandardItem *, RaidComponentInfo> ComponentsMap;
+        
         QStandardItemModel m_model;
         std::map<QStandardItem *, RaidInfo> m_infos;
         std::map<QStandardItem *, RaidComponentInfo> m_componentInfos;
         const QMap<RaidComponentInfo::Type, QString> m_diskType;
+        
+        const RaidInfo& infoFor(const QString &) const;
+        QStandardItem* itemFor(const QString &) const;
+        
+        void appendRaid(const RaidInfo &);
+        void removeRaid(const QString &);
+        void updateRaid(const RaidInfo &);
+        
+        void removeComponentsOf(const QString &);
+        
+        void appendComponent(QStandardItem *, const RaidComponentInfo &);
+        void removeComponent(const RaidComponentInfo &);
+        
+        void eraseRemoved(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
+        void appendAdded(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
+        void refreshChanged(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
 };
 
 #endif // RAIDSMODEL_HPP
