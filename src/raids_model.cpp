@@ -49,7 +49,7 @@ namespace
         {
         }
 
-        R operator*() const
+        const R& operator*() const
         {
             return m_operation(*this);
         }
@@ -61,7 +61,7 @@ namespace
     template<typename T>
     struct MapKeyAccessor
     {
-        typename T::value_type::first_type operator()(const typename T::const_iterator& v) const
+        const typename T::value_type::first_type& operator()(const typename T::const_iterator& v) const
         {
             return v->first;
         }
@@ -70,7 +70,7 @@ namespace
     template<typename T>
     struct MapValueAccessor
     {
-        typename T::value_type::second_type operator()(const typename T::const_iterator& v) const
+        const typename T::value_type::second_type& operator()(const typename T::const_iterator& v) const
         {
             return v->second;
         }
