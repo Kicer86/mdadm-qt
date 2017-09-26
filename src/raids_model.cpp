@@ -181,6 +181,22 @@ QAbstractItemModel* RaidsModel::model()
 }
 
 
+const RaidInfo& RaidsModel::infoFor(const QString& name) const
+{
+     value_map_iterator<RaidsMap> it = 
+        std::find_if(value_map_iterator<RaidsMap>(m_infos.cbegin()), 
+                     value_map_iterator<RaidsMap>(m_infos.cend()),
+                     [&name](const RaidInfo& raid) 
+                     { return name == raid.raid_device; });
+        
+    assert(it != value_map_iterator<RaidsMap>(m_infos.cend()));
+    
+    const RaidInfo& raidInfo = *it;
+    
+    return raidInfo;
+}
+
+
 void RaidsModel::appendRaid(const RaidInfo& raidInfo)
 {
     QStandardItem* raid_device_item = new QStandardItem(raidInfo.raid_device);
@@ -225,6 +241,15 @@ void RaidsModel::updateRaid(const RaidInfo& raid)
     // Re-add all components.
     // This is not the nicest solution, but it is easy, and is good enough.
     
+}
+
+
+void RaidsModel::removeComponentsOf(const QString& raid_name)
+{    
+    const RaidInfo& raidInfo = infoFor(raid_name);
+       
+    for(const RaidComponentInfo& component: raidInfo.block_devices)
+        removeComponent(component);
 }
 
 
