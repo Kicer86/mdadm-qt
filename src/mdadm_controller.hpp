@@ -113,7 +113,7 @@ struct ScanInfo
         Idle,
         Check,
         Repair,
-        Recover,
+        Recovery,
         Resync,
         Reshape,
         Frozen,
@@ -182,6 +182,7 @@ class MDAdmController: public QObject
         bool runScan(const QString& raid_device,
                      const ScanInfo::ScanType scan_type);
         ScanInfo::ScanType getScanType(const QString&);
+        ScanInfo getScanData(const QString&);
 
     private:
         IMDAdmProcess* m_mdadmProcess;
@@ -189,6 +190,10 @@ class MDAdmController: public QObject
 
         QString scanTypeToString(const ScanInfo::ScanType) const;
         ScanInfo::ScanType scanStringToType(const QString &) const;
+        QString reshapeDirectionToString(
+                const ScanInfo::ReshapeDirection) const;
+        ScanInfo::ReshapeDirection stringToReshapeDirection(
+                const QString &) const;
 
     signals:
         void raidCreated();

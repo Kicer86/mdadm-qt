@@ -58,6 +58,11 @@ namespace
 
         return result;
     }
+
+    inline QString getScanPath(const QString& raid_device)
+    {
+        return "/sys/block/" + raid_device + "/md/";
+    }
     
     void nullResultCallback(const QByteArray &, bool,int) {  }    
 }
@@ -292,9 +297,11 @@ QString MDAdmController::scanTypeToString(const ScanInfo::ScanType type) const
     {
         { ScanInfo::ScanType::Idle, "idle" },
         { ScanInfo::ScanType::Check, "check" },
-        { ScanInfo::ScanType::Recover, "recover" },
+        { ScanInfo::ScanType::Recovery, "recover" },
         { ScanInfo::ScanType::Repair, "repair" },
         { ScanInfo::ScanType::Resync, "resync" },
+        { ScanInfo::ScanType::Reshape, "reshape" },
+        { ScanInfo::ScanType::Frozen, "frozen" },
     };
 
     return scanTypes.value(type);
@@ -307,9 +314,11 @@ MDAdmController::scanStringToType(const QString& type) const
     {
         { "idle", ScanInfo::ScanType::Idle },
         { "check", ScanInfo::ScanType::Check },
-        { "recover", ScanInfo::ScanType::Recover },
+        { "recovery", ScanInfo::ScanType::Recovery },
         { "repair", ScanInfo::ScanType::Repair },
         { "resync", ScanInfo::ScanType::Resync },
+        { "reshape", ScanInfo::ScanType::Reshape },
+        { "frozen", ScanInfo::ScanType::Frozen },
     };
 
     return scanTypes.value(type, ScanInfo::ScanType::Idle);
@@ -334,4 +343,104 @@ MDAdmController::getScanType(const QString& raid_device)
     return scanStringToType(
             utils::readValueFromFile<QString>(m_fileSystem, scan_action_path));
 
+}
+
+QString MDAdmController::reshapeDirectionToString(
+        const ScanInfo::ReshapeDirection direction) const
+{
+    QMap<ScanInfo::ReshapeDirection, QString> reshapeDirections =
+    {
+        { ScanInfo::ReshapeDirection::Backward, "backwards" },
+        { ScanInfo::ReshapeDirection::Forward, "forwards" },
+    };
+
+    return reshapeDirections.value(direction);
+}
+
+ScanInfo::ReshapeDirection MDAdmController::stringToReshapeDirection(
+        const QString& direction) const
+{
+    QMap<QString, ScanInfo::ReshapeDirection> reshapeDirections =
+    {
+        { "backwards", ScanInfo::ReshapeDirection::Backward },
+        { "forwards", ScanInfo::ReshapeDirection::Forward },
+    };
+
+    return reshapeDirections.value(direction,
+                                   ScanInfo::ReshapeDirection::Forward);
+}
+
+ScanInfo MDAdmController::getScanData(const QString& raid_device)
+{
+    const QString sync_action_path = getScanPath(raid_device) + "sync_action";
+    const QString last_sync_action_path =
+            getScanPath(raid_device) + "last_sync_action";
+    const QString mismatch_cnt_path = getScanPath(raid_device) + "mismatch_cnt";
+    const QString reshape_direction_path =
+            getScanPath(raid_device) + "reshape_direction";
+    const QString reshape_position_path =
+            getScanPath(raid_device) + "reshape_position";
+    const QString resync_start_path =
+            getScanPath(raid_device) + "resync_start";
+    const QString sync_completed_path =
+            getScanPath(raid_device) + "sync_completed";
+    const QString sync_max_path =
+            getScanPath(raid_device) + "sync_max";
+    const QString sync_min_path =
+            getScanPath(raid_device) + "sync_min";
+    const QString sync_speed_path =
+            getScanPath(raid_device) + "sync_speed";
+    const QString sync_speed_max_path =
+            getScanPath(raid_device) + "sync_speed_max";
+    const QString sync_speed_min_path =
+            getScanPath(raid_device) + "sync_speed_min";
+
+    ScanInfo scan_info;
+    scan_info.sync_action = scanStringToType(
+                utils::readValueFromFile<QString>(m_fileSystem,
+                                                  sync_action_path));
+    scan_info.last_scan = scanStringToType(
+                utils::readValueFromFile<QString>(m_fileSystem,
+                                                  last_sync_action_path));
+    scan_info.mismatch_cnt =
+            utils::readValueFromFile<uint64_t>(m_fileSystem,
+                                                mismatch_cnt_path);
+    scan_info.reshape_direction = stringToReshapeDirection(
+                utils::readValueFromFile<QString>(m_fileSystem,
+                                                  reshape_direction_path));
+    scan_info.reshape_position =
+            utils::readValueFromFile<uint64_t>(m_fileSystem,
+                                                reshape_position_path);
+    scan_info.resync_start =
+            utils::readValueFromFile<uint64_t>(m_fileSystem,
+                                               resync_start_path);
+
+    auto sync_completed_file = m_fileSystem->openFile(sync_completed_path);
+    QTextStream* sync_completed_stream = sync_completed_file->getStream();
+    const auto progress =
+            utils::readValueFromFile<QString>(*sync_completed_stream);
+    if (progress == "none" || progress == "delayed")
+        scan_info.progress = std::make_tuple(0, 0);
+    else
+    {
+        utils::readValueFromFile<QString>(*sync_completed_stream); //spacer
+        const auto end =
+                utils::readValueFromFile<QString>(*sync_completed_stream);
+        scan_info.progress = std::make_tuple(progress.toUInt(),
+                                             end.toUInt());
+    }
+
+    scan_info.scan_limits = std::make_tuple(
+                utils::readValueFromFile<uint64_t>(m_fileSystem,
+                                                   sync_min_path),
+                utils::readValueFromFile<uint64_t>(m_fileSystem,
+                                                   sync_max_path));
+    scan_info.sync_speed =
+            utils::readValueFromFile<unsigned>(m_fileSystem, sync_speed_path);
+    scan_info.speed_limits = std::make_tuple(
+                utils::readValueFromFile<uint64_t>(m_fileSystem,
+                                                   sync_speed_min_path),
+                utils::readValueFromFile<uint64_t>(m_fileSystem,
+                                                   sync_speed_max_path));
+    return scan_info;
 }

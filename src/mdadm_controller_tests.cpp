@@ -751,12 +751,44 @@ TEST(MDAdmControllerTest, usesRightParameterForStopScan)
 TEST(MDAdmControllerTest, getsCorrectRecoverScanType)
 {
     FakeFileSystem fs;
-    fs.addFile("/sys/block/md2/md/sync_action", "recover");
+    fs.addFile("/sys/block/md2/md/sync_action", "recovery");
 
     IMDAdmProcessMock mdadm_process;
 
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
 
     EXPECT_TRUE(controller.getScanType("md2") ==
-                ScanInfo::ScanType::Recover);
+                ScanInfo::ScanType::Recovery);
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForReshape)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/md2/md/sync_action", "reshape");
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Reshape));
+
+    EXPECT_TRUE(controller.getScanType("md2") ==
+                ScanInfo::ScanType::Reshape);
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForFreeze)
+{
+    FakeFileSystem fs;
+    fs.addFile("/sys/block/md2/md/sync_action", "frozen");
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Frozen));
+
+    EXPECT_TRUE(controller.getScanType("md2") ==
+                ScanInfo::ScanType::Frozen);
 }
