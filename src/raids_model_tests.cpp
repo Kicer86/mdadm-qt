@@ -4,7 +4,9 @@
 #include <gmock/gmock.h>
 
 #include "raids_model.hpp"
+#include "printers_for_gmock.hpp"
 
+using testing::_;
 
 class RaidsModelTests: public testing::Test
 {
@@ -129,4 +131,36 @@ TEST_F(RaidsModelTests, addingRaidsToEmptyModel)
 
     EXPECT_EQ(2, qt_model->rowCount(first_raid));
     EXPECT_EQ(4, qt_model->rowCount(second_raid));
+}
+
+
+struct ModelSignalWatcher: QObject
+{
+    MOCK_METHOD3(rowsRemoved, void(const QModelIndex &parent, int first, int last));
+};
+
+
+TEST_F(RaidsModelTests, removingRaidsFromModel)
+{
+    const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+
+    RaidsModel model;
+    model.load(raids);
+
+    QAbstractItemModel* qt_model = model.model();
+
+    ModelSignalWatcher signalWatcher;
+
+    // top item (raid1)
+    EXPECT_CALL(signalWatcher, rowsRemoved(QModelIndex(), 1, 1));
+
+    // raid1's items
+    EXPECT_CALL(signalWatcher, rowsRemoved(qt_model->index(1, 0) ,_ ,_))
+        .Times(4);
+
+    QObject::connect(qt_model, &QAbstractItemModel::rowsRemoved,
+                     &signalWatcher, &ModelSignalWatcher::rowsRemoved);
+
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, raid3};
+    model.load(raidsAfterChange);
 }
