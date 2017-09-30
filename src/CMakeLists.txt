@@ -77,6 +77,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             ifilesystem_mock.hpp
             imdadm_process_mock.hpp
             mdadm_controller.cpp
+            raids_model.cpp
             ${WRAPPED_FOR_TESTS}
 
             printers_for_gmock.cpp
@@ -100,6 +101,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                         ${GMOCK_INCLUDE_DIRS}
                                         ${GTEST_INCLUDE_DIRS}
                                         ${Qt5Core_INCLUDE_DIRS}
+                                        ${Qt5Gui_INCLUDE_DIRS}
     )
 
     target_include_directories(mdadm_unit_tests_cc
@@ -107,6 +109,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                         ${GMOCK_INCLUDE_DIRS}
                                         ${GTEST_INCLUDE_DIRS}
                                         ${Qt5Core_INCLUDE_DIRS}
+                                        ${Qt5Gui_INCLUDE_DIRS}
     )
 
     # link stage
@@ -117,6 +120,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                 ${GTEST_LIBRARY}
                                 ${CMAKE_THREAD_LIBS_INIT}
                                 Qt5::Core
+                                Qt5::Gui
     )
 
     target_link_libraries(mdadm_unit_tests_cc
@@ -126,6 +130,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
                                 ${GTEST_LIBRARY}
                                 ${CMAKE_THREAD_LIBS_INIT}
                                 Qt5::Core
+                                Qt5::Gui
                                 gcov
     )
 
