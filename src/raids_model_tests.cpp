@@ -161,7 +161,7 @@ TEST_F(RaidsModelTests, removingRaidsFromModel)
 
     ModelSignalWatcher signalWatcher(qt_model);
 
-    // top item (raid1)
+    // top item (raid2)
     EXPECT_CALL(signalWatcher, rowsRemoved(QModelIndex(), 1, 1));
 
     // raid1's items
