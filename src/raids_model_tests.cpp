@@ -136,6 +136,12 @@ TEST_F(RaidsModelTests, addingRaidsToEmptyModel)
 
 struct ModelSignalWatcher: QObject
 {
+    ModelSignalWatcher(QAbstractItemModel* model)
+    {
+        connect(model, &QAbstractItemModel::rowsRemoved,
+                this, &ModelSignalWatcher::rowsRemoved);
+    }
+
     MOCK_METHOD3(rowsRemoved, void(const QModelIndex &parent, int first, int last));
 };
 
@@ -149,7 +155,7 @@ TEST_F(RaidsModelTests, removingRaidsFromModel)
 
     QAbstractItemModel* qt_model = model.model();
 
-    ModelSignalWatcher signalWatcher;
+    ModelSignalWatcher signalWatcher(qt_model);
 
     // top item (raid1)
     EXPECT_CALL(signalWatcher, rowsRemoved(QModelIndex(), 1, 1));
@@ -157,9 +163,6 @@ TEST_F(RaidsModelTests, removingRaidsFromModel)
     // raid1's items
     EXPECT_CALL(signalWatcher, rowsRemoved(qt_model->index(1, 0) ,_ ,_))
         .Times(4);
-
-    QObject::connect(qt_model, &QAbstractItemModel::rowsRemoved,
-                     &signalWatcher, &ModelSignalWatcher::rowsRemoved);
 
     const std::vector<RaidInfo> raidsAfterChange = {raid1, raid3};
     model.load(raidsAfterChange);
