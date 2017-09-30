@@ -7,6 +7,8 @@
 #include "printers_for_gmock.hpp"
 
 using testing::_;
+using testing::NiceMock;
+
 
 class RaidsModelTests: public testing::Test
 {
@@ -200,4 +202,30 @@ TEST_F(RaidsModelTests, appendingRaidsToModel)
     // Make sure last item has 4 leafs
     const QModelIndex raid2Idx = qt_model->index(2, 0);
     EXPECT_EQ(4, qt_model->rowCount(raid2Idx));
+}
+
+
+TEST_F(RaidsModelTests, raidComponentRemoved)
+{
+    const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+
+    RaidsModel model;
+    model.load(raids);
+
+    QAbstractItemModel* qt_model = model.model();
+
+    // Use nice mock.
+    // We do not care currently what signals will be emited when
+    // refreshing list of components.
+    NiceMock<ModelSignalWatcher> signalWatcher(qt_model);
+
+    RaidInfo newRaid2 = raid2;
+    newRaid2.block_devices.pop_back();    // drop last component from raid
+
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
+    model.load(raidsAfterChange);
+
+    // When model is updated, we expect raid2 will have 3 leafs instead of 4
+    const QModelIndex raid2Idx = qt_model->index(1, 0);
+    EXPECT_EQ(3, qt_model->rowCount(raid2Idx));
 }
