@@ -34,8 +34,6 @@ private:
     Disk(const Disk&) = delete;
     Disk& operator=(const Disk&) = delete;
 
-    void accept(IDeviceVisitor *) override;
-
 public:
     Disk();
     Disk(const QString &, IFileSystem *);

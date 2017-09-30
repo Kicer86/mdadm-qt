@@ -75,11 +75,3 @@ QString Disk::toString() const
             .arg(m_name).arg(m_model).arg(m_serial)
             .arg(m_logical_block_size * m_size / 1024.0 / 1024.0 / 1024.0);
 }
-
-
-void Disk::accept(IDeviceVisitor* visitor)
-{
-    visitor->visit(this);
-}
-
-

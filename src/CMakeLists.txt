@@ -4,8 +4,6 @@ find_package(Qt5Widgets REQUIRED)
 option(RUN_UNIT_TESTS "Run unit test in post build step" ON)
 
 set(SRCS
-        device_type_visitor.cpp
-        device_type_visitor.hpp
         imdadm_process.hpp
         main.cpp
         main_window.cpp
@@ -67,7 +65,6 @@ if(GMOCK_FOUND AND GTEST_FOUND)
 
     set(tests_sources
             block_device.cpp
-            device_type_visitor.cpp
             disk.cpp
             disk_controller.cpp
             empty_filter.cpp
@@ -81,7 +78,6 @@ if(GMOCK_FOUND AND GTEST_FOUND)
 
             printers_for_gmock.cpp
 
-            device_type_visitor_tests.cpp
             disk_tests.cpp
             disk_controller_tests.cpp
             filters_tests.cpp

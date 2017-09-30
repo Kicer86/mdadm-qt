@@ -5,7 +5,6 @@
 
 enum units { BYTES, SECTORS };
 
-struct IDeviceVisitor;
 
 class IBlockDevice
 {
@@ -17,8 +16,6 @@ public:
     virtual bool isUsed() const = 0;
     virtual QString devPath() const = 0;
     virtual QString toString() const = 0;
-
-    virtual void accept(IDeviceVisitor  *) = 0;
 };
 
 #endif // IBLOCK_DEVICE_H
