@@ -181,6 +181,48 @@ TEST_F(RaidsModelTests, modelItemsHaveExpectedTypes)
 }
 
 
+TEST_F(RaidsModelTests, gettingRaidsInfo)
+{
+    const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+
+    RaidsModel model;
+    model.load(raids);
+
+    QAbstractItemModel* qt_model = model.model();
+
+    const QModelIndex raid1Idx = qt_model->index(0, 0);
+    const QModelIndex raid2Idx = qt_model->index(1, 0);
+    const QModelIndex raid3Idx = qt_model->index(2, 0);
+
+    EXPECT_EQ(raid1, model.infoForRaid(raid1Idx));
+    EXPECT_EQ(raid2, model.infoForRaid(raid2Idx));
+    EXPECT_EQ(raid3, model.infoForRaid(raid3Idx));
+}
+
+
+TEST_F(RaidsModelTests, gettingComponentsInfo)
+{
+    const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+
+    RaidsModel model;
+    model.load(raids);
+
+    QAbstractItemModel* qt_model = model.model();
+
+    const QModelIndex raid2Idx = qt_model->index(1, 0);
+
+    const QModelIndex raid1Comp1Idx = qt_model->index(0, 0, raid2Idx);
+    const QModelIndex raid1Comp2Idx = qt_model->index(1, 0, raid2Idx);
+    const QModelIndex raid1Comp3Idx = qt_model->index(2, 0, raid2Idx);
+    const QModelIndex raid1Comp4Idx = qt_model->index(3, 0, raid2Idx);
+
+    EXPECT_EQ(dev3, model.infoForComponent(raid1Comp1Idx));
+    EXPECT_EQ(dev4, model.infoForComponent(raid1Comp2Idx));
+    EXPECT_EQ(dev5, model.infoForComponent(raid1Comp3Idx));
+    EXPECT_EQ(dev6, model.infoForComponent(raid1Comp4Idx));
+}
+
+
 TEST_F(RaidsModelTests, removingRaidsFromModel)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
