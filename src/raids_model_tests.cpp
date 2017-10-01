@@ -158,6 +158,29 @@ struct ModelSignalWatcher: QObject
 };
 
 
+TEST_F(RaidsModelTests, modelItemsHaveExpectedTypes)
+{
+    const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+
+    RaidsModel model;
+    model.load(raids);
+
+    QAbstractItemModel* qt_model = model.model();
+
+    const QModelIndex raid1Idx = qt_model->index(0, 0);
+    const QModelIndex raid3Idx = qt_model->index(2, 0);
+
+    EXPECT_EQ(RaidsModel::Raid, model.getTypeFor(raid1Idx));
+    EXPECT_EQ(RaidsModel::Raid, model.getTypeFor(raid3Idx));
+
+    const QModelIndex raid1CompIdx = qt_model->index(1, 0, raid1Idx);
+    const QModelIndex raid3CompIdx = qt_model->index(1, 0, raid3Idx);
+
+    EXPECT_EQ(RaidsModel::Component, model.getTypeFor(raid1CompIdx));
+    EXPECT_EQ(RaidsModel::Component, model.getTypeFor(raid3CompIdx));
+}
+
+
 TEST_F(RaidsModelTests, removingRaidsFromModel)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
