@@ -2,6 +2,7 @@
 #include "printers_for_gmock.hpp"
 
 #include <QDebug>
+#include <QModelIndex>
 #include <QString>
 
 #include "mdadm_controller.hpp"
@@ -46,6 +47,15 @@ void PrintTo(const RaidInfo& info, std::ostream* os)
               << "(" << static_cast<int>(device.type) << ")";
     }
 
+
+    *os << output.toStdString();
+}
+
+void PrintTo(const QModelIndex& idx, std::ostream* os)
+{
+    QString output;
+    QDebug debug(&output);
+    debug << idx;
 
     *os << output.toStdString();
 }
