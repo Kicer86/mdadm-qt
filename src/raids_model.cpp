@@ -253,6 +253,14 @@ void RaidsModel::updateRaid(const RaidInfo& raid)
     QStandardItem* raidItem = itemFor(raid.raid_device);
     for (const auto& blkdev : raid.block_devices)
         appendComponent(raidItem, blkdev);
+
+    // update raid information
+    const QModelIndex idxForRaid = m_model.indexFromItem(raidItem);
+    const QModelIndex idxForType = idxForRaid.sibling(idxForRaid.row(), 1);   // TODO: use constant for column type
+    QStandardItem* typeItem = m_model.itemFromIndex(idxForType);
+
+    // TODO: prepare common code for update and appendRaid()
+    typeItem->setText(raid.raid_type);
 }
 
 
