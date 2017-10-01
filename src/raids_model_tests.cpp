@@ -145,10 +145,16 @@ struct ModelSignalWatcher: QObject
 
         connect(model, &QAbstractItemModel::rowsInserted,
                 this, &ModelSignalWatcher::rowsInserted);
+
+        connect(model, &QAbstractItemModel::dataChanged,
+                this, &ModelSignalWatcher::dataChanged);
     }
 
     MOCK_METHOD3(rowsRemoved, void(const QModelIndex &parent, int first, int last));
     MOCK_METHOD3(rowsInserted, void(const QModelIndex &parent, int first, int last));
+    MOCK_METHOD3(dataChanged, void(const QModelIndex &topLeft,
+                                   const QModelIndex &bottomRight,
+                                   const QVector<int> &roles));
 };
 
 
@@ -228,4 +234,27 @@ TEST_F(RaidsModelTests, raidComponentRemoved)
     // When model is updated, we expect raid2 will have 3 leafs instead of 4
     const QModelIndex raid2Idx = qt_model->index(1, 0);
     EXPECT_EQ(3, qt_model->rowCount(raid2Idx));
+}
+
+
+TEST_F(RaidsModelTests, raidTypeChanged)
+{
+    const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+
+    RaidsModel model;
+    model.load(raids);
+
+    QAbstractItemModel* qt_model = model.model();
+
+    NiceMock<ModelSignalWatcher> signalWatcher(qt_model);
+
+    const QModelIndex raid2TypeIdx = qt_model->index(1, 1);
+    EXPECT_CALL(signalWatcher, dataChanged(raid2TypeIdx, raid2TypeIdx, _))
+        .Times(1);
+
+    RaidInfo newRaid2 = raid2;
+    newRaid2.raid_type = "new type";
+
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
+    model.load(raidsAfterChange);
 }
