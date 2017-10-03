@@ -167,7 +167,8 @@ QMenu* MainWindow::createScanMenu(const RaidInfo& raid)
     QAction *actionResync = new QAction(tr("Resync"), this);
     QAction *actionStop = new QAction(tr("Stop"), this);
 
-    auto scanType = m_mdadmController.getScanType(raid.raid_device);
+    ScanInfo scanInfo = m_mdadmController.getScanData(raid.raid_device);
+    auto scanType = scanInfo.sync_action;
     bool isIdle = (scanType == ScanInfo::ScanType::Idle);
     actionCheck->setEnabled(isIdle);
     actionRepair->setEnabled(isIdle);

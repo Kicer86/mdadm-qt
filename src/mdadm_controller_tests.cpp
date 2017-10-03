@@ -683,11 +683,42 @@ TEST(MDAdmControllerTest, usesRightParameterForReAdd)
     controller.reAdd("/dev/md2", "/dev/sdc");
 }
 
+void setUpScanInfoFakeFs(FakeFileSystem& fs, const QString& raid_device,
+                         const QMap<QString, QString>& override)
+{
+    QMap<QString, QString> scanInfoFiles{
+        { "last_sync_action", "resync" },
+        { "mismatch_cnt", "0" },
+        { "reshape_direction", "forwards" },
+        { "reshape_position", "none" },
+        { "resync_start", "none" },
+        { "sync_action", "idle" },
+        { "sync_completed", "none" },
+        { "sync_max", "max" },
+        { "sync_min", "0" },
+        { "sync_speed", "none" },
+        { "sync_speed_max", "200000 (system)" },
+        { "sync_speed_min", "1000 (system)" },
+    };
+
+    for (const auto& key : override.keys())
+    {
+        scanInfoFiles.insert(key, override.value(key));
+    }
+
+    for (const auto& key : scanInfoFiles.keys())
+    {
+        fs.addFile(QString("/sys/block/%1/md/%2").arg(raid_device)
+                           .arg(key),
+                   scanInfoFiles.value(key));
+    }
+}
 
 TEST(MDAdmControllerTest, usesRightParameterForIntegrityCheck)
 {
     FakeFileSystem fs;
-    fs.addFile("/sys/block/md2/md/sync_action", "idle");
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{{"sync_action", "idle"}});
 
     IMDAdmProcessMock mdadm_process;
 
@@ -695,7 +726,7 @@ TEST(MDAdmControllerTest, usesRightParameterForIntegrityCheck)
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Check));
 
-    EXPECT_TRUE(controller.getScanType("md2") ==
+    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Check);
 }
 
@@ -703,7 +734,8 @@ TEST(MDAdmControllerTest, usesRightParameterForIntegrityCheck)
 TEST(MDAdmControllerTest, usesRightParameterForRepair)
 {
     FakeFileSystem fs;
-    fs.addFile("/sys/block/md2/md/sync_action", "idle");
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{{"sync_action", "idle"}});
 
     IMDAdmProcessMock mdadm_process;
 
@@ -711,7 +743,7 @@ TEST(MDAdmControllerTest, usesRightParameterForRepair)
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Repair));
 
-    EXPECT_TRUE(controller.getScanType("md2") ==
+    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Repair);
 }
 
@@ -719,7 +751,8 @@ TEST(MDAdmControllerTest, usesRightParameterForRepair)
 TEST(MDAdmControllerTest, usesRightParameterForResync)
 {
     FakeFileSystem fs;
-    fs.addFile("/sys/block/md2/md/sync_action", "resync");
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{{"sync_action", "idle"}});
 
     IMDAdmProcessMock mdadm_process;
 
@@ -727,7 +760,7 @@ TEST(MDAdmControllerTest, usesRightParameterForResync)
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Resync));
 
-    EXPECT_TRUE(controller.getScanType("md2") ==
+    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Resync);
 }
 
@@ -735,7 +768,8 @@ TEST(MDAdmControllerTest, usesRightParameterForResync)
 TEST(MDAdmControllerTest, usesRightParameterForStopScan)
 {
     FakeFileSystem fs;
-    fs.addFile("/sys/block/md2/md/sync_action", "check");
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{{"sync_action", "check"}});
 
     IMDAdmProcessMock mdadm_process;
 
@@ -743,21 +777,22 @@ TEST(MDAdmControllerTest, usesRightParameterForStopScan)
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Idle));
 
-    EXPECT_TRUE(controller.getScanType("md2") ==
+    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Idle);
 }
 
 
-TEST(MDAdmControllerTest, getsCorrectRecoverScanType)
+TEST(MDAdmControllerTest, getsCorrectRecoveryScanType)
 {
     FakeFileSystem fs;
-    fs.addFile("/sys/block/md2/md/sync_action", "recovery");
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{{"sync_action", "recovery"}});
 
     IMDAdmProcessMock mdadm_process;
 
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
 
-    EXPECT_TRUE(controller.getScanType("md2") ==
+    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Recovery);
 }
 
@@ -765,7 +800,8 @@ TEST(MDAdmControllerTest, getsCorrectRecoverScanType)
 TEST(MDAdmControllerTest, usesRightParameterForReshape)
 {
     FakeFileSystem fs;
-    fs.addFile("/sys/block/md2/md/sync_action", "reshape");
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{{"sync_action", "reshape"}});
 
     IMDAdmProcessMock mdadm_process;
 
@@ -773,7 +809,7 @@ TEST(MDAdmControllerTest, usesRightParameterForReshape)
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Reshape));
 
-    EXPECT_TRUE(controller.getScanType("md2") ==
+    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Reshape);
 }
 
@@ -781,7 +817,8 @@ TEST(MDAdmControllerTest, usesRightParameterForReshape)
 TEST(MDAdmControllerTest, usesRightParameterForFreeze)
 {
     FakeFileSystem fs;
-    fs.addFile("/sys/block/md2/md/sync_action", "frozen");
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{{"sync_action", "frozen"}});
 
     IMDAdmProcessMock mdadm_process;
 
@@ -789,6 +826,6 @@ TEST(MDAdmControllerTest, usesRightParameterForFreeze)
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Frozen));
 
-    EXPECT_TRUE(controller.getScanType("md2") ==
+    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Frozen);
 }
