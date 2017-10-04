@@ -53,7 +53,7 @@ T readValueFromFile(IFileSystem* fs, const QString& path)
 template <typename T>
 void writeValueToFile(QTextStream& file_stream, const T& value)
 {
-    file_stream << value << endl; // XXX: consider passing value with \n
+    file_stream << value << endl; // FIXME consider passing value with \n
 }
 
 template <typename T>
