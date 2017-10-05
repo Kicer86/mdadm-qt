@@ -175,33 +175,20 @@ QMenu* MainWindow::createScanMenu(const RaidInfo& raid)
     actionResync->setEnabled(isIdle);
     actionStop->setDisabled(isIdle);
 
+    auto scan_function = [this](const RaidInfo& raid_info,
+            const ScanInfo::ScanType& type)
+    {
+        m_mdadmController.runScan(raid_info.raid_device, type);
+    };
+
     connect(actionCheck, &QAction::triggered,
-            [&raid, this]
-    {
-       m_mdadmController.runScan(raid.raid_device,
-                                 ScanInfo::ScanType::Check);
-    });
-
+            std::bind(scan_function, raid, ScanInfo::ScanType::Check));
     connect(actionRepair, &QAction::triggered,
-            [&raid, this]
-    {
-       m_mdadmController.runScan(raid.raid_device,
-                                 ScanInfo::ScanType::Repair);
-    });
-
+            std::bind(scan_function, raid, ScanInfo::ScanType::Repair));
     connect(actionResync, &QAction::triggered,
-            [&raid, this]
-    {
-       m_mdadmController.runScan(raid.raid_device,
-                                 ScanInfo::ScanType::Resync);
-    });
-
+            std::bind(scan_function, raid, ScanInfo::ScanType::Resync));
     connect(actionStop, &QAction::triggered,
-            [&raid, this]
-    {
-       m_mdadmController.runScan(raid.raid_device,
-                                 ScanInfo::ScanType::Idle);
-    });
+            std::bind(scan_function, raid, ScanInfo::ScanType::Idle));
 
     scanOptions->setTitle(tr("Scan options"));
     scanOptions->addAction(actionCheck);
