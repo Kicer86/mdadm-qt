@@ -187,8 +187,12 @@ QMenu* MainWindow::createScanMenu(const RaidInfo& raid)
             std::bind(scan_function, raid, ScanInfo::ScanType::Repair));
     connect(actionResync, &QAction::triggered,
             std::bind(scan_function, raid, ScanInfo::ScanType::Resync));
+    /* FIXME
+     * stop should set sync_min to 0
+     * consider setting ScanType to Idle (and test it if scan is not restarted
+     */
     connect(actionStop, &QAction::triggered,
-            std::bind(scan_function, raid, ScanInfo::ScanType::Idle));
+            std::bind(scan_function, raid, ScanInfo::ScanType::Frozen));
 
     scanOptions->setTitle(tr("Scan options"));
     scanOptions->addAction(actionCheck);
