@@ -248,7 +248,7 @@ TEST_F(RaidsModelTests, removingRaidsFromModel)
 
 TEST_F(RaidsModelTests, appendingRaidsToModel)
 {
-    const std::vector<RaidInfo> raids = {raid1,raid3};
+    const std::vector<RaidInfo> raids = {raid1, raid3};
 
     RaidsModel model;
     model.load(raids);
