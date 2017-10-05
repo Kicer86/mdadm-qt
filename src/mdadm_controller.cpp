@@ -433,3 +433,14 @@ ScanInfo MDAdmController::getScanData(const QString& raid_device)
                                                    sync_speed_max_path));
     return scan_info;
 }
+
+bool MDAdmController::stopScan(const QString& raid_device)
+{
+    const QString sync_min_path =
+            getScanPath(raid_device) + "sync_min";
+
+    return (runScan(raid_device, ScanInfo::ScanType::Frozen) &&
+            utils::writeValueToFile(m_fileSystem, sync_min_path, "0") &&
+            // TODO: Retest if it doesn't restart scan action
+            runScan(raid_device, ScanInfo::ScanType::Idle));
+}

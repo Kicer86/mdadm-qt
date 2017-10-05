@@ -769,16 +769,19 @@ TEST(MDAdmControllerTest, usesRightParameterForStopScan)
 {
     FakeFileSystem fs;
     setUpScanInfoFakeFs(fs, "md2",
-                        QMap<QString, QString>{{"sync_action", "check"}});
+                        QMap<QString, QString>{
+                            {"sync_action", "check"},
+                            {"sync_min", "512"}});
 
     IMDAdmProcessMock mdadm_process;
 
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
-
+    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Frozen));
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Idle));
 
     EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Idle);
+    EXPECT_TRUE(std::get<0>(controller.getScanData("md2").scan_limits) == 0);
 }
 
 

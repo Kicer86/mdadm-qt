@@ -181,6 +181,7 @@ class MDAdmController: public QObject
         bool reAdd(const QString& raid_device, const QString& component);
         bool runScan(const QString& raid_device,
                      const ScanInfo::ScanType scan_type);
+        bool stopScan(const QString& raid_device);
         ScanInfo getScanData(const QString&);
 
     private:
