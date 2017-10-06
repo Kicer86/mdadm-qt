@@ -39,11 +39,12 @@ namespace
     const RaidInfo raid4("md1", { dev1, dev2 }, "type 2");
 }
 
+
 INSTANTIATE_TEST_CASE_P(RaidsSet,
                         RaidInfoOperatorTest,
                         ::testing::Values(
-                            std::make_pair(raid1, raid2),
-                            std::make_pair(raid1, raid3),
-                            std::make_pair(raid1, raid4)
+                            std::make_pair(raid1, raid2),        // different device
+                            std::make_pair(raid1, raid3),        // defferent type
+                            std::make_pair(raid4, raid3)         // different components
                         )
 );
