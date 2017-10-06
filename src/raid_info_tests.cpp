@@ -18,7 +18,8 @@ TEST_P(RaidInfoOperatorTest, operatorLess)
 {
     const auto& raids = GetParam();
 
-    EXPECT_LT(raids.first, raids.second);
+    EXPECT_EQ( true,  raids.first  < raids.second );       // 1st < 2nd
+    EXPECT_EQ( false, raids.second < raids.first  );       // 2nd !< 1st
 }
 
 namespace
@@ -34,9 +35,15 @@ namespace
 
     const RaidInfo raid1("md1", { dev1, dev2 }, "type 0");
     const RaidInfo raid2("md2", { dev3, dev4, dev5, dev6 }, "type 1");
-    const RaidInfo raid3("md3", { dev7, dev8 }, "type 2");
+    const RaidInfo raid3("md1", { dev7, dev8 }, "type 2");
+    const RaidInfo raid4("md1", { dev1, dev2 }, "type 2");
 }
 
 INSTANTIATE_TEST_CASE_P(RaidsSet,
                         RaidInfoOperatorTest,
-                        ::testing::Values( std::make_pair(raid1, raid2) ));
+                        ::testing::Values(
+                            std::make_pair(raid1, raid2),
+                            std::make_pair(raid1, raid3),
+                            std::make_pair(raid1, raid4)
+                        )
+);
