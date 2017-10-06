@@ -83,6 +83,7 @@ if(GMOCK_FOUND AND GTEST_FOUND)
             disk_controller_tests.cpp
             filters_tests.cpp
             mdadm_controller_tests.cpp
+            raid_info_tests.cpp
             raids_model_tests.cpp
     )
 
