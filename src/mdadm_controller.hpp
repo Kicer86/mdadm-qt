@@ -138,6 +138,7 @@ class MDAdmController: public QObject
     signals:
         void raidCreated();
         void raidRemoved();
+        void componentStateUpdated();
 };
 
 #endif // MDADMCONTROLLER_HPP
