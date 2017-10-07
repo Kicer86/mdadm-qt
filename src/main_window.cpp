@@ -154,6 +154,8 @@ MainWindow::MainWindow():
             &MainWindow::refreshAll);
     connect(&m_mdadmController, &MDAdmController::raidRemoved, this,
             &MainWindow::refreshAll);
+    connect(&m_mdadmController, &MDAdmController::componentStateUpdated,
+            this, &MainWindow::refreshAll);
     connect(m_raidsView, &QTableView::customContextMenuRequested, this,
             &MainWindow::contextMenu);
 }
