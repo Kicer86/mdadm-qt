@@ -444,3 +444,19 @@ bool MDAdmController::stopScan(const QString& raid_device)
             // TODO: Retest if it doesn't restart scan action
             runScan(raid_device, ScanInfo::ScanType::Idle));
 }
+
+bool MDAdmController::pauseScan(const QString& raid_device)
+{
+    return runScan(raid_device, ScanInfo::ScanType::Frozen);
+}
+
+bool MDAdmController::resumeScan(const QString& raid_device)
+{
+    bool ret = false;
+    ScanInfo scan_info = getScanData(raid_device);
+    if (scan_info.sync_action == ScanInfo::ScanType::Frozen) {
+        ret = runScan(raid_device, scan_info.last_scan);
+    }
+
+    return ret;
+}

@@ -776,8 +776,8 @@ TEST(MDAdmControllerTest, usesRightParameterForStopScan)
     IMDAdmProcessMock mdadm_process;
 
     MDAdmController controller(&mdadm_process, fs.getFileSystem());
-    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Frozen));
-    EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Idle));
+
+    EXPECT_TRUE(controller.stopScan("md2"));
 
     EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Idle);
@@ -831,4 +831,69 @@ TEST(MDAdmControllerTest, usesRightParameterForFreeze)
 
     EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Frozen);
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForPause)
+{
+    FakeFileSystem fs;
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{{"sync_action", "check"},
+                                               {"sync_min", "512"}});
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_TRUE(controller.pauseScan("md2"));
+
+    const ScanInfo si = controller.getScanData("md2");
+    EXPECT_TRUE(si.sync_action ==
+                ScanInfo::ScanType::Frozen);
+    EXPECT_TRUE(std::get<0>(si.scan_limits) == 512);
+}
+
+
+TEST(MDAdmControllerTest, usesRightParameterForResume)
+{
+    FakeFileSystem fs;
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{
+                            {"sync_action", "frozen"},
+                            {"last_sync_action", "check"},
+                            {"sync_min", "512"}});
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    EXPECT_TRUE(controller.resumeScan("md2"));
+
+    ScanInfo scan_info = controller.getScanData("md2");
+    EXPECT_TRUE(scan_info.sync_action ==
+                ScanInfo::ScanType::Check);
+    EXPECT_TRUE(std::get<0>(scan_info.scan_limits) == 512);
+
+}
+
+
+TEST(MDAdmControllerTest, resumeOfActiveScanShouldFail)
+{
+    FakeFileSystem fs;
+    setUpScanInfoFakeFs(fs, "md2",
+                        QMap<QString, QString>{
+                            {"sync_action", "repair"},
+                            {"last_sync_action", "check"},
+                            {"sync_min", "512"}});
+
+    IMDAdmProcessMock mdadm_process;
+
+    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+
+    EXPECT_FALSE(controller.resumeScan("md2"));
+
+    ScanInfo scan_info = controller.getScanData("md2");
+    EXPECT_TRUE(scan_info.sync_action ==
+                ScanInfo::ScanType::Repair);
+    EXPECT_TRUE(std::get<0>(scan_info.scan_limits) == 512);
+
 }

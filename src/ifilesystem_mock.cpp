@@ -41,6 +41,8 @@ void FakeFileSystem::addFile(const QString& path, const QString& content)
             = std::make_unique<IFileSystemMock::IFileMock>();
         if (mode == QIODevice::WriteOnly) {
             current_stream.string()->clear();
+        } else {
+            current_stream.seek(0);
         }
 
         EXPECT_CALL(*file, getStream())
