@@ -331,6 +331,9 @@ TEST_F(RaidsModelTests, raidComponentTypeChanged)
     const QString typeStr = data.toString();
 
     EXPECT_EQ(typeStr, "journal");
+
+    const RaidComponentInfo& compInfo = model.infoForComponent(raid2Comp1Idx);
+    EXPECT_EQ(compInfo.type, RaidComponentInfo::Type::Journal);
 }
 
 
