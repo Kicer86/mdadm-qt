@@ -238,16 +238,16 @@ bool MDAdmController::createRaid(const QString& raid_device,
                             [this](const QByteArray& output,
                                                bool success,
                                                int exitCode)
-    {
-        if (success)
-            emit raidCreated();
-    },
+                            {
+                                if (success)
+                                    emit raidCreated();
+                            },
                             [callback](const QByteArray& output)->QString
-    {
-        if (callback != nullptr)
-            return callback(QString(output));
-        return "";
-    });
+                            {
+                                if (callback != nullptr)
+                                    return callback(QString(output));
+                                return "";
+                            });
 
     return true;
 }
@@ -335,8 +335,6 @@ bool MDAdmController::reAdd(const QString& raid_device,
         if (success)
             emit componentStateUpdated();
     });
-
-    emit componentStateUpdated();
 
     return true;
 }
