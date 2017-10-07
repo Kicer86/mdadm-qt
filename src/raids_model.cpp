@@ -207,17 +207,11 @@ RaidsModel::RaidsMap::const_iterator RaidsModel::itFor(const QString& name) cons
 
 const RaidInfo& RaidsModel::infoFor(const QString& name) const
 {
-     value_map_iterator<RaidsMap> it =
-        std::find_if(value_map_iterator<RaidsMap>(m_infos.cbegin()),
-                     value_map_iterator<RaidsMap>(m_infos.cend()),
-                     [&name](const RaidInfo& raid)
-                     { return name == raid.raid_device; });
+    RaidsMap::const_iterator it = itFor(name);
 
-    assert(it != value_map_iterator<RaidsMap>(m_infos.cend()));
+    assert(it != m_infos.end());
 
-    const RaidInfo& raidInfo = *it;
-
-    return raidInfo;
+    return it->second;
 }
 
 
