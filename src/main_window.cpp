@@ -175,18 +175,18 @@ QMenu* MainWindow::createScanMenu(const RaidInfo& raid)
     actionResync->setEnabled(isIdle);
     actionStop->setDisabled(isIdle);
 
-    auto scan_function = [this](const RaidInfo& raid_info,
-            const ScanInfo::ScanType& type)
+    const QString& raid_device = raid.raid_device;
+    auto scan_function = [this, raid_device](const ScanInfo::ScanType& type)
     {
-        m_mdadmController.runScan(raid_info.raid_device, type);
+        m_mdadmController.runScan(raid_device, type);
     };
 
     connect(actionCheck, &QAction::triggered,
-            std::bind(scan_function, raid, ScanInfo::ScanType::Check));
+            std::bind(scan_function, ScanInfo::ScanType::Check));
     connect(actionRepair, &QAction::triggered,
-            std::bind(scan_function, raid, ScanInfo::ScanType::Repair));
+            std::bind(scan_function, ScanInfo::ScanType::Repair));
     connect(actionResync, &QAction::triggered,
-            std::bind(scan_function, raid, ScanInfo::ScanType::Resync));
+            std::bind(scan_function, ScanInfo::ScanType::Resync));
     connect(actionStop, &QAction::triggered,
             std::bind(&MDAdmController::stopScan, &m_mdadmController,
                       raid.raid_device));
@@ -211,7 +211,7 @@ void MainWindow::contextMenu(const QPoint& pos)
     const RaidsModel::ItemType type = m_raidsModel.getTypeFor(index);
 
     if (type == RaidsModel::Raid)
-    {        
+    {
         const RaidInfo& raid = m_raidsModel.infoForRaid(index);
         const QString& device = raid.raid_device;
 
