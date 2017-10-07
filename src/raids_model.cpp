@@ -181,6 +181,30 @@ QAbstractItemModel* RaidsModel::model()
 }
 
 
+RaidsModel::RaidsMap::iterator RaidsModel::itFor(const QString& name)
+{
+     RaidsMap::iterator it = std::find_if(m_infos.begin(), m_infos.end(),
+        [&name](const auto& item) { return item.second.raid_device == name; }
+    );
+
+    assert(it != m_infos.end());
+
+    return it;
+}
+
+
+RaidsModel::RaidsMap::const_iterator RaidsModel::itFor(const QString& name) const
+{
+     RaidsMap::const_iterator it = std::find_if(m_infos.begin(), m_infos.end(),
+        [&name](const auto& item) { return item.second.raid_device == name; }
+    );
+
+    assert(it != m_infos.end());
+
+    return it;
+}
+
+
 const RaidInfo& RaidsModel::infoFor(const QString& name) const
 {
      value_map_iterator<RaidsMap> it =
@@ -199,9 +223,7 @@ const RaidInfo& RaidsModel::infoFor(const QString& name) const
 
 QStandardItem* RaidsModel::itemFor(const QString& name) const
 {
-    RaidsMap::const_iterator it = std::find_if(m_infos.cbegin(), m_infos.cend(),
-        [&name](const auto& item) { return item.second.raid_device == name; }
-    );
+    RaidsMap::const_iterator it = itFor(name);
 
     assert(it != m_infos.end());
 
