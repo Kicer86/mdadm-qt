@@ -360,4 +360,7 @@ TEST_F(RaidsModelTests, raidTypeChanged)
 
     const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
     model.load(raidsAfterChange);
+
+    const RaidInfo& raidInfo = model.infoForRaid(raid2TypeIdx);
+    EXPECT_EQ(raidInfo, newRaid2);
 }
