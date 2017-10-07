@@ -181,27 +181,43 @@ QAbstractItemModel* RaidsModel::model()
 }
 
 
+RaidsModel::RaidsMap::iterator RaidsModel::itFor(const QString& name)
+{
+     RaidsMap::iterator it = std::find_if(m_infos.begin(), m_infos.end(),
+        [&name](const auto& item) { return item.second.raid_device == name; }
+    );
+
+    assert(it != m_infos.end());
+
+    return it;
+}
+
+
+RaidsModel::RaidsMap::const_iterator RaidsModel::itFor(const QString& name) const
+{
+     RaidsMap::const_iterator it = std::find_if(m_infos.begin(), m_infos.end(),
+        [&name](const auto& item) { return item.second.raid_device == name; }
+    );
+
+    assert(it != m_infos.end());
+
+    return it;
+}
+
+
 const RaidInfo& RaidsModel::infoFor(const QString& name) const
 {
-     value_map_iterator<RaidsMap> it =
-        std::find_if(value_map_iterator<RaidsMap>(m_infos.cbegin()),
-                     value_map_iterator<RaidsMap>(m_infos.cend()),
-                     [&name](const RaidInfo& raid)
-                     { return name == raid.raid_device; });
+    RaidsMap::const_iterator it = itFor(name);
 
-    assert(it != value_map_iterator<RaidsMap>(m_infos.cend()));
+    assert(it != m_infos.end());
 
-    const RaidInfo& raidInfo = *it;
-
-    return raidInfo;
+    return it->second;
 }
 
 
 QStandardItem* RaidsModel::itemFor(const QString& name) const
 {
-    RaidsMap::const_iterator it = std::find_if(m_infos.cbegin(), m_infos.cend(),
-        [&name](const auto& item) { return item.second.raid_device == name; }
-    );
+    RaidsMap::const_iterator it = itFor(name);
 
     assert(it != m_infos.end());
 
@@ -250,7 +266,9 @@ void RaidsModel::updateRaid(const RaidInfo& raid)
 
     removeComponentsOf(raid.raid_device);
 
-    QStandardItem* raidItem = itemFor(raid.raid_device);
+    auto raidIt = itFor(raid.raid_device);
+
+    QStandardItem* raidItem = raidIt->first;
     for (const auto& blkdev : raid.block_devices)
         appendComponent(raidItem, blkdev);
 
@@ -258,6 +276,9 @@ void RaidsModel::updateRaid(const RaidInfo& raid)
     const QModelIndex idxForRaid = m_model.indexFromItem(raidItem);
     const QModelIndex idxForType = idxForRaid.sibling(idxForRaid.row(), 1);   // TODO: use constant for column type
     QStandardItem* typeItem = m_model.itemFromIndex(idxForType);
+
+    // update stored RaidInfo
+    raidIt->second = raid;
 
     // TODO: prepare common code for update and appendRaid()
     typeItem->setText(raid.raid_type);

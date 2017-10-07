@@ -302,6 +302,44 @@ TEST_F(RaidsModelTests, raidComponentRemoved)
 }
 
 
+TEST_F(RaidsModelTests, raidComponentTypeChanged)
+{
+    const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+
+    RaidsModel model;
+    model.load(raids);
+
+    QAbstractItemModel* qt_model = model.model();
+
+    // Use nice mock.
+    // We do not care currently what signals will be emited when
+    // refreshing list of components.
+    NiceMock<ModelSignalWatcher> signalWatcher(qt_model);
+
+    RaidInfo newRaid2 = raid2;
+    EXPECT_NE(newRaid2.block_devices.front().type,
+              RaidComponentInfo::Type::Journal);
+
+    newRaid2.block_devices.front().type = RaidComponentInfo::Type::Journal;
+
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
+    model.load(raidsAfterChange);
+
+    const QModelIndex raid2Idx = qt_model->index(1, 0);
+    const QModelIndex raid2Comp1Idx = raid2Idx.child(0, 2);  // index to type of first component
+    const QVariant data = raid2Comp1Idx.data();
+    const QString typeStr = data.toString();
+
+    EXPECT_EQ(typeStr, "journal");
+
+    const RaidComponentInfo& compInfo = model.infoForComponent(raid2Comp1Idx);
+    EXPECT_EQ(compInfo.type, RaidComponentInfo::Type::Journal);
+
+    const RaidInfo& raidInfo = model.infoForRaid(raid2Idx);
+    EXPECT_EQ(raidInfo.block_devices.front().type, RaidComponentInfo::Type::Journal);
+}
+
+
 TEST_F(RaidsModelTests, raidTypeChanged)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
@@ -322,4 +360,7 @@ TEST_F(RaidsModelTests, raidTypeChanged)
 
     const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
     model.load(raidsAfterChange);
+
+    const RaidInfo& raidInfo = model.infoForRaid(raid2TypeIdx);
+    EXPECT_EQ(raidInfo, newRaid2);
 }

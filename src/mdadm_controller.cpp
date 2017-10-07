@@ -238,16 +238,16 @@ bool MDAdmController::createRaid(const QString& raid_device,
                             [this](const QByteArray& output,
                                                bool success,
                                                int exitCode)
-    {
-        if (success)
-            emit raidCreated();
-    },
+                            {
+                                if (success)
+                                    emit raidCreated();
+                            },
                             [callback](const QByteArray& output)->QString
-    {
-        if (callback != nullptr)
-            return callback(QString(output));
-        return "";
-    });
+                            {
+                                return callback?
+                                       callback(output):
+                                       QString();
+                            });
 
     return true;
 }
@@ -308,7 +308,15 @@ bool MDAdmController::markAsFaulty(const QString& raid_device,
 
     mdadm_args << raid_device << "--fail" << component;
 
-    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
+    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray &,
+                                               bool success,
+                                               int)
+    {
+        if (success)
+            emit componentStateUpdated();
+    });
+
+    emit componentStateUpdated();
 
     return true;
 }
@@ -320,7 +328,13 @@ bool MDAdmController::reAdd(const QString& raid_device,
 
     mdadm_args << raid_device << "--re-add" << component;
 
-    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
+    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray &,
+                                               bool success,
+                                               int)
+    {
+        if (success)
+            emit componentStateUpdated();
+    });
 
     return true;
 }
