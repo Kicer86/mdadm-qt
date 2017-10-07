@@ -244,9 +244,9 @@ bool MDAdmController::createRaid(const QString& raid_device,
                             },
                             [callback](const QByteArray& output)->QString
                             {
-                                if (callback != nullptr)
-                                    return callback(QString(output));
-                                return "";
+                                return callback?
+                                       callback(output):
+                                       QString();
                             });
 
     return true;
