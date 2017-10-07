@@ -334,6 +334,9 @@ TEST_F(RaidsModelTests, raidComponentTypeChanged)
 
     const RaidComponentInfo& compInfo = model.infoForComponent(raid2Comp1Idx);
     EXPECT_EQ(compInfo.type, RaidComponentInfo::Type::Journal);
+
+    const RaidInfo& raidInfo = model.infoForRaid(raid2Idx);
+    EXPECT_EQ(raidInfo.block_devices.front().type, RaidComponentInfo::Type::Journal);
 }
 
 
