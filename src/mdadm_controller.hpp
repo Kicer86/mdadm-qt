@@ -26,6 +26,8 @@
 #include <QObject>
 #include <QStringList>
 
+#include "imdadm_controller.hpp"
+
 
 struct IMDAdmProcess;
 struct IFileSystem;
@@ -91,7 +93,7 @@ struct RaidInfo
     bool operator<(const RaidInfo&) const;
 };
 
-class MDAdmController: public QObject
+class MDAdmController: public QObject, public IMDAdmController
 {
         Q_OBJECT
 
@@ -116,6 +118,9 @@ class MDAdmController: public QObject
 
         MDAdmController& operator=(const MDAdmController &) = delete;
         bool operator==(const MDAdmController &) const = delete;
+
+        // overrides
+        QStringList listRaids() const override;
 
         // operations
         bool listRaids(const ListResult &);             // list raids asynchronicaly, call ListResult when done

@@ -134,6 +134,21 @@ MDAdmController::~MDAdmController()
 }
 
 
+QStringList MDAdmController::listRaids() const
+{
+    std::vector<RaidInfo> raid_infos;
+
+    /*
+    listRaids([&raid_infos](const std::vector<RaidInfo>& infos)
+    {
+        raid_infos = infos;
+    });
+    */
+
+    return {};
+}
+
+
 bool MDAdmController::listRaids(const ListResult& result)
 {
     auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
