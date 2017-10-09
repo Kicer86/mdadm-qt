@@ -19,6 +19,8 @@
 
 #include "mdadm_controller.hpp"
 
+#include <cassert>
+
 #include <QRegExp>
 #include <QFileInfo>
 #include <QTextStream>
@@ -79,6 +81,11 @@ MDAdmController::~MDAdmController()
 
 std::vector<MDAdmController::RaidId> MDAdmController::listRaids() const
 {
+    // TODO: we are filling cache here.
+    //       Whole idea of caching and cache flush needs to be
+    //       prepared properly.
+    m_infoCache.clear();
+
     std::vector<RaidInfo> raid_infos;
 
     listRaids([&raid_infos](const std::vector<RaidInfo>& infos)
@@ -90,7 +97,11 @@ std::vector<MDAdmController::RaidId> MDAdmController::listRaids() const
     result.reserve(raid_infos.size());
 
     for(const RaidInfo& raidInfo: raid_infos)
+    {
         result.push_back(raidInfo.raid_device);
+
+        m_infoCache.emplace(raidInfo.raid_device, raidInfo);
+    }
 
     return result;
 }
@@ -98,7 +109,10 @@ std::vector<MDAdmController::RaidId> MDAdmController::listRaids() const
 
 RaidInfo MDAdmController::getInfoFor(const IMDAdmController::RaidId& id) const
 {
+    auto it = m_infoCache.find(id);
+    assert(it != m_infoCache.end());
 
+    return it->second;
 }
 
 
