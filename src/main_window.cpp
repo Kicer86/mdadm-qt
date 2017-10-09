@@ -81,7 +81,7 @@ MainWindow::MainWindow():
     m_mdadmProcess(),
     m_mdadmDebug(&m_mdadmProcess),
     m_mdadmController(&m_mdadmDebug, &m_fileSystem),
-    m_raidsModel(),
+    m_raidsModel(&m_mdadmController),
     m_disksModel(),
     m_viewTabs(nullptr),
     m_raidsView(nullptr),
@@ -268,9 +268,7 @@ bool MainWindow::removeRaid(const QString& raidDevice)
 
 void MainWindow::refreshArraysList()
 {
-    auto load = std::bind(&RaidsModel::load, &m_raidsModel, std::placeholders::_1);
-
-    m_mdadmController.listRaids(load);
+    m_raidsModel.load();
 }
 
 
