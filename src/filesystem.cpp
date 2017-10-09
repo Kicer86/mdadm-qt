@@ -67,7 +67,7 @@ FileSystem::~FileSystem()
 }
 
 
-std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path, const QIODevice::OpenMode& mode)
+std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path, const QIODevice::OpenMode& mode) const
 {
     std::unique_ptr<IFileSystem::IFile> file = std::make_unique<File>(path, mode);
 
@@ -78,17 +78,17 @@ std::unique_ptr<IFileSystem::IFile> FileSystem::openFile(const QString& path, co
 bool FileSystem::isDeviceUsed(const QString& dev_path)
 {
     bool result = true;
-    
+
     if (dev_path.left(5) == "/dev/")
     {
         const int fd = open(QFile::encodeName(dev_path), O_RDONLY | O_EXCL);
-        if (fd > 0) 
+        if (fd > 0)
         {
             result = false;
             close(fd);
         }
     }
-    
+
     return result;
 }
 
