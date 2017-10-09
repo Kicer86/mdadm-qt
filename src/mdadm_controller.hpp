@@ -21,6 +21,7 @@
 #define MDADMCONTROLLER_HPP
 
 #include <functional>
+#include <map>
 #include <vector>
 
 #include <QObject>
@@ -61,6 +62,7 @@ class MDAdmController: public QObject, public IMDAdmController
 
         // overrides
         std::vector<RaidId> listRaids() const override;
+        RaidInfo getInfoFor(const IMDAdmController::RaidId & ) const override;
 
         // operations
         bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
@@ -77,6 +79,7 @@ class MDAdmController: public QObject, public IMDAdmController
         bool reAdd(const QString& raid_device, const QString& component);
 
     private:
+        mutable std::map<RaidId, RaidInfo> m_infoCache;
         IMDAdmProcess* m_mdadmProcess;
         IFileSystem* m_fileSystem;
 

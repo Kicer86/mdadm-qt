@@ -4,6 +4,7 @@
 
 #include <vector>
 
+#include "raidinfo.hpp"
 
 struct IMDAdmController
 {
@@ -12,6 +13,7 @@ struct IMDAdmController
     virtual ~IMDAdmController() = default;
 
     virtual std::vector<RaidId> listRaids() const = 0;
+    virtual RaidInfo getInfoFor(const RaidId &) const = 0;
 };
 
 

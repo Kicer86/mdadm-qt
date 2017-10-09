@@ -96,6 +96,12 @@ std::vector<MDAdmController::RaidId> MDAdmController::listRaids() const
 }
 
 
+RaidInfo MDAdmController::getInfoFor(const IMDAdmController::RaidId& id) const
+{
+
+}
+
+
 bool MDAdmController::listRaids(const ListResult& result) const
 {
     auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
