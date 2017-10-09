@@ -134,22 +134,26 @@ MDAdmController::~MDAdmController()
 }
 
 
-QStringList MDAdmController::listRaids() const
+std::vector<MDAdmController::RaidId> MDAdmController::listRaids() const
 {
     std::vector<RaidInfo> raid_infos;
 
-    /*
     listRaids([&raid_infos](const std::vector<RaidInfo>& infos)
     {
         raid_infos = infos;
     });
-    */
 
-    return {};
+    std::vector<RaidId> result;
+    result.reserve(raid_infos.size());
+
+    for(const RaidInfo& raidInfo: raid_infos)
+        result.push_back(raidInfo.raid_device);
+
+    return result;
 }
 
 
-bool MDAdmController::listRaids(const ListResult& result)
+bool MDAdmController::listRaids(const ListResult& result) const
 {
     auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
                                                        QIODevice::Text);

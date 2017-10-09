@@ -2,14 +2,16 @@
 #ifndef IMDADM_CONTROLLER_HPP
 #define IMDADM_CONTROLLER_HPP
 
-#include <QStringList>
+#include <vector>
 
 
 struct IMDAdmController
 {
+    typedef QString RaidId;
+
     virtual ~IMDAdmController() = default;
 
-        virtual QStringList listRaids() const = 0;
+    virtual std::vector<RaidId> listRaids() const = 0;
 };
 
 

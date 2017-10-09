@@ -120,10 +120,10 @@ class MDAdmController: public QObject, public IMDAdmController
         bool operator==(const MDAdmController &) const = delete;
 
         // overrides
-        QStringList listRaids() const override;
+        std::vector<RaidId> listRaids() const override;
 
         // operations
-        bool listRaids(const ListResult &);             // list raids asynchronicaly, call ListResult when done
+        bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
         bool listComponents(const QString& raid_device,
                             QStringList& block_devices);
         bool createRaid(const QString& raid_device, Type,
