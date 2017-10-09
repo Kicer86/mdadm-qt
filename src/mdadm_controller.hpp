@@ -32,66 +32,6 @@
 struct IMDAdmProcess;
 struct IFileSystem;
 
-struct RaidComponentInfo
-{
-    enum class Type {
-        Normal,
-        WriteMostly = 'W',
-        Journal = 'J',
-        Faulty = 'F',
-        Spare = 'S',
-        Replacement ='R',
-    };
-
-    QString name;
-    Type type;
-    int descriptor_index;
-
-    RaidComponentInfo(const QString& _name, Type _type, int _descr_nr) :
-        name(_name),
-        type(_type),
-        descriptor_index(_descr_nr)
-    {
-    }
-
-    RaidComponentInfo(const RaidComponentInfo &) = default;
-    RaidComponentInfo(RaidComponentInfo &&) = default;
-    RaidComponentInfo& operator=(const RaidComponentInfo &) = default;
-    RaidComponentInfo& operator=(RaidComponentInfo &&) = default;
-
-    bool operator==(const RaidComponentInfo &) const;
-    bool operator<(const RaidComponentInfo &) const;
-};
-
-struct RaidInfo
-{
-    /*
-     * device types in mdstat:
-     * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/md/md.c#n7711
-     */
-
-    QString raid_device;
-    QList<RaidComponentInfo> block_devices;
-    QString raid_type;
-
-    RaidInfo (const QString& _raid_device,
-              const QList<RaidComponentInfo>& _block_devices,
-              const QString& _type):
-        raid_device(_raid_device),
-        block_devices(_block_devices),
-        raid_type(_type)
-    {}
-
-    RaidInfo(const RaidInfo &) = default;
-    RaidInfo(RaidInfo &&) = default;
-
-    RaidInfo& operator=(const RaidInfo &) = default;
-    RaidInfo& operator=(RaidInfo &&) = default;
-
-    bool operator==(const RaidInfo&) const;
-    bool operator!=(const RaidInfo&) const;
-    bool operator<(const RaidInfo&) const;
-};
 
 class MDAdmController: public QObject, public IMDAdmController
 {

@@ -25,6 +25,8 @@ set(SRCS
         empty_filter.hpp
         filesystem.cpp
         filesystem.hpp
+        raidinfo.cpp
+        raidinfo.hpp
         raids_model.cpp
         raids_model.hpp
         exclude_used_filter.cpp
