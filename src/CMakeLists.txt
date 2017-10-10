@@ -81,6 +81,7 @@ if(BUILD_TESTS)
                 ifilesystem_mock.cpp
                 ifilesystem_mock.hpp
                 imdadm_process_mock.hpp
+                iraid_info_provider_mock.hpp
                 mdadm_controller.cpp
                 raids_model.cpp
                 ${WRAPPED_FOR_TESTS}
