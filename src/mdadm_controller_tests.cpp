@@ -6,6 +6,7 @@
 #include "mdadm_controller.hpp"
 #include "ifilesystem_mock.hpp"
 #include "imdadm_process_mock.hpp"
+#include "iraid_info_provider_mock.hpp"
 #include "printers_for_gmock.hpp"
 
 using testing::_;
@@ -372,8 +373,8 @@ TEST(MDAdmControllerTest,
 TEST(MDAdmControllerTest,
      usesRightParameterForRaidRemoval)
 {
+    IRaidInfoProviderMock raid_info_provider;
     IMDAdmProcessMock mdadm_process;
-    IFileSystemMock filesystem;
 
     const QString slavesPath("/sys/block/md127/slaves");
 
@@ -387,14 +388,10 @@ TEST(MDAdmControllerTest,
         "/dev/sdd"
     };
 
-    EXPECT_CALL(filesystem, listDir(slavesPath, _, QDir::Dirs | QDir::NoDotAndDotDot))
-            .WillOnce(Return(
-                          std::deque<QString> { "sdb", "sdc", "sdd" }));
-
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
-    MDAdmController controller(&mdadm_process, &filesystem);
+    MDAdmController controller(&mdadm_process, &raid_info_provider);
     EXPECT_TRUE(controller.removeRaid("/dev/md127"));
 }
 
@@ -403,7 +400,7 @@ TEST(MDAdmControllerTest,
      usesRightParameterForEmptyRaidRemoval)
 {
     IMDAdmProcessMock mdadm_process;
-    IFileSystemMock filesystem;
+    IRaidInfoProviderMock raidInfoProvider;
 
     const QString slavesPath("/sys/block/md4/slaves");
 
@@ -413,14 +410,10 @@ TEST(MDAdmControllerTest,
         "/dev/md4"
     };
 
-    EXPECT_CALL(filesystem, listDir(slavesPath, _, QDir::Dirs | QDir::NoDotAndDotDot))
-            .WillOnce(Return(
-                          std::deque<QString> { }));
-
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
-    MDAdmController controller(&mdadm_process, &filesystem);
+    MDAdmController controller(&mdadm_process, &raidInfoProvider);
     EXPECT_TRUE(controller.removeRaid("/dev/md4"));
 }
 
