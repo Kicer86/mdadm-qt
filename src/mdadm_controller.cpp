@@ -62,8 +62,10 @@ namespace
 }
 
 
-MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess):
-    m_mdadmProcess(mdadmProcess)
+MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess,
+                                 IRaidInfoProvider* raidInfoProvider):
+    m_mdadmProcess(mdadmProcess),
+    m_raidInfoProvider(raidInfoProvider)
 {
 
 }
@@ -121,13 +123,10 @@ bool MDAdmController::removeRaid(const QString& raid_device)
 
     mdadm_args << "--stop" << "--verbose" << raid_device;
 
-    // FIXME: temporarily disabled due to compilation error
-    /*
-    if (listComponents(QFileInfo(raid_device).baseName(), components))
+    if (m_raidInfoProvider->listComponents(QFileInfo(raid_device).baseName(), components))
     {
         mdadm_args << "--zero-superblock" << components;
     }
-    */
 
     m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output,
                                                bool success,

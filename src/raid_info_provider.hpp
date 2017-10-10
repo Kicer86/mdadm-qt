@@ -35,11 +35,11 @@ class RaidInfoProvider: public IRaidInfoProvider
         // overrides
         std::vector<RaidId> listRaids() const override;
         RaidInfo getInfoFor(const IRaidInfoProvider::RaidId & ) const override;
+        bool listComponents(const QString& raid_device,
+                            QStringList& block_devices) const override;
 
         // operations
         bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
-        bool listComponents(const QString& raid_device,
-                            QStringList& block_devices);
 
     private:
         mutable std::map<RaidId, RaidInfo> m_infoCache;

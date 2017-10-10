@@ -14,6 +14,10 @@ struct IRaidInfoProvider
 
     virtual std::vector<RaidId> listRaids() const = 0;
     virtual RaidInfo getInfoFor(const RaidId &) const = 0;
+
+    // TODO: refactor, base on RaidId
+    virtual bool listComponents(const QString& raid_device,
+                                QStringList& block_devices) const = 0;
 };
 
 

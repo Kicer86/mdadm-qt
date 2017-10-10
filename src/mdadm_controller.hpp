@@ -31,6 +31,7 @@
 
 
 struct IMDAdmProcess;
+struct IRaidInfoProvider;
 
 
 class MDAdmController: public QObject
@@ -50,7 +51,7 @@ class MDAdmController: public QObject
             Raid6,
         };
 
-        MDAdmController(IMDAdmProcess *);
+        MDAdmController(IMDAdmProcess *, IRaidInfoProvider *);
         MDAdmController(const MDAdmController &) = delete;
         ~MDAdmController();
 
@@ -69,6 +70,7 @@ class MDAdmController: public QObject
 
     private:
         IMDAdmProcess* m_mdadmProcess;
+        IRaidInfoProvider* m_raidInfoProvider;
 
     signals:
         void raidCreated();

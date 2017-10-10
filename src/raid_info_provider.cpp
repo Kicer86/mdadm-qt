@@ -139,7 +139,8 @@ bool RaidInfoProvider::listRaids(const ListResult& result) const
 
 
 bool RaidInfoProvider::listComponents(const QString& raid_device,
-                                     QStringList& block_devices) {
+                                     QStringList& block_devices) const
+{
     QString slaves_path = "/sys/block/" + raid_device + "/slaves";
 
     const std::deque<QString> files =

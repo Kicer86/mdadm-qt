@@ -51,8 +51,8 @@ class MainWindow: public QMainWindow
         FileSystem m_fileSystem;
         MDAdmProcess m_mdadmProcess;
         MDAdmDebugLayer m_mdadmDebug;
-        MDAdmController m_mdadmController;
         RaidInfoProvider m_raidInfoProvider;
+        MDAdmController m_mdadmController;
         RaidsModel m_raidsModel;
         QStandardItemModel m_disksModel;
         QTabWidget* m_viewTabs;
