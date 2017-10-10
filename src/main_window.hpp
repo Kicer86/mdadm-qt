@@ -65,6 +65,8 @@ class MainWindow: public QMainWindow
         void refreshAll();
         void createRaid();
 
+        QMenu* createScanMenu(const RaidInfo&);
+
         bool confirmDialog(const QString& title, const QString& message,
                            const QString& confirmWord);
 
