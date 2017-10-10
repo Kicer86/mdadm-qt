@@ -21,8 +21,30 @@
 
 #include "iraid_info_provider.hpp"
 
+struct IFileSystem;
+
 class RaidInfoProvider: public IRaidInfoProvider
 {
+    public:
+        RaidInfoProvider(IFileSystem *);
+        virtual ~RaidInfoProvider();
+
+        // ListResult - callback function for listRaids
+        typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
+
+        // overrides
+        std::vector<RaidId> listRaids() const override;
+        RaidInfo getInfoFor(const IRaidInfoProvider::RaidId & ) const override;
+
+        // operations
+        bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
+        bool listComponents(const QString& raid_device,
+                            QStringList& block_devices);
+
+    private:
+        mutable std::map<RaidId, RaidInfo> m_infoCache;
+        IFileSystem* m_fileSystem;
+
 };
 
 #endif // RAIDINFOPROVIDER_HPP

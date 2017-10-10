@@ -31,16 +31,13 @@
 
 
 struct IMDAdmProcess;
-struct IFileSystem;
 
 
-class MDAdmController: public QObject, public IRaidInfoProvider
+class MDAdmController: public QObject
 {
         Q_OBJECT
 
     public:
-        // ListResult - callback function for listRaids
-        typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
         // OutputParser - callback function for process read channel
         typedef std::function<QString(const QString &)> OutputParser;
 
@@ -53,21 +50,13 @@ class MDAdmController: public QObject, public IRaidInfoProvider
             Raid6,
         };
 
-        MDAdmController(IMDAdmProcess *, IFileSystem *);
+        MDAdmController(IMDAdmProcess *);
         MDAdmController(const MDAdmController &) = delete;
         ~MDAdmController();
 
         MDAdmController& operator=(const MDAdmController &) = delete;
         bool operator==(const MDAdmController &) const = delete;
 
-        // overrides
-        std::vector<RaidId> listRaids() const override;
-        RaidInfo getInfoFor(const IRaidInfoProvider::RaidId & ) const override;
-
-        // operations
-        bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
-        bool listComponents(const QString& raid_device,
-                            QStringList& block_devices);
         bool createRaid(const QString& raid_device, Type,
                         const QStringList& block_devices,
                         const QStringList& spare_devices,
@@ -79,9 +68,7 @@ class MDAdmController: public QObject, public IRaidInfoProvider
         bool reAdd(const QString& raid_device, const QString& component);
 
     private:
-        mutable std::map<RaidId, RaidInfo> m_infoCache;
         IMDAdmProcess* m_mdadmProcess;
-        IFileSystem* m_fileSystem;
 
     signals:
         void raidCreated();

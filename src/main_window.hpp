@@ -26,6 +26,7 @@
 #include "mdadm_controller.hpp"
 #include "mdadm_debug_layer.hpp"
 #include "mdadm_process.hpp"
+#include "raid_info_provider.hpp"
 #include "raids_model.hpp"
 
 
@@ -51,6 +52,7 @@ class MainWindow: public QMainWindow
         MDAdmProcess m_mdadmProcess;
         MDAdmDebugLayer m_mdadmDebug;
         MDAdmController m_mdadmController;
+        RaidInfoProvider m_raidInfoProvider;
         RaidsModel m_raidsModel;
         QStandardItemModel m_disksModel;
         QTabWidget* m_viewTabs;

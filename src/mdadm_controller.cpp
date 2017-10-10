@@ -23,9 +23,7 @@
 
 #include <QRegExp>
 #include <QFileInfo>
-#include <QTextStream>
 
-#include "ifilesystem.hpp"
 #include "imdadm_process.hpp"
 
 namespace
@@ -64,10 +62,8 @@ namespace
 }
 
 
-MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess,
-                                 IFileSystem* fileSystem):
-    m_mdadmProcess(mdadmProcess),
-    m_fileSystem(fileSystem)
+MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess):
+    m_mdadmProcess(mdadmProcess)
 {
 
 }
@@ -76,123 +72,6 @@ MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess,
 MDAdmController::~MDAdmController()
 {
 
-}
-
-
-std::vector<MDAdmController::RaidId> MDAdmController::listRaids() const
-{
-    // TODO: we are filling cache here.
-    //       Whole idea of caching and cache flush needs to be
-    //       prepared properly.
-    m_infoCache.clear();
-
-    std::vector<RaidInfo> raid_infos;
-
-    listRaids([&raid_infos](const std::vector<RaidInfo>& infos)
-    {
-        raid_infos = infos;
-    });
-
-    std::vector<RaidId> result;
-    result.reserve(raid_infos.size());
-
-    for(const RaidInfo& raidInfo: raid_infos)
-    {
-        result.push_back(raidInfo.raid_device);
-
-        m_infoCache.emplace(raidInfo.raid_device, raidInfo);
-    }
-
-    return result;
-}
-
-
-RaidInfo MDAdmController::getInfoFor(const IRaidInfoProvider::RaidId& id) const
-{
-    auto it = m_infoCache.find(id);
-    assert(it != m_infoCache.end());
-
-    return it->second;
-}
-
-
-bool MDAdmController::listRaids(const ListResult& result) const
-{
-    auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
-                                                       QIODevice::Text);
-
-    QTextStream* mdstat_stream = file->getStream();
-
-    const bool open_status = mdstat_stream != nullptr;
-
-    if (open_status)
-    {
-        //                        raid device  status  read-only        type             devices
-        const QRegExp mdadm_info("^(md[^ ]+) : ([^ ]+) (?:\\([^ ]+\\) )?(?:(raid[^ ]+) )?(.*)");
-        std::vector<RaidInfo> results;
-
-        // simple loop with atEnd() won't work
-        // see: http://doc.qt.io/qt-5/qiodevice.html#atEnd
-        // and  http://doc.qt.io/qt-5/qfile.html#details
-        // for details
-
-        const QRegExp device_info("([a-zA-Z0-9]+)\\[([0-9]+)\\](?:\\(([A-Z])\\))?");
-
-        for(QString outputLine = mdstat_stream->readLine();
-            outputLine.isNull() == false;
-            outputLine = mdstat_stream->readLine())
-        {
-            if (mdadm_info.exactMatch(outputLine))
-            {
-                const QString dev = mdadm_info.cap(1);
-                const QString status = mdadm_info.cap(2);
-                const QString type = mdadm_info.cap(3);
-                const QString devices = mdadm_info.cap(4);
-
-                const QStringList devices_list_raw = devices.split(" ");
-
-                //drop role numbers (convert sda1[0] to sda1)
-                QList<RaidComponentInfo> devices_list;
-                for(const QString& device_with_role: devices_list_raw)
-                {
-                    if (device_info.exactMatch(device_with_role)) {
-                        QString device = device_info.cap(1);
-                        int descr_nr = device_info.cap(2).toInt();
-                        QString tmp = device_info.cap(3);
-                        RaidComponentInfo::Type type =
-                                (tmp.isEmpty() ?
-                                     RaidComponentInfo::Type::Normal :
-                                     static_cast<RaidComponentInfo::Type>(
-                                         tmp.toStdString().c_str()[0]));
-                        devices_list.append(
-                                    RaidComponentInfo(device, type, descr_nr)
-                                    );
-                    }
-                }
-
-                results.emplace_back(dev, devices_list, type);
-            }
-        }
-
-        result(results);
-    }
-
-    return open_status;
-}
-
-
-bool MDAdmController::listComponents(const QString& raid_device,
-                                     QStringList& block_devices) {
-    QString slaves_path = "/sys/block/" + raid_device + "/slaves";
-
-    const std::deque<QString> files =
-            m_fileSystem->listDir(slaves_path, "*",
-                                  QDir::Dirs | QDir::NoDotAndDotDot);
-
-    for (const QString& file: files)
-        block_devices << ("/dev/" + file);
-
-    return !block_devices.empty();
 }
 
 
@@ -242,10 +121,13 @@ bool MDAdmController::removeRaid(const QString& raid_device)
 
     mdadm_args << "--stop" << "--verbose" << raid_device;
 
+    // FIXME: temporarily disabled due to compilation error
+    /*
     if (listComponents(QFileInfo(raid_device).baseName(), components))
     {
         mdadm_args << "--zero-superblock" << components;
     }
+    */
 
     m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output,
                                                bool success,
