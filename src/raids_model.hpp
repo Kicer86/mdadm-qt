@@ -28,7 +28,7 @@
 #include "mdadm_controller.hpp"
 
 
-struct IMDAdmController;
+struct IRaidInfoProvider;
 
 
 class RaidsModel: public QObject
@@ -40,7 +40,7 @@ class RaidsModel: public QObject
             Component,
         };
 
-        RaidsModel(IMDAdmController *);
+        RaidsModel(IRaidInfoProvider *);
         RaidsModel(const RaidsModel &) = delete;
         ~RaidsModel();
 
@@ -61,7 +61,7 @@ class RaidsModel: public QObject
         std::map<QStandardItem *, RaidInfo> m_infos;
         std::map<QStandardItem *, RaidComponentInfo> m_componentInfos;
         const QMap<RaidComponentInfo::Type, QString> m_diskType;
-        IMDAdmController* m_mdadmCtrl;
+        IRaidInfoProvider* m_mdadmCtrl;
 
         RaidsMap::iterator itFor(const QString &);
         RaidsMap::const_iterator itFor(const QString &) const;

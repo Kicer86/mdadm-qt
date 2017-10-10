@@ -6,11 +6,11 @@
 
 #include "raidinfo.hpp"
 
-struct IMDAdmController
+struct IRaidInfoProvider
 {
     typedef QString RaidId;
 
-    virtual ~IMDAdmController() = default;
+    virtual ~IRaidInfoProvider() = default;
 
     virtual std::vector<RaidId> listRaids() const = 0;
     virtual RaidInfo getInfoFor(const RaidId &) const = 0;

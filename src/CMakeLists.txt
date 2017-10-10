@@ -21,7 +21,7 @@ set(SRCS
         idisk_filter.hpp
         idevice_visitor.hpp
         ifilesystem.hpp
-        imdadm_controller.hpp
+        iraid_info_provider.hpp
         empty_filter.cpp
         empty_filter.hpp
         filesystem.cpp

@@ -107,7 +107,7 @@ std::vector<MDAdmController::RaidId> MDAdmController::listRaids() const
 }
 
 
-RaidInfo MDAdmController::getInfoFor(const IMDAdmController::RaidId& id) const
+RaidInfo MDAdmController::getInfoFor(const IRaidInfoProvider::RaidId& id) const
 {
     auto it = m_infoCache.find(id);
     assert(it != m_infoCache.end());

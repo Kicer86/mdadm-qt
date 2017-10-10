@@ -93,7 +93,7 @@ namespace
 }
 
 
-RaidsModel::RaidsModel(IMDAdmController* mdadmCtrl):
+RaidsModel::RaidsModel(IRaidInfoProvider* mdadmCtrl):
     m_model(),
     m_infos(),
     m_componentInfos(),
@@ -118,10 +118,10 @@ RaidsModel::~RaidsModel()
 
 void RaidsModel::load()
 {
-    std::vector<IMDAdmController::RaidId> raidIds = m_mdadmCtrl->listRaids();
+    std::vector<IRaidInfoProvider::RaidId> raidIds = m_mdadmCtrl->listRaids();
     std::vector<RaidInfo> raids;
 
-    for(const IMDAdmController::RaidId& id: raidIds)
+    for(const IRaidInfoProvider::RaidId& id: raidIds)
     {
         const RaidInfo info = m_mdadmCtrl->getInfoFor(id);
         raids.push_back(info);

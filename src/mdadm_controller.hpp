@@ -27,14 +27,14 @@
 #include <QObject>
 #include <QStringList>
 
-#include "imdadm_controller.hpp"
+#include "iraid_info_provider.hpp"
 
 
 struct IMDAdmProcess;
 struct IFileSystem;
 
 
-class MDAdmController: public QObject, public IMDAdmController
+class MDAdmController: public QObject, public IRaidInfoProvider
 {
         Q_OBJECT
 
@@ -62,7 +62,7 @@ class MDAdmController: public QObject, public IMDAdmController
 
         // overrides
         std::vector<RaidId> listRaids() const override;
-        RaidInfo getInfoFor(const IMDAdmController::RaidId & ) const override;
+        RaidInfo getInfoFor(const IRaidInfoProvider::RaidId & ) const override;
 
         // operations
         bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
