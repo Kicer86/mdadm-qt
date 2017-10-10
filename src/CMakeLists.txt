@@ -28,6 +28,8 @@ set(SRCS
         filesystem.hpp
         raidinfo.cpp
         raidinfo.hpp
+        raid_info_provider.cpp
+        raid_info_provider.hpp
         raids_model.cpp
         raids_model.hpp
         exclude_used_filter.cpp
