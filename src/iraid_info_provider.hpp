@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "raidinfo.hpp"
+#include "raid_info.hpp"
 
 struct IRaidInfoProvider
 {

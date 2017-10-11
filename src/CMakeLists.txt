@@ -26,8 +26,8 @@ set(SRCS
         empty_filter.hpp
         filesystem.cpp
         filesystem.hpp
-        raidinfo.cpp
-        raidinfo.hpp
+        raid_info.cpp
+        raid_info.hpp
         raid_info_provider.cpp
         raid_info_provider.hpp
         raids_model.cpp
@@ -83,6 +83,8 @@ if(BUILD_TESTS)
                 imdadm_process_mock.hpp
                 iraid_info_provider_mock.hpp
                 mdadm_controller.cpp
+                raid_info.cpp
+                raid_info.hpp
                 raids_model.cpp
                 ${WRAPPED_FOR_TESTS}
 

@@ -457,7 +457,11 @@ void mockMdstatOutput(IFileSystemMock& filesystem, QTextStream* const outputStre
 void compareListOutput(IRaidInfoProvider* infoProvider,
                        const std::vector<RaidInfo>& expected)
 {
-    const std::vector<IRaidInfoProvider::RaidId> raids = infoProvider->listRaids();
+    const std::vector<IRaidInfoProvider::RaidId> raidIds = infoProvider->listRaids();
+
+    std::vector<RaidInfo> raids;
+    for(const IRaidInfoProvider::RaidId& id: raidIds)
+        raids.push_back(infoProvider->getInfoFor(id));
 
     ASSERT_EQ(raids.size(), expected.size());
     auto expectedIt = expected.cbegin();
@@ -481,9 +485,9 @@ TEST(MDAdmControllerTest,
                          "unused devices: <none>\n");
     QTextStream outputStream(&mdstatOutput);
 
-    mockMdstatOutput(filesystem, &outputStream);
+    //mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &filesystem);
+    MDAdmController controller(nullptr, &raidInfoProvider);
 
     const QList<RaidComponentInfo> components =
     {
@@ -494,7 +498,7 @@ TEST(MDAdmControllerTest,
         RaidInfo("md1", components, "")
     };
 
-    compareListOutput(controller, expectedOutput);
+    compareListOutput(&raidInfoProvider, expectedOutput);
 }
 
 
@@ -502,6 +506,7 @@ TEST(MDAdmControllerTest,
      listActiveRaid5)
 {
     IFileSystemMock filesystem;
+    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md0 : active raid5 sdb[1] sdc[3] sdd[0]\n"
@@ -513,7 +518,7 @@ TEST(MDAdmControllerTest,
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &filesystem);
+    MDAdmController controller(nullptr, &raidInfoProvider);
 
     const QList<RaidComponentInfo> components =
     {
@@ -526,7 +531,7 @@ TEST(MDAdmControllerTest,
         RaidInfo("md0", components, "raid5")
     };
 
-    compareListOutput(controller, expectedOutput);
+    compareListOutput(&raidInfoProvider, expectedOutput);
 }
 
 
@@ -534,6 +539,7 @@ TEST(MDAdmControllerTest,
      listActiveRaid0Raid1Raid6)
 {
     IFileSystemMock filesystem;
+    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -552,7 +558,7 @@ TEST(MDAdmControllerTest,
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &filesystem);
+    MDAdmController controller(nullptr, &raidInfoProvider);
 
     const QList<RaidComponentInfo> components1 =
     {
@@ -578,13 +584,14 @@ TEST(MDAdmControllerTest,
         RaidInfo("md3", components3, "raid1")
     };
 
-    compareListOutput(controller, expectedOutput);
+    compareListOutput(&raidInfoProvider, expectedOutput);
 }
 
 
 TEST(MDAdmControllerTest, listNoRaids)
 {
     IFileSystemMock filesystem;
+    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -595,17 +602,18 @@ TEST(MDAdmControllerTest, listNoRaids)
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &filesystem);
+    MDAdmController controller(nullptr, &raidInfoProvider);
 
     const std::vector<RaidInfo> expectedOutput;
 
-    compareListOutput(controller, expectedOutput);
+    compareListOutput(&raidInfoProvider, expectedOutput);
 }
 
 
 TEST(MDAdmControllerTest, listDegradedRaid)
 {
     IFileSystemMock filesystem;
+    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -620,7 +628,7 @@ TEST(MDAdmControllerTest, listDegradedRaid)
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &filesystem);
+    MDAdmController controller(nullptr, &raidInfoProvider);
 
     const QList<RaidComponentInfo> components =
     {
@@ -633,7 +641,7 @@ TEST(MDAdmControllerTest, listDegradedRaid)
         RaidInfo("md8", components, "raid6"),
     };
 
-    compareListOutput(controller, expectedOutput);
+    compareListOutput(&raidInfoProvider, expectedOutput);
 }
 
 

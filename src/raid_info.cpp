@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "raidinfo.hpp"
+#include "raid_info.hpp"
 
 
 bool RaidComponentInfo::operator==(const RaidComponentInfo& other) const
