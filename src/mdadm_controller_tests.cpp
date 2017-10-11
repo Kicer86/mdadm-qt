@@ -8,11 +8,13 @@
 #include "imdadm_process_mock.hpp"
 #include "iraid_info_provider_mock.hpp"
 #include "printers_for_gmock.hpp"
+#include "raid_info_provider.hpp"
 
 using testing::_;
 using testing::DoAll;
 using testing::InvokeArgument;
 using testing::Return;
+using testing::SetArgReferee;
 
 
 TEST(MDAdmControllerTest, usesRightParametersForRaid0Creation)
@@ -376,8 +378,6 @@ TEST(MDAdmControllerTest,
     IRaidInfoProviderMock raid_info_provider;
     IMDAdmProcessMock mdadm_process;
 
-    const QString slavesPath("/sys/block/md127/slaves");
-
     const QStringList expected_args = {
         "--stop",
         "--verbose",
@@ -388,8 +388,15 @@ TEST(MDAdmControllerTest,
         "/dev/sdd"
     };
 
+    const QStringList slaves = {"/dev/sdb", "/dev/sdc", "/dev/sdd"};
+    const QString device_name = "md127";
+
+    EXPECT_CALL(raid_info_provider, listComponents(device_name, _))
+        .WillOnce(DoAll(SetArgReferee<1>(slaves), Return(true)));
+
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
-            .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
+            .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
+                            Return(true)));
 
     MDAdmController controller(&mdadm_process, &raid_info_provider);
     EXPECT_TRUE(controller.removeRaid("/dev/md127"));
@@ -402,13 +409,16 @@ TEST(MDAdmControllerTest,
     IMDAdmProcessMock mdadm_process;
     IRaidInfoProviderMock raidInfoProvider;
 
-    const QString slavesPath("/sys/block/md4/slaves");
-
     const QStringList expected_args = {
         "--stop",
         "--verbose",
         "/dev/md4"
     };
+
+    const QString device_name = "md4";
+
+    EXPECT_CALL(raidInfoProvider, listComponents(device_name, _))
+        .WillOnce(Return(false));
 
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
@@ -473,11 +483,9 @@ void compareListOutput(IRaidInfoProvider* infoProvider,
 }
 
 
-TEST(MDAdmControllerTest,
+TEST(raidInfoProviderTests,
      listInactiveRaid0)
 {
-    IRaidInfoProviderMock raidInfoProvider;
-
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md1 : inactive sdf[1](S)\n"
                          "      130048 blocks super 1.2\n"
@@ -485,9 +493,7 @@ TEST(MDAdmControllerTest,
                          "unused devices: <none>\n");
     QTextStream outputStream(&mdstatOutput);
 
-    //mockMdstatOutput(filesystem, &outputStream);
-
-    MDAdmController controller(nullptr, &raidInfoProvider);
+    RaidInfoProvider infoProvider(nullptr);
 
     const QList<RaidComponentInfo> components =
     {
@@ -498,7 +504,7 @@ TEST(MDAdmControllerTest,
         RaidInfo("md1", components, "")
     };
 
-    compareListOutput(&raidInfoProvider, expectedOutput);
+    compareListOutput(&infoProvider, expectedOutput);
 }
 
 

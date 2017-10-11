@@ -85,6 +85,7 @@ if(BUILD_TESTS)
                 mdadm_controller.cpp
                 raid_info.cpp
                 raid_info.hpp
+                raid_info_provider.cpp
                 raids_model.cpp
                 ${WRAPPED_FOR_TESTS}
 

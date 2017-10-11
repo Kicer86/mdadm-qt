@@ -19,6 +19,9 @@
 #ifndef RAIDINFOPROVIDER_HPP
 #define RAIDINFOPROVIDER_HPP
 
+#include <functional>
+#include <map>
+
 #include "iraid_info_provider.hpp"
 
 struct IFileSystem;
