@@ -421,7 +421,7 @@ TEST(MDAdmControllerTest,
 TEST(MDAdmControllerTest,
      simulateProcessCrash)
 {
-        IMDAdmProcessMock mdadm_process;
+    IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = {
         "--zero-superblock",
@@ -454,27 +454,25 @@ void mockMdstatOutput(IFileSystemMock& filesystem, QTextStream* const outputStre
 
 }
 
-void compareListOutput(MDAdmController& controller,
+void compareListOutput(IRaidInfoProvider* infoProvider,
                        const std::vector<RaidInfo>& expected)
 {
-    EXPECT_TRUE(controller.listRaids(
-                    [&expected](const std::vector<RaidInfo>& raids)
+    const std::vector<IRaidInfoProvider::RaidId> raids = infoProvider->listRaids();
+
+    ASSERT_EQ(raids.size(), expected.size());
+    auto expectedIt = expected.cbegin();
+    for (const auto& element : raids)
     {
-        ASSERT_EQ(raids.size(), expected.size());
-        auto expectedIt = expected.cbegin();
-        for (const auto& element : raids)
-        {
-            EXPECT_EQ(element, *expectedIt);
-            ++expectedIt;
-        }
-    }));
+        EXPECT_EQ(element, *expectedIt);
+        ++expectedIt;
+    }
 }
 
 
 TEST(MDAdmControllerTest,
      listInactiveRaid0)
 {
-    IFileSystemMock filesystem;
+    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md1 : inactive sdf[1](S)\n"

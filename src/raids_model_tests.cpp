@@ -96,7 +96,7 @@ class RaidsModelTests: public testing::Test
 
 TEST_F(RaidsModelTests, isEmptyWhenConstructed)
 {
-    IRaidInfoProvider raidInfoProvider;
+    IRaidInfoProviderMock raidInfoProvider;
     RaidsModel model(&raidInfoProvider);
 
     QAbstractItemModel* qt_model = model.model();
