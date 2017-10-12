@@ -6,12 +6,14 @@
 #include "mdadm_controller.hpp"
 #include "ifilesystem_mock.hpp"
 #include "imdadm_process_mock.hpp"
+#include "iraid_info_provider_mock.hpp"
 #include "printers_for_gmock.hpp"
 
 using testing::_;
 using testing::DoAll;
 using testing::InvokeArgument;
 using testing::Return;
+using testing::SetArgReferee;
 
 
 TEST(MDAdmControllerTest, usesRightParametersForRaid0Creation)
@@ -372,10 +374,8 @@ TEST(MDAdmControllerTest,
 TEST(MDAdmControllerTest,
      usesRightParameterForRaidRemoval)
 {
+    IRaidInfoProviderMock raid_info_provider;
     IMDAdmProcessMock mdadm_process;
-    IFileSystemMock filesystem;
-
-    const QString slavesPath("/sys/block/md127/slaves");
 
     const QStringList expected_args = {
         "--stop",
@@ -387,14 +387,17 @@ TEST(MDAdmControllerTest,
         "/dev/sdd"
     };
 
-    EXPECT_CALL(filesystem, listDir(slavesPath, _, QDir::Dirs | QDir::NoDotAndDotDot))
-            .WillOnce(Return(
-                          std::deque<QString> { "sdb", "sdc", "sdd" }));
+    const QStringList slaves = {"/dev/sdb", "/dev/sdc", "/dev/sdd"};
+    const QString device_name = "md127";
+
+    EXPECT_CALL(raid_info_provider, listComponents(device_name, _))
+        .WillOnce(DoAll(SetArgReferee<1>(slaves), Return(true)));
 
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
-            .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
+            .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
+                            Return(true)));
 
-    MDAdmController controller(&mdadm_process, &filesystem);
+    MDAdmController controller(&mdadm_process, &raid_info_provider);
     EXPECT_TRUE(controller.removeRaid("/dev/md127"));
 }
 
@@ -403,9 +406,7 @@ TEST(MDAdmControllerTest,
      usesRightParameterForEmptyRaidRemoval)
 {
     IMDAdmProcessMock mdadm_process;
-    IFileSystemMock filesystem;
-
-    const QString slavesPath("/sys/block/md4/slaves");
+    IRaidInfoProviderMock raidInfoProvider;
 
     const QStringList expected_args = {
         "--stop",
@@ -413,14 +414,15 @@ TEST(MDAdmControllerTest,
         "/dev/md4"
     };
 
-    EXPECT_CALL(filesystem, listDir(slavesPath, _, QDir::Dirs | QDir::NoDotAndDotDot))
-            .WillOnce(Return(
-                          std::deque<QString> { }));
+    const QString device_name = "md4";
+
+    EXPECT_CALL(raidInfoProvider, listComponents(device_name, _))
+        .WillOnce(Return(false));
 
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
-    MDAdmController controller(&mdadm_process, &filesystem);
+    MDAdmController controller(&mdadm_process, &raidInfoProvider);
     EXPECT_TRUE(controller.removeRaid("/dev/md4"));
 }
 
@@ -428,7 +430,7 @@ TEST(MDAdmControllerTest,
 TEST(MDAdmControllerTest,
      simulateProcessCrash)
 {
-        IMDAdmProcessMock mdadm_process;
+    IMDAdmProcessMock mdadm_process;
 
     const QStringList expected_args = {
         "--zero-superblock",
@@ -440,209 +442,6 @@ TEST(MDAdmControllerTest,
 
     MDAdmController controller(&mdadm_process, nullptr);
     EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb" }));
-}
-
-
-typedef std::unique_ptr<IFileSystemMock::IFileMock> FilePtr;
-
-void mockMdstatOutput(IFileSystemMock& filesystem, QTextStream* const outputStream)
-{
-    EXPECT_CALL(filesystem, openFile(QString("/proc/mdstat"), QIODevice::ReadOnly |
-                                     QIODevice::Text))
-            .WillOnce(::testing::Invoke(
-                          [outputStream](const QString&,
-                                          QIODevice::OpenMode)
-                                         ->FilePtr
-    {
-        FilePtr ifile(new IFileSystemMock::IFileMock);
-        EXPECT_CALL(*ifile, getStream()).WillOnce(Return(outputStream));
-        return ifile;
-    }));
-
-}
-
-void compareListOutput(MDAdmController& controller,
-                       const std::vector<RaidInfo>& expected)
-{
-    EXPECT_TRUE(controller.listRaids(
-                    [&expected](const std::vector<RaidInfo>& raids)
-    {
-        ASSERT_EQ(raids.size(), expected.size());
-        auto expectedIt = expected.cbegin();
-        for (const auto& element : raids)
-        {
-            EXPECT_EQ(element, *expectedIt);
-            ++expectedIt;
-        }
-    }));
-}
-
-
-TEST(MDAdmControllerTest,
-     listInactiveRaid0)
-{
-    IFileSystemMock filesystem;
-
-    QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
-                         "md1 : inactive sdf[1](S)\n"
-                         "      130048 blocks super 1.2\n"
-                         "\n"
-                         "unused devices: <none>\n");
-    QTextStream outputStream(&mdstatOutput);
-
-    mockMdstatOutput(filesystem, &outputStream);
-
-    MDAdmController controller(nullptr, &filesystem);
-
-    const QList<RaidComponentInfo> components =
-    {
-        RaidComponentInfo("sdf", RaidComponentInfo::Type::Spare, 1)
-    };
-    const std::vector<RaidInfo> expectedOutput =
-    {
-        RaidInfo("md1", components, "")
-    };
-
-    compareListOutput(controller, expectedOutput);
-}
-
-
-TEST(MDAdmControllerTest,
-     listActiveRaid5)
-{
-    IFileSystemMock filesystem;
-
-    QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
-                         "md0 : active raid5 sdb[1] sdc[3] sdd[0]\n"
-                         "      5860270080 blocks super 1.2 level 5, "
-                         "512k chunk, algorithm 2 [3/3] [UUU]\n"
-                         "\n"
-                         "unused devices: <none>\n");
-    QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
-
-    mockMdstatOutput(filesystem, &outputStream);
-
-    MDAdmController controller(nullptr, &filesystem);
-
-    const QList<RaidComponentInfo> components =
-    {
-        RaidComponentInfo("sdb", RaidComponentInfo::Type::Normal, 1),
-        RaidComponentInfo("sdc", RaidComponentInfo::Type::Normal, 3),
-        RaidComponentInfo("sdd", RaidComponentInfo::Type::Normal, 0),
-    };
-    const std::vector<RaidInfo> expectedOutput =
-    {
-        RaidInfo("md0", components, "raid5")
-    };
-
-    compareListOutput(controller, expectedOutput);
-}
-
-
-TEST(MDAdmControllerTest,
-     listActiveRaid0Raid1Raid6)
-{
-    IFileSystemMock filesystem;
-
-    QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
-                         "[raid1] [raid10]\n"
-                         "md11 : active raid0 sdm[1] sdl[0]\n"
-                         "       260096 blocks super 1.2 512k chunks\n"
-                         "\n"
-                         "md8 : active raid6 sdk[3] sdj[2] sdi[1] sdh[0]\n"
-                         "      260096 blocks super 1.2 level 6, 512k chunk, "
-                         "algorithm 2 [4/4] [UUUU]\n"
-                         "\n"
-                         "md3 : active raid1 sdg[1] sdf[0]\n"
-                         "      130880 blocks super 1.2 [2/2] [UU]\n"
-                         "\n"
-                         "unused devices: <none>\n");
-    QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
-
-    mockMdstatOutput(filesystem, &outputStream);
-
-    MDAdmController controller(nullptr, &filesystem);
-
-    const QList<RaidComponentInfo> components1 =
-    {
-        RaidComponentInfo("sdm", RaidComponentInfo::Type::Normal, 1),
-        RaidComponentInfo("sdl", RaidComponentInfo::Type::Normal, 0),
-    };
-    const QList<RaidComponentInfo> components2 =
-    {
-        RaidComponentInfo("sdk", RaidComponentInfo::Type::Normal, 3),
-        RaidComponentInfo("sdj", RaidComponentInfo::Type::Normal, 2),
-        RaidComponentInfo("sdi", RaidComponentInfo::Type::Normal, 1),
-        RaidComponentInfo("sdh", RaidComponentInfo::Type::Normal, 0),
-    };
-    const QList<RaidComponentInfo> components3=
-    {
-        RaidComponentInfo("sdg", RaidComponentInfo::Type::Normal, 1),
-        RaidComponentInfo("sdf", RaidComponentInfo::Type::Normal, 0),
-    };
-    const std::vector<RaidInfo> expectedOutput =
-    {
-        RaidInfo("md11", components1, "raid0"),
-        RaidInfo("md8", components2, "raid6"),
-        RaidInfo("md3", components3, "raid1")
-    };
-
-    compareListOutput(controller, expectedOutput);
-}
-
-
-TEST(MDAdmControllerTest, listNoRaids)
-{
-    IFileSystemMock filesystem;
-
-    QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
-                         "[raid1] [raid10]\n"
-                         "\n"
-                         "unused devices: <none>\n");
-
-    QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
-
-    mockMdstatOutput(filesystem, &outputStream);
-
-    MDAdmController controller(nullptr, &filesystem);
-
-    const std::vector<RaidInfo> expectedOutput;
-
-    compareListOutput(controller, expectedOutput);
-}
-
-
-TEST(MDAdmControllerTest, listDegradedRaid)
-{
-    IFileSystemMock filesystem;
-
-    QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
-                         "[raid1] [raid10]\n"
-                         "md8 : active (auto-read-only) raid6 sdk[3] sdj[2] "
-                         "sdh[0]\n"
-                         "      260096 blocks super 1.2 level 6, 512k chunk, "
-                         "algorithm 2 [4/3] [U_UU]\n"
-                         "\n"
-                         "unused devices: <none>\n");
-
-    QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
-
-    mockMdstatOutput(filesystem, &outputStream);
-
-    MDAdmController controller(nullptr, &filesystem);
-
-    const QList<RaidComponentInfo> components =
-    {
-        RaidComponentInfo("sdk", RaidComponentInfo::Type::Normal, 3),
-        RaidComponentInfo("sdj", RaidComponentInfo::Type::Normal, 2),
-        RaidComponentInfo("sdh", RaidComponentInfo::Type::Normal, 0),
-    };
-    const std::vector<RaidInfo> expectedOutput =
-    {
-        RaidInfo("md8", components, "raid6"),
-    };
-
-    compareListOutput(controller, expectedOutput);
 }
 
 

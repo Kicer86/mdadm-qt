@@ -1,6 +1,7 @@
 
 find_package(Qt5Widgets REQUIRED)
 
+option(BUILD_TESTS "Build unit tests" ON)
 option(RUN_UNIT_TESTS "Run unit test in post build step" ON)
 
 set(SRCS
@@ -20,10 +21,15 @@ set(SRCS
         idisk_filter.hpp
         idevice_visitor.hpp
         ifilesystem.hpp
+        iraid_info_provider.hpp
         empty_filter.cpp
         empty_filter.hpp
         filesystem.cpp
         filesystem.hpp
+        raid_info.cpp
+        raid_info.hpp
+        raid_info_provider.cpp
+        raid_info_provider.hpp
         raids_model.cpp
         raids_model.hpp
         exclude_used_filter.cpp
@@ -54,99 +60,108 @@ target_link_libraries(mdadm-qt
 
 
 # unit tests
-find_package(GMock)
-find_package(GTest)
+if(BUILD_TESTS)
 
-if(GMOCK_FOUND AND GTEST_FOUND)
+    find_package(GMock)
+    find_package(GTest)
 
-    find_package(Threads REQUIRED)
+    if(GMOCK_FOUND AND GTEST_FOUND)
 
-    qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
+        find_package(Threads REQUIRED)
 
-    set(tests_sources
-            block_device.cpp
-            disk.cpp
-            disk_controller.cpp
-            empty_filter.cpp
-            exclude_used_filter.cpp
-            iblock_device_mock.hpp
-            ifilesystem_mock.cpp
-            ifilesystem_mock.hpp
-            imdadm_process_mock.hpp
-            mdadm_controller.cpp
-            raids_model.cpp
-            ${WRAPPED_FOR_TESTS}
+        qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
 
-            printers_for_gmock.cpp
+        set(tests_sources
+                block_device.cpp
+                disk.cpp
+                disk_controller.cpp
+                empty_filter.cpp
+                exclude_used_filter.cpp
+                iblock_device_mock.hpp
+                ifilesystem_mock.cpp
+                ifilesystem_mock.hpp
+                imdadm_process_mock.hpp
+                iraid_info_provider_mock.hpp
+                mdadm_controller.cpp
+                raid_info.cpp
+                raid_info.hpp
+                raid_info_provider.cpp
+                raids_model.cpp
+                ${WRAPPED_FOR_TESTS}
 
-            disk_tests.cpp
-            disk_controller_tests.cpp
-            filters_tests.cpp
-            mdadm_controller_tests.cpp
-            raid_info_tests.cpp
-            raids_model_tests.cpp
-    )
+                printers_for_gmock.cpp
 
-    add_executable(mdadm_unit_tests ${tests_sources})        # regular unit tests
-    add_executable(mdadm_unit_tests_cc ${tests_sources})     # unit tests with code coverage
-
-    target_compile_options(mdadm_unit_tests_cc PRIVATE -fprofile-arcs -ftest-coverage)
-
-    # include dirs
-    target_include_directories(mdadm_unit_tests
-                                    SYSTEM PRIVATE
-                                        ${GMOCK_INCLUDE_DIRS}
-                                        ${GTEST_INCLUDE_DIRS}
-                                        ${Qt5Core_INCLUDE_DIRS}
-                                        ${Qt5Gui_INCLUDE_DIRS}
-    )
-
-    target_include_directories(mdadm_unit_tests_cc
-                                    SYSTEM PRIVATE
-                                        ${GMOCK_INCLUDE_DIRS}
-                                        ${GTEST_INCLUDE_DIRS}
-                                        ${Qt5Core_INCLUDE_DIRS}
-                                        ${Qt5Gui_INCLUDE_DIRS}
-    )
-
-    # link stage
-    target_link_libraries(mdadm_unit_tests
-                            PRIVATE
-                                ${GMOCK_MAIN_LIBRARY}
-                                ${GMOCK_LIBRARY}
-                                ${GTEST_LIBRARY}
-                                ${CMAKE_THREAD_LIBS_INIT}
-                                Qt5::Core
-                                Qt5::Gui
-    )
-
-    target_link_libraries(mdadm_unit_tests_cc
-                            PRIVATE
-                                ${GMOCK_MAIN_LIBRARY}
-                                ${GMOCK_LIBRARY}
-                                ${GTEST_LIBRARY}
-                                ${CMAKE_THREAD_LIBS_INIT}
-                                Qt5::Core
-                                Qt5::Gui
-                                gcov
-    )
-
-    add_test(NAME mdadm_unit_tests COMMAND mdadm_unit_tests)
-
-    enable_testing()
-
-    # run unit tests after all build steps
-    if(RUN_UNIT_TESTS)
-        add_custom_command(TARGET mdadm_unit_tests POST_BUILD
-                        COMMAND ctest
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                disk_tests.cpp
+                disk_controller_tests.cpp
+                filters_tests.cpp
+                mdadm_controller_tests.cpp
+                raid_info_tests.cpp
+                raid_info_provider_tests.cpp
+                raids_model_tests.cpp
         )
-    endif()
 
-    # test coverage
-    include(CodeCoverage)
+        add_executable(mdadm_unit_tests ${tests_sources})        # regular unit tests
+        add_executable(mdadm_unit_tests_cc ${tests_sources})     # unit tests with code coverage
 
-    setup_code_coverage()
-    setup_target_for_coverage(run_unit_tests_code_coverage mdadm_unit_tests_cc coverage)
+        target_compile_options(mdadm_unit_tests_cc PRIVATE -fprofile-arcs -ftest-coverage)
 
-endif()
+        # include dirs
+        target_include_directories(mdadm_unit_tests
+                                        SYSTEM PRIVATE
+                                            ${GMOCK_INCLUDE_DIRS}
+                                            ${GTEST_INCLUDE_DIRS}
+                                            ${Qt5Core_INCLUDE_DIRS}
+                                            ${Qt5Gui_INCLUDE_DIRS}
+        )
+
+        target_include_directories(mdadm_unit_tests_cc
+                                        SYSTEM PRIVATE
+                                            ${GMOCK_INCLUDE_DIRS}
+                                            ${GTEST_INCLUDE_DIRS}
+                                            ${Qt5Core_INCLUDE_DIRS}
+                                            ${Qt5Gui_INCLUDE_DIRS}
+        )
+
+        # link stage
+        target_link_libraries(mdadm_unit_tests
+                                PRIVATE
+                                    ${GMOCK_MAIN_LIBRARY}
+                                    ${GMOCK_LIBRARY}
+                                    ${GTEST_LIBRARY}
+                                    ${CMAKE_THREAD_LIBS_INIT}
+                                    Qt5::Core
+                                    Qt5::Gui
+        )
+
+        target_link_libraries(mdadm_unit_tests_cc
+                                PRIVATE
+                                    ${GMOCK_MAIN_LIBRARY}
+                                    ${GMOCK_LIBRARY}
+                                    ${GTEST_LIBRARY}
+                                    ${CMAKE_THREAD_LIBS_INIT}
+                                    Qt5::Core
+                                    Qt5::Gui
+                                    gcov
+        )
+
+        add_test(NAME mdadm_unit_tests COMMAND mdadm_unit_tests)
+
+        enable_testing()
+
+        # run unit tests after all build steps
+        if(RUN_UNIT_TESTS)
+            add_custom_command(TARGET mdadm_unit_tests POST_BUILD
+                            COMMAND ctest
+                            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+            )
+        endif()
+
+        # test coverage
+        include(CodeCoverage)
+
+        setup_code_coverage()
+        setup_target_for_coverage(run_unit_tests_code_coverage mdadm_unit_tests_cc coverage)
+
+    endif(GMOCK_FOUND AND GTEST_FOUND)
+
+endif(BUILD_TESTS)

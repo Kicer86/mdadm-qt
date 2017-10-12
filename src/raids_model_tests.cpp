@@ -5,9 +5,11 @@
 
 #include "raids_model.hpp"
 #include "printers_for_gmock.hpp"
+#include "iraid_info_provider_mock.hpp"
 
 using testing::_;
 using testing::NiceMock;
+using testing::Return;
 
 
 class RaidsModelTests: public testing::Test
@@ -96,7 +98,8 @@ class RaidsModelTests: public testing::Test
 
 TEST_F(RaidsModelTests, isEmptyWhenConstructed)
 {
-    RaidsModel model;
+    IRaidInfoProviderMock raidInfoProvider;
+    RaidsModel model(&raidInfoProvider);
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -108,11 +111,14 @@ TEST_F(RaidsModelTests, isEmptyWhenConstructed)
 
 TEST_F(RaidsModelTests, addingRaidsToEmptyModel)
 {
-    RaidsModel model;
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
+    RaidsModel model(&raidInfoProvider);
 
     const std::vector<RaidInfo> raids = {raid1, raid2};
+    ON_CALL(raidInfoProvider, listRaids())
+        .WillByDefault(Return(raids));
 
-    model.load(raids);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -161,9 +167,13 @@ struct ModelSignalWatcher: QObject
 TEST_F(RaidsModelTests, modelItemsHaveExpectedTypes)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
 
-    RaidsModel model;
-    model.load(raids);
+    ON_CALL(raidInfoProvider, listRaids())
+        .WillByDefault(Return(raids));
+
+    RaidsModel model(&raidInfoProvider);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -184,9 +194,13 @@ TEST_F(RaidsModelTests, modelItemsHaveExpectedTypes)
 TEST_F(RaidsModelTests, gettingRaidsInfo)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
 
-    RaidsModel model;
-    model.load(raids);
+    ON_CALL(raidInfoProvider, listRaids())
+        .WillByDefault(Return(raids));
+
+    RaidsModel model(&raidInfoProvider);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -203,9 +217,13 @@ TEST_F(RaidsModelTests, gettingRaidsInfo)
 TEST_F(RaidsModelTests, gettingComponentsInfo)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
 
-    RaidsModel model;
-    model.load(raids);
+    ON_CALL(raidInfoProvider, listRaids())
+        .WillByDefault(Return(raids));
+
+    RaidsModel model(&raidInfoProvider);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -226,9 +244,16 @@ TEST_F(RaidsModelTests, gettingComponentsInfo)
 TEST_F(RaidsModelTests, removingRaidsFromModel)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, raid3};
 
-    RaidsModel model;
-    model.load(raids);
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
+
+    EXPECT_CALL(raidInfoProvider, listRaids())
+        .WillOnce(Return(raids))
+        .WillOnce(Return(raidsAfterChange));
+
+    RaidsModel model(&raidInfoProvider);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -241,17 +266,22 @@ TEST_F(RaidsModelTests, removingRaidsFromModel)
     EXPECT_CALL(signalWatcher, rowsRemoved(qt_model->index(1, 0) ,_ ,_))
         .Times(4);
 
-    const std::vector<RaidInfo> raidsAfterChange = {raid1, raid3};
-    model.load(raidsAfterChange);
+    model.load();
 }
 
 
 TEST_F(RaidsModelTests, appendingRaidsToModel)
 {
     const std::vector<RaidInfo> raids = {raid1, raid3};
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, raid2, raid3};
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
 
-    RaidsModel model;
-    model.load(raids);
+    EXPECT_CALL(raidInfoProvider, listRaids())
+        .WillOnce(Return(raids))
+        .WillOnce(Return(raidsAfterChange));
+
+    RaidsModel model(&raidInfoProvider);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -267,8 +297,7 @@ TEST_F(RaidsModelTests, appendingRaidsToModel)
     // 2. We cannot ask model for QModelIndex of 'raid2' index, as
     //    it doesn't exist in model yet.
 
-    const std::vector<RaidInfo> raidsAfterChange = {raid1, raid2, raid3};
-    model.load(raidsAfterChange);
+    model.load();
 
     // Make sure last item has 4 leafs
     const QModelIndex raid2Idx = qt_model->index(2, 0);
@@ -280,8 +309,19 @@ TEST_F(RaidsModelTests, raidComponentRemoved)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
 
-    RaidsModel model;
-    model.load(raids);
+    RaidInfo newRaid2 = raid2;
+    newRaid2.block_devices.pop_back();    // drop last component from raid
+
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
+
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
+
+    EXPECT_CALL(raidInfoProvider, listRaids())
+        .WillOnce(Return(raids))
+        .WillOnce(Return(raidsAfterChange));
+
+    RaidsModel model(&raidInfoProvider);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -290,11 +330,7 @@ TEST_F(RaidsModelTests, raidComponentRemoved)
     // refreshing list of components.
     NiceMock<ModelSignalWatcher> signalWatcher(qt_model);
 
-    RaidInfo newRaid2 = raid2;
-    newRaid2.block_devices.pop_back();    // drop last component from raid
-
-    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
-    model.load(raidsAfterChange);
+    model.load();
 
     // When model is updated, we expect raid2 will have 3 leafs instead of 4
     const QModelIndex raid2Idx = qt_model->index(1, 0);
@@ -306,8 +342,22 @@ TEST_F(RaidsModelTests, raidComponentTypeChanged)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
 
-    RaidsModel model;
-    model.load(raids);
+    RaidInfo newRaid2 = raid2;
+    EXPECT_NE(newRaid2.block_devices.front().type,
+              RaidComponentInfo::Type::Journal);
+
+    newRaid2.block_devices.front().type = RaidComponentInfo::Type::Journal;
+
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
+
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
+
+    EXPECT_CALL(raidInfoProvider, listRaids())
+        .WillOnce(Return(raids))
+        .WillOnce(Return(raidsAfterChange));
+
+    RaidsModel model(&raidInfoProvider);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -316,14 +366,7 @@ TEST_F(RaidsModelTests, raidComponentTypeChanged)
     // refreshing list of components.
     NiceMock<ModelSignalWatcher> signalWatcher(qt_model);
 
-    RaidInfo newRaid2 = raid2;
-    EXPECT_NE(newRaid2.block_devices.front().type,
-              RaidComponentInfo::Type::Journal);
-
-    newRaid2.block_devices.front().type = RaidComponentInfo::Type::Journal;
-
-    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
-    model.load(raidsAfterChange);
+    model.load();
 
     const QModelIndex raid2Idx = qt_model->index(1, 0);
     const QModelIndex raid2Comp1Idx = raid2Idx.child(0, 2);  // index to type of first component
@@ -344,8 +387,18 @@ TEST_F(RaidsModelTests, raidTypeChanged)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
 
-    RaidsModel model;
-    model.load(raids);
+    RaidInfo newRaid2 = raid2;
+    newRaid2.raid_type = "new type";
+    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
+
+    NiceMock<IRaidInfoProviderMock> raidInfoProvider;
+
+    EXPECT_CALL(raidInfoProvider, listRaids())
+        .WillOnce(Return(raids))
+        .WillOnce(Return(raidsAfterChange));
+
+    RaidsModel model(&raidInfoProvider);
+    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -355,11 +408,7 @@ TEST_F(RaidsModelTests, raidTypeChanged)
     EXPECT_CALL(signalWatcher, dataChanged(raid2TypeIdx, raid2TypeIdx, _))
         .Times(1);
 
-    RaidInfo newRaid2 = raid2;
-    newRaid2.raid_type = "new type";
-
-    const std::vector<RaidInfo> raidsAfterChange = {raid1, newRaid2, raid3};
-    model.load(raidsAfterChange);
+    model.load();
 
     const RaidInfo& raidInfo = model.infoForRaid(raid2TypeIdx);
     EXPECT_EQ(raidInfo, newRaid2);

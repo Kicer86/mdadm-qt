@@ -93,7 +93,7 @@ namespace
 }
 
 
-RaidsModel::RaidsModel():
+RaidsModel::RaidsModel(IRaidInfoProvider* mdadmCtrl):
     m_model(),
     m_infos(),
     m_componentInfos(),
@@ -103,7 +103,8 @@ RaidsModel::RaidsModel():
                 { RaidComponentInfo::Type::Replacement, "replacement" },
                 { RaidComponentInfo::Type::Spare, "spare" },
                 { RaidComponentInfo::Type::WriteMostly, "write mostly" },
-               })
+               }),
+    m_mdadmCtrl(mdadmCtrl)
 {
     m_model.setHorizontalHeaderLabels( { tr("device"), tr("type"), tr("status") } );
 }
@@ -115,8 +116,10 @@ RaidsModel::~RaidsModel()
 }
 
 
-void RaidsModel::load(const std::vector<RaidInfo>& raids)
+void RaidsModel::load()
 {
+    std::vector<RaidInfo> raids = m_mdadmCtrl->listRaids();
+
     const std::set<RaidInfo> newRaids(raids.cbegin(), raids.cend());
     const std::set<RaidInfo> oldRaids(value_map_iterator<RaidsMap>(m_infos.cbegin()),
                                       value_map_iterator<RaidsMap>(m_infos.cend()));
