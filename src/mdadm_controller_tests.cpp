@@ -467,11 +467,7 @@ void mockMdstatOutput(IFileSystemMock& filesystem, QTextStream* const outputStre
 void compareListOutput(IRaidInfoProvider* infoProvider,
                        const std::vector<RaidInfo>& expected)
 {
-    const std::vector<IRaidInfoProvider::RaidId> raidIds = infoProvider->listRaids();
-
-    std::vector<RaidInfo> raids;
-    for(const IRaidInfoProvider::RaidId& id: raidIds)
-        raids.push_back(infoProvider->getInfoFor(id));
+    const std::vector<RaidInfo> raids = infoProvider->listRaids();
 
     ASSERT_EQ(raids.size(), expected.size());
     auto expectedIt = expected.cbegin();
@@ -483,9 +479,11 @@ void compareListOutput(IRaidInfoProvider* infoProvider,
 }
 
 
-TEST(raidInfoProviderTests,
+TEST(RaidInfoProviderTests,
      listInactiveRaid0)
 {
+    IFileSystemMock filesystem;
+
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md1 : inactive sdf[1](S)\n"
                          "      130048 blocks super 1.2\n"
@@ -493,7 +491,9 @@ TEST(raidInfoProviderTests,
                          "unused devices: <none>\n");
     QTextStream outputStream(&mdstatOutput);
 
-    RaidInfoProvider infoProvider(nullptr);
+    mockMdstatOutput(filesystem, &outputStream);
+
+    RaidInfoProvider infoProvider(&filesystem);
 
     const QList<RaidComponentInfo> components =
     {
@@ -508,11 +508,10 @@ TEST(raidInfoProviderTests,
 }
 
 
-TEST(MDAdmControllerTest,
+TEST(RaidInfoProviderTests,
      listActiveRaid5)
 {
     IFileSystemMock filesystem;
-    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md0 : active raid5 sdb[1] sdc[3] sdd[0]\n"
@@ -524,7 +523,7 @@ TEST(MDAdmControllerTest,
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &raidInfoProvider);
+    RaidInfoProvider infoProvider(&filesystem);
 
     const QList<RaidComponentInfo> components =
     {
@@ -537,15 +536,14 @@ TEST(MDAdmControllerTest,
         RaidInfo("md0", components, "raid5")
     };
 
-    compareListOutput(&raidInfoProvider, expectedOutput);
+    compareListOutput(&infoProvider, expectedOutput);
 }
 
 
-TEST(MDAdmControllerTest,
+TEST(RaidInfoProviderTests,
      listActiveRaid0Raid1Raid6)
 {
     IFileSystemMock filesystem;
-    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -560,11 +558,12 @@ TEST(MDAdmControllerTest,
                          "      130880 blocks super 1.2 [2/2] [UU]\n"
                          "\n"
                          "unused devices: <none>\n");
+
     QTextStream outputStream(&mdstatOutput, QIODevice::ReadOnly);
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &raidInfoProvider);
+    RaidInfoProvider infoProvider(&filesystem);
 
     const QList<RaidComponentInfo> components1 =
     {
@@ -590,14 +589,13 @@ TEST(MDAdmControllerTest,
         RaidInfo("md3", components3, "raid1")
     };
 
-    compareListOutput(&raidInfoProvider, expectedOutput);
+    compareListOutput(&infoProvider, expectedOutput);
 }
 
 
-TEST(MDAdmControllerTest, listNoRaids)
+TEST(RaidInfoProviderTests, listNoRaids)
 {
     IFileSystemMock filesystem;
-    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -608,18 +606,17 @@ TEST(MDAdmControllerTest, listNoRaids)
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &raidInfoProvider);
+    RaidInfoProvider infoProvider(&filesystem);
 
     const std::vector<RaidInfo> expectedOutput;
 
-    compareListOutput(&raidInfoProvider, expectedOutput);
+    compareListOutput(&infoProvider, expectedOutput);
 }
 
 
-TEST(MDAdmControllerTest, listDegradedRaid)
+TEST(RaidInfoProviderTests, listDegradedRaid)
 {
     IFileSystemMock filesystem;
-    IRaidInfoProviderMock raidInfoProvider;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -634,7 +631,7 @@ TEST(MDAdmControllerTest, listDegradedRaid)
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    MDAdmController controller(nullptr, &raidInfoProvider);
+    RaidInfoProvider raidInfoProvider(&filesystem);
 
     const QList<RaidComponentInfo> components =
     {
