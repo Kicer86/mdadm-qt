@@ -168,6 +168,65 @@ MainWindow::~MainWindow()
 }
 
 
+QMenu* MainWindow::createScanMenu(const RaidInfo& raid)
+{
+    QMenu *scanOptions = new QMenu(this);
+
+    QAction *actionCheck = new QAction(tr("Integrity check"), this);
+    QAction *actionRepair = new QAction(tr("Repair"), this);
+    QAction *actionResync = new QAction(tr("Resync"), this);
+    QAction *actionStop = new QAction(tr("Stop"), this);
+    QAction *actionPause = new QAction(tr("Pause"), this);
+    QAction *actionResume = new QAction(tr("Resume"), this);
+
+    ScanInfo scanInfo = m_mdadmController.getScanData(raid.raid_device);
+    auto scanType = scanInfo.sync_action;
+    bool isIdle = (scanType == ScanInfo::ScanType::Idle);
+    bool isPaused = (scanType == ScanInfo::ScanType::Frozen);
+
+    actionCheck->setEnabled(isIdle);
+    actionRepair->setEnabled(isIdle);
+    actionResync->setEnabled(isIdle);
+    actionStop->setDisabled(isIdle);
+    actionPause->setDisabled(isIdle || isPaused);
+    actionResume->setEnabled(isPaused &&
+                             scanInfo.last_scan != ScanInfo::ScanType::Idle);
+
+    const QString& raid_device = raid.raid_device;
+    auto scan_function = [this, raid_device](const ScanInfo::ScanType& type)
+    {
+        m_mdadmController.runScan(raid_device, type);
+    };
+
+    connect(actionCheck, &QAction::triggered,
+            std::bind(scan_function, ScanInfo::ScanType::Check));
+    connect(actionRepair, &QAction::triggered,
+            std::bind(scan_function, ScanInfo::ScanType::Repair));
+    connect(actionResync, &QAction::triggered,
+            std::bind(scan_function, ScanInfo::ScanType::Resync));
+    connect(actionStop, &QAction::triggered,
+            std::bind(&MDAdmController::stopScan, &m_mdadmController,
+                      raid.raid_device));
+    connect(actionPause, &QAction::triggered,
+            std::bind(&MDAdmController::pauseScan, &m_mdadmController,
+                      raid.raid_device));
+    connect(actionResume, &QAction::triggered,
+            std::bind(&MDAdmController::resumeScan, &m_mdadmController,
+                      raid.raid_device));
+
+    scanOptions->setTitle(tr("Scan options"));
+    scanOptions->addAction(actionCheck);
+    scanOptions->addAction(actionRepair);
+    scanOptions->addAction(actionResync);
+    scanOptions->addSeparator();
+    scanOptions->addAction(actionPause);
+    scanOptions->addAction(actionResume);
+    scanOptions->addSeparator();
+    scanOptions->addAction(actionStop);
+
+    return scanOptions;
+}
+
 void MainWindow::contextMenu(const QPoint& pos)
 {
     const QModelIndex view_index = m_raidsView->indexAt(pos);
@@ -194,6 +253,7 @@ void MainWindow::contextMenu(const QPoint& pos)
         });
 
         raidOptions->addAction(actionRemove);
+        raidOptions->addMenu(createScanMenu(raid));
         raidOptions->popup(m_raidsView->viewport()->mapToGlobal(pos));
     }
     else
