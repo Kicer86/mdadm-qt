@@ -96,6 +96,7 @@ if(BUILD_TESTS)
                 filters_tests.cpp
                 mdadm_controller_tests.cpp
                 raid_info_tests.cpp
+                raid_info_provider_tests.cpp
                 raids_model_tests.cpp
         )
 
