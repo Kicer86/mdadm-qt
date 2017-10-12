@@ -118,14 +118,7 @@ RaidsModel::~RaidsModel()
 
 void RaidsModel::load()
 {
-    std::vector<IRaidInfoProvider::RaidId> raidIds = m_mdadmCtrl->listRaids();
-    std::vector<RaidInfo> raids;
-
-    for(const IRaidInfoProvider::RaidId& id: raidIds)
-    {
-        const RaidInfo info = m_mdadmCtrl->getInfoFor(id);
-        raids.push_back(info);
-    }
+    std::vector<RaidInfo> raids = m_mdadmCtrl->listRaids();
 
     const std::set<RaidInfo> newRaids(raids.cbegin(), raids.cend());
     const std::set<RaidInfo> oldRaids(value_map_iterator<RaidsMap>(m_infos.cbegin()),

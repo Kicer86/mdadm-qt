@@ -12,7 +12,7 @@ struct IRaidInfoProvider
 
     virtual ~IRaidInfoProvider() = default;
 
-    virtual std::vector<RaidId> listRaids() const = 0;
+    virtual std::vector<RaidInfo> listRaids() const = 0;
     virtual RaidInfo getInfoFor(const RaidId &) const = 0;
 
     // TODO: refactor, base on RaidId

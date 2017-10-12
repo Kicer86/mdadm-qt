@@ -36,7 +36,7 @@ class RaidInfoProvider: public IRaidInfoProvider
         typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
 
         // overrides
-        std::vector<RaidId> listRaids() const override;
+        std::vector<RaidInfo> listRaids() const override;
         RaidInfo getInfoFor(const IRaidInfoProvider::RaidId & ) const override;
         bool listComponents(const QString& raid_device,
                             QStringList& block_devices) const override;

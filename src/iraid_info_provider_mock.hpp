@@ -7,7 +7,7 @@
 
 struct IRaidInfoProviderMock: IRaidInfoProvider
 {
-    MOCK_CONST_METHOD0(listRaids, std::vector<RaidId>());
+    MOCK_CONST_METHOD0(listRaids, std::vector<RaidInfo>());
     MOCK_CONST_METHOD1(getInfoFor, RaidInfo(const RaidId &));
     MOCK_CONST_METHOD2(listComponents, bool(const QString& raid_device,
                                             QStringList& block_devices));

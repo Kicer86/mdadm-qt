@@ -36,7 +36,7 @@ RaidInfoProvider::~RaidInfoProvider()
 }
 
 
-std::vector<RaidInfoProvider::RaidId> RaidInfoProvider::listRaids() const
+std::vector<RaidInfo> RaidInfoProvider::listRaids() const
 {
     // TODO: we are filling cache here.
     //       Whole idea of caching and cache flush needs to be
@@ -50,17 +50,7 @@ std::vector<RaidInfoProvider::RaidId> RaidInfoProvider::listRaids() const
         raid_infos = infos;
     });
 
-    std::vector<RaidId> result;
-    result.reserve(raid_infos.size());
-
-    for(const RaidInfo& raidInfo: raid_infos)
-    {
-        result.push_back(raidInfo.raid_device);
-
-        m_infoCache.emplace(raidInfo.raid_device, raidInfo);
-    }
-
-    return result;
+    return raid_infos;
 }
 
 
