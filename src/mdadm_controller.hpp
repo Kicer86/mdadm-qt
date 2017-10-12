@@ -32,6 +32,7 @@
 
 struct IMDAdmProcess;
 struct IRaidInfoProvider;
+struct IFileSystem;
 
 
 struct ScanInfo
@@ -103,7 +104,7 @@ class MDAdmController: public QObject
             Raid6,
         };
 
-        MDAdmController(IMDAdmProcess *, IRaidInfoProvider *);
+        MDAdmController(IMDAdmProcess *, IRaidInfoProvider *, IFileSystem *);
         MDAdmController(const MDAdmController &) = delete;
         ~MDAdmController();
 
@@ -129,6 +130,7 @@ class MDAdmController: public QObject
     private:
         IMDAdmProcess* m_mdadmProcess;
         IRaidInfoProvider* m_raidInfoProvider;
+        IFileSystem* m_fileSystem;
 
         QString scanTypeToString(const ScanInfo::ScanType) const;
         ScanInfo::ScanType scanStringToType(const QString &) const;

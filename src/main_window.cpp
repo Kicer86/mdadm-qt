@@ -81,7 +81,7 @@ MainWindow::MainWindow():
     m_mdadmProcess(),
     m_mdadmDebug(&m_mdadmProcess),
     m_raidInfoProvider(&m_fileSystem),
-    m_mdadmController(&m_mdadmDebug, &m_raidInfoProvider),
+    m_mdadmController(&m_mdadmDebug, &m_raidInfoProvider, &m_fileSystem),
     m_raidsModel(&m_raidInfoProvider),
     m_disksModel(),
     m_viewTabs(nullptr),

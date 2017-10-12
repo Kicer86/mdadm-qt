@@ -28,7 +28,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid0Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md0",
                           MDAdmController::Type::Raid0,
                           QStringList({"/dev/sda", "/dev/sdc"}),
@@ -49,7 +49,7 @@ TEST(MDAdmControllerTest, usesSparesForRaid0Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("error"), false, 2),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md1",
                           MDAdmController::Type::Raid0,
                           QStringList({"/dev/sda", "/dev/sdc"}),
@@ -69,7 +69,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid1Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md1",
                           MDAdmController::Type::Raid1,
                           QStringList({"/dev/sda", "/dev/sdc", "/dev/sde"}),
@@ -92,7 +92,7 @@ TEST(MDAdmControllerTest, usesSparesForRaid1Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md1",
                           MDAdmController::Type::Raid1,
                           QStringList({"/dev/sda", "/dev/sdc", "/dev/sde"}),
@@ -113,7 +113,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid4Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md2",
                           MDAdmController::Type::Raid4,
                           QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc",
@@ -137,7 +137,7 @@ TEST(MDAdmControllerTest, usesSparesForRaid4Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md7",
                           MDAdmController::Type::Raid4,
                           QStringList({"/dev/sdb", "/dev/sdc", "/dev/sdd",
@@ -158,7 +158,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid5Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md3",
                           MDAdmController::Type::Raid5,
                           QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc"}),
@@ -181,7 +181,7 @@ TEST(MDAdmControllerTest, usesSparesForRaid5Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md8",
                           MDAdmController::Type::Raid5,
                           QStringList({"/dev/sdb", "/dev/sdc", "/dev/sdd",
@@ -203,7 +203,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid6Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md4",
                           MDAdmController::Type::Raid6,
                           QStringList({"/dev/sda", "/dev/sdb", "/dev/sdc",
@@ -228,7 +228,7 @@ TEST(MDAdmControllerTest, usesSparesForRaid6Creation)
         .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                         Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md2",
                           MDAdmController::Type::Raid6,
                           QStringList({"/dev/sdb", "/dev/sdc", "/dev/sdd",
@@ -251,7 +251,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid1CreationWithMissing)
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                             Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md7",
                           MDAdmController::Type::Raid1,
                           QStringList({"/dev/sdb", "missing"}),
@@ -272,7 +272,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid5CreationWithMissing)
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                             Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md8",
                           MDAdmController::Type::Raid5,
                           QStringList({"/dev/sdm", "missing", "/dev/sdn"}),
@@ -294,7 +294,7 @@ TEST(MDAdmControllerTest, usesRightParametersForRaid6CreationWithMissing)
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                             Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.createRaid("/dev/md127",
                           MDAdmController::Type::Raid6,
                           QStringList({"/dev/sdl", "/dev/sdm", "missing",
@@ -315,7 +315,7 @@ TEST(MDAdmControllerTest, usesRightParameterForRaidStop)
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.stopRaid("/dev/md127");
 }
 
@@ -325,7 +325,7 @@ TEST(MDAdmControllerTest,
 {
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     EXPECT_FALSE(controller.zeroSuperblock(QStringList()));
 }
 
@@ -343,7 +343,7 @@ TEST(MDAdmControllerTest,
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb" }));
 }
 
@@ -364,7 +364,7 @@ TEST(MDAdmControllerTest,
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb",
                                             "/dev/sdc",
                                             "/dev/sde"}));
@@ -397,7 +397,7 @@ TEST(MDAdmControllerTest,
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                             Return(true)));
 
-    MDAdmController controller(&mdadm_process, &raid_info_provider);
+    MDAdmController controller(&mdadm_process, &raid_info_provider, nullptr);
     EXPECT_TRUE(controller.removeRaid("/dev/md127"));
 }
 
@@ -422,7 +422,7 @@ TEST(MDAdmControllerTest,
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
-    MDAdmController controller(&mdadm_process, &raidInfoProvider);
+    MDAdmController controller(&mdadm_process, &raidInfoProvider, nullptr);
     EXPECT_TRUE(controller.removeRaid("/dev/md4"));
 }
 
@@ -440,7 +440,7 @@ TEST(MDAdmControllerTest,
     EXPECT_CALL(mdadm_process, execute(expected_args, _, _))
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("crash"), false, 0), Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb" }));
 }
 
@@ -459,7 +459,7 @@ TEST(MDAdmControllerTest, usesRightParameterForMarkAsFaulty)
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                             Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.markAsFaulty("/dev/md10", "/dev/sdo");
 }
 
@@ -478,7 +478,7 @@ TEST(MDAdmControllerTest, usesRightParameterForReAdd)
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0),
                             Return(true)));
 
-    MDAdmController controller(&mdadm_process, nullptr);
+    MDAdmController controller(&mdadm_process, nullptr, nullptr);
     controller.reAdd("/dev/md2", "/dev/sdc");
 }
 
@@ -521,7 +521,7 @@ TEST(MDAdmControllerTest, usesRightParameterForIntegrityCheck)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Check));
 
@@ -538,7 +538,7 @@ TEST(MDAdmControllerTest, usesRightParameterForRepair)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Repair));
 
@@ -555,7 +555,7 @@ TEST(MDAdmControllerTest, usesRightParameterForResync)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Resync));
 
@@ -574,7 +574,7 @@ TEST(MDAdmControllerTest, usesRightParameterForStopScan)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.stopScan("md2"));
 
@@ -592,7 +592,7 @@ TEST(MDAdmControllerTest, getsCorrectRecoveryScanType)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.getScanData("md2").sync_action ==
                 ScanInfo::ScanType::Recovery);
@@ -607,7 +607,7 @@ TEST(MDAdmControllerTest, usesRightParameterForReshape)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Reshape));
 
@@ -624,7 +624,7 @@ TEST(MDAdmControllerTest, usesRightParameterForFreeze)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Frozen));
 
@@ -642,7 +642,7 @@ TEST(MDAdmControllerTest, usesRightParameterForPause)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.pauseScan("md2"));
 
@@ -664,7 +664,7 @@ TEST(MDAdmControllerTest, usesRightParameterForResume)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
     EXPECT_TRUE(controller.resumeScan("md2"));
 
     ScanInfo scan_info = controller.getScanData("md2");
@@ -686,7 +686,7 @@ TEST(MDAdmControllerTest, resumeOfActiveScanShouldFail)
 
     IMDAdmProcessMock mdadm_process;
 
-    MDAdmController controller(&mdadm_process, fs.getFileSystem());
+    MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_FALSE(controller.resumeScan("md2"));
 

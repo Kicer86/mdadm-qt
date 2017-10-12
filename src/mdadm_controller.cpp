@@ -63,15 +63,18 @@ namespace
     {
         return "/sys/block/" + raid_device + "/md/";
     }
-    
-    void nullResultCallback(const QByteArray &, bool,int) {  }    
+
+    void nullResultCallback(const QByteArray &, bool,int) {  }
 }
 
 
 MDAdmController::MDAdmController(IMDAdmProcess* mdadmProcess,
-                                 IRaidInfoProvider* raidInfoProvider):
+                                 IRaidInfoProvider* raidInfoProvider,
+                                 IFileSystem* filesystem
+                                ):
     m_mdadmProcess(mdadmProcess),
-    m_raidInfoProvider(raidInfoProvider)
+    m_raidInfoProvider(raidInfoProvider),
+    m_fileSystem(filesystem)
 {
 
 }
