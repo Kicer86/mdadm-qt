@@ -15,6 +15,7 @@ set(SRCS
         mdadm_debug_layer.hpp
         mdadm_process.cpp
         mdadm_process.hpp
+        objects_ids.hpp
         utils.hpp
         disk_controller.cpp
         disk_controller.hpp
