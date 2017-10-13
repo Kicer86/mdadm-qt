@@ -43,6 +43,14 @@ bool RaidComponentInfo::operator<(const RaidComponentInfo& other) const
     return less;
 }
 
+
+RaidInfo::RaidInfo(IRaidInfoProvider* data_provider, RaidId id):
+    m_provider(data_provider),
+    m_id(id)
+{
+}
+
+
 bool RaidInfo::operator==(const RaidInfo &other) const
 {
     return this->raid_device == other.raid_device &&

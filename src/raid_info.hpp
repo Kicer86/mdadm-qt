@@ -22,6 +22,10 @@
 #include <QString>
 #include <QList>
 
+#include "objects_ids.hpp"
+
+struct IRaidInfoProvider;
+
 
 struct RaidComponentInfo
 {
@@ -66,7 +70,12 @@ struct RaidInfo
     QList<RaidComponentInfo> block_devices;
     QString raid_type;
 
-    RaidInfo (const QString& _raid_device,
+    RaidId m_id;
+    IRaidInfoProvider* m_provider;
+
+    RaidInfo(IRaidInfoProvider *, RaidId);
+
+    RaidInfo(const QString& _raid_device,
               const QList<RaidComponentInfo>& _block_devices,
               const QString& _type):
         raid_device(_raid_device),
