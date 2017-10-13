@@ -54,7 +54,7 @@ std::vector<RaidInfo> RaidInfoProvider::listRaids() const
 }
 
 
-RaidInfo RaidInfoProvider::getInfoFor(const IRaidInfoProvider::RaidId& id) const
+RaidInfo RaidInfoProvider::getInfoFor(const RaidId& id) const
 {
     auto it = m_infoCache.find(id);
     assert(it != m_infoCache.end());

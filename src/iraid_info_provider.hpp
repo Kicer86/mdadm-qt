@@ -5,11 +5,10 @@
 #include <vector>
 
 #include "raid_info.hpp"
+#include "objects_ids.hpp"
 
 struct IRaidInfoProvider
 {
-    typedef QString RaidId;
-
     virtual ~IRaidInfoProvider() = default;
 
     virtual std::vector<RaidInfo> listRaids() const = 0;
