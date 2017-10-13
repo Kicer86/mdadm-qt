@@ -30,7 +30,12 @@ class RaidInfoProvider: public IRaidInfoProvider
 {
     public:
         RaidInfoProvider(IFileSystem *);
+        RaidInfoProvider(const RaidInfoProvider &);
+        RaidInfoProvider(RaidInfoProvider &&);
         virtual ~RaidInfoProvider();
+
+        RaidInfoProvider& operator=(const RaidInfoProvider &);
+        RaidInfoProvider& operator=(RaidInfoProvider &&);
 
         // ListResult - callback function for listRaids
         typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;

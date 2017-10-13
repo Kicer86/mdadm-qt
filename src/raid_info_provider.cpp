@@ -26,7 +26,10 @@
 
 
 RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
-    m_fileSystem(fileSystem)
+    m_fileSystem(fileSystem),
+    m_raidType(),
+    m_raidDevice(),
+    m_raidComponents()
 {
 }
 
