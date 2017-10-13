@@ -38,6 +38,11 @@ class RaidInfoProvider: public IRaidInfoProvider
         // overrides
         std::vector<RaidInfo> listRaids() const override;
         RaidInfo getInfoFor(const RaidId & ) const override;
+
+        QString raidDevice(const RaidId &) const override;
+        QList<RaidComponentInfo> blockDevices(const RaidId &) const override;
+        QString raidType(const RaidId &) const override;
+
         bool listComponents(const QString& raid_device,
                             QStringList& block_devices) const override;
 
@@ -45,7 +50,9 @@ class RaidInfoProvider: public IRaidInfoProvider
         bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
 
     private:
-        mutable std::map<RaidId, RaidInfo> m_infoCache;
+        mutable std::map<RaidId, QString> m_raidType;
+        mutable std::map<RaidId, QString> m_raidDevice;
+        mutable std::map<RaidId, QList<RaidComponentInfo>> m_raidComponents;
         IFileSystem* m_fileSystem;
 
 };

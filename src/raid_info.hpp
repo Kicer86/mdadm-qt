@@ -61,27 +61,7 @@ struct RaidComponentInfo
 
 struct RaidInfo
 {
-    /*
-     * device types in mdstat:
-     * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/md/md.c#n7711
-     */
-
-    QString raid_device;
-    QList<RaidComponentInfo> block_devices;
-    QString raid_type;
-
-    RaidId m_id;
-    IRaidInfoProvider* m_provider;
-
-    RaidInfo(IRaidInfoProvider *, RaidId);
-
-    RaidInfo(const QString& _raid_device,
-              const QList<RaidComponentInfo>& _block_devices,
-              const QString& _type):
-        raid_device(_raid_device),
-        block_devices(_block_devices),
-        raid_type(_type)
-    {}
+    RaidInfo(const IRaidInfoProvider *, RaidId);
 
     RaidInfo(const RaidInfo &) = default;
     RaidInfo(RaidInfo &&) = default;
@@ -92,6 +72,14 @@ struct RaidInfo
     bool operator==(const RaidInfo&) const;
     bool operator!=(const RaidInfo&) const;
     bool operator<(const RaidInfo&) const;
+
+    QString device() const;
+    QString type() const;
+    QList<RaidComponentInfo> devices() const;
+
+    private:
+        RaidId m_id;
+        const IRaidInfoProvider* m_provider;
 };
 
 #endif // RAIDINFO_HPP

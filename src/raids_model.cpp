@@ -87,7 +87,7 @@ namespace
 
     bool raidNameLess(const RaidInfo& lhs, const RaidInfo& rhs)
     {
-        return lhs.raid_device < rhs.raid_device;
+        return lhs.device() < rhs.device();
     }
 
 }
@@ -187,7 +187,7 @@ QAbstractItemModel* RaidsModel::model()
 RaidsModel::RaidsMap::iterator RaidsModel::itFor(const QString& name)
 {
      RaidsMap::iterator it = std::find_if(m_infos.begin(), m_infos.end(),
-        [&name](const auto& item) { return item.second.raid_device == name; }
+        [&name](const auto& item) { return item.second.device() == name; }
     );
 
     assert(it != m_infos.end());
@@ -199,7 +199,7 @@ RaidsModel::RaidsMap::iterator RaidsModel::itFor(const QString& name)
 RaidsModel::RaidsMap::const_iterator RaidsModel::itFor(const QString& name) const
 {
      RaidsMap::const_iterator it = std::find_if(m_infos.begin(), m_infos.end(),
-        [&name](const auto& item) { return item.second.raid_device == name; }
+        [&name](const auto& item) { return item.second.device() == name; }
     );
 
     assert(it != m_infos.end());
@@ -230,8 +230,8 @@ QStandardItem* RaidsModel::itemFor(const QString& name) const
 
 void RaidsModel::appendRaid(const RaidInfo& raidInfo)
 {
-    QStandardItem* raid_device_item = new QStandardItem(raidInfo.raid_device);
-    QStandardItem* raid_type_item = new QStandardItem(raidInfo.raid_type);
+    QStandardItem* raid_device_item = new QStandardItem(raidInfo.device());
+    QStandardItem* raid_type_item = new QStandardItem(raidInfo.type());
     QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
 
     const QList<QStandardItem *> row =
@@ -241,7 +241,7 @@ void RaidsModel::appendRaid(const RaidInfo& raidInfo)
         raid_status,
     };
 
-    for (const auto& blkdev : raidInfo.block_devices)
+    for (const auto& blkdev : raidInfo.devices())
         appendComponent(raid_device_item, blkdev);
 
     m_infos.emplace(raid_device_item, raidInfo);
@@ -267,12 +267,12 @@ void RaidsModel::updateRaid(const RaidInfo& raid)
     // Re-add all components.
     // This is not the nicest solution, but it is easy, and is good enough.
 
-    removeComponentsOf(raid.raid_device);
+    removeComponentsOf(raid.device());
 
-    auto raidIt = itFor(raid.raid_device);
+    auto raidIt = itFor(raid.device());
 
     QStandardItem* raidItem = raidIt->first;
-    for (const auto& blkdev : raid.block_devices)
+    for (const auto& blkdev : raid.devices())
         appendComponent(raidItem, blkdev);
 
     // update raid information
@@ -284,7 +284,7 @@ void RaidsModel::updateRaid(const RaidInfo& raid)
     raidIt->second = raid;
 
     // TODO: prepare common code for update and appendRaid()
-    typeItem->setText(raid.raid_type);
+    typeItem->setText(raid.type());
 }
 
 
@@ -292,7 +292,7 @@ void RaidsModel::removeComponentsOf(const QString& raid_name)
 {
     const RaidInfo& raidInfo = infoFor(raid_name);
 
-    for(const RaidComponentInfo& component: raidInfo.block_devices)
+    for(const RaidComponentInfo& component: raidInfo.devices())
         removeComponent(component);
 }
 
@@ -338,7 +338,7 @@ void RaidsModel::eraseRemoved(const std::set<RaidInfo>& oldRaids, const std::set
                         raidNameLess);
 
     for (const RaidInfo& raid: removed)
-        removeRaid(raid.raid_device);
+        removeRaid(raid.device());
 }
 
 
@@ -367,7 +367,7 @@ void RaidsModel::refreshChanged(const std::set<RaidInfo>& oldRaids, const std::s
                          [&oldRaid](const RaidInfo& newRaid)
                          {
                              // Find raids which differ in anything but name
-                             return newRaid.raid_device == oldRaid.raid_device &&
+                             return newRaid.device() == oldRaid.device() &&
                                     newRaid != oldRaid;
                          });
 

@@ -18,6 +18,8 @@
 
 #include "raid_info.hpp"
 
+#include "iraid_info_provider.hpp"
+
 
 bool RaidComponentInfo::operator==(const RaidComponentInfo& other) const
 {
@@ -44,7 +46,7 @@ bool RaidComponentInfo::operator<(const RaidComponentInfo& other) const
 }
 
 
-RaidInfo::RaidInfo(IRaidInfoProvider* data_provider, RaidId id):
+RaidInfo::RaidInfo(const IRaidInfoProvider* data_provider, RaidId id):
     m_provider(data_provider),
     m_id(id)
 {
@@ -53,33 +55,35 @@ RaidInfo::RaidInfo(IRaidInfoProvider* data_provider, RaidId id):
 
 bool RaidInfo::operator==(const RaidInfo &other) const
 {
-    return this->raid_device == other.raid_device &&
-           this->raid_type == other.raid_type &&
-           this->block_devices == other.block_devices;
+    return m_id == other.m_id;
 }
 
 
 bool RaidInfo::operator!=(const RaidInfo& other) const
 {
-    return this->raid_device != other.raid_device ||
-           this->raid_type != other.raid_type ||
-           this->block_devices != other.block_devices;
+    return m_id != other.m_id;
 }
 
 
 bool RaidInfo::operator<(const RaidInfo& other) const
 {
-    bool less = false;
+    return m_id < other.m_id;
+}
 
-    if (this->raid_device < other.raid_device)
-        less = true;
-    else if (this->raid_device == other.raid_device)
-    {
-        if (this->raid_type < other.raid_type)
-            less = true;
-        else if (this->raid_type == other.raid_type)
-            less = this->block_devices < other.block_devices;
-    }
 
-    return less;
+QString RaidInfo::device() const
+{
+    return m_provider->raidDevice(m_id);
+}
+
+
+QString RaidInfo::type() const
+{
+    return m_provider->raidType(m_id);
+}
+
+
+QList<RaidComponentInfo> RaidInfo::devices() const
+{
+    return m_provider->blockDevices(m_id);
 }

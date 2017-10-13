@@ -1,6 +1,4 @@
 
-
-
 #include <gmock/gmock.h>
 
 #include "raids_model.hpp"

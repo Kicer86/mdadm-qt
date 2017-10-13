@@ -41,8 +41,9 @@ std::vector<RaidInfo> RaidInfoProvider::listRaids() const
     // TODO: we are filling cache here.
     //       Whole idea of caching and cache flush needs to be
     //       prepared properly.
-    m_infoCache.clear();
-
+    m_raidDevice.clear();
+    m_raidType.clear();
+    m_raidComponents.clear();
     std::vector<RaidInfo> raid_infos;
 
     listRaids([&raid_infos](const std::vector<RaidInfo>& infos)
@@ -56,10 +57,25 @@ std::vector<RaidInfo> RaidInfoProvider::listRaids() const
 
 RaidInfo RaidInfoProvider::getInfoFor(const RaidId& id) const
 {
-    auto it = m_infoCache.find(id);
-    assert(it != m_infoCache.end());
+    return RaidInfo(this, id);
+}
 
-    return it->second;
+
+QString RaidInfoProvider::raidDevice(const RaidId& id) const
+{
+    return m_raidDevice.at(id);
+}
+
+
+QList<RaidComponentInfo> RaidInfoProvider::blockDevices(const RaidId& id) const
+{
+    return m_raidComponents.at(id);
+}
+
+
+QString RaidInfoProvider::raidType(const RaidId& id) const
+{
+    return m_raidType.at(id);
 }
 
 
@@ -117,7 +133,13 @@ bool RaidInfoProvider::listRaids(const ListResult& result) const
                     }
                 }
 
-                results.emplace_back(dev, devices_list, type);
+                const RaidId id(dev);
+
+                m_raidType[id] = type;
+                m_raidComponents[id] = devices_list;
+                m_raidDevice[id] = dev;
+
+                results.push_back(getInfoFor(id));
             }
         }
 

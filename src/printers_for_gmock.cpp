@@ -38,9 +38,9 @@ void PrintTo(const RaidInfo& info, std::ostream* os)
 {
     QString output;
     QDebug debug(&output);
-    debug << info.raid_device;
-    debug << info.raid_type;
-    for (const auto& device : info.block_devices)
+    debug << info.device();
+    debug << info.type();
+    for (const auto& device : info.devices())
     {
         debug << device.name
               << "[" << device.descriptor_index << "]"

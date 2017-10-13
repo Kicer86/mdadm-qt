@@ -23,6 +23,16 @@ struct string_id
         return m_value < other.m_value;
     }
 
+    bool operator==(const string_id& other) const
+    {
+        return m_value == other.m_value;
+    }
+
+    bool operator!=(const string_id& other) const
+    {
+        return m_value != other.m_value;
+    }
+
 private:
     QString m_value;
 };
