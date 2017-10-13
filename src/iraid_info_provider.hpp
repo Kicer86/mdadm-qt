@@ -19,9 +19,9 @@ struct IRaidInfoProvider
      * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/md/md.c#n7711
      */
 
-    virtual QString raidDevice(const RaidId &) const = 0;
-    virtual QList<RaidComponentInfo> blockDevices(const RaidId &) const = 0;
-    virtual QString raidType(const RaidId &) const = 0;
+    virtual const QString& raidDevice(const RaidId &) const = 0;
+    virtual const QList<RaidComponentInfo>& blockDevices(const RaidId &) const = 0;
+    virtual const QString& raidType(const RaidId &) const = 0;
 
     // TODO: refactor, base on RaidId
     virtual bool listComponents(const QString& raid_device,

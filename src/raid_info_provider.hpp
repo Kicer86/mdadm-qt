@@ -39,9 +39,9 @@ class RaidInfoProvider: public IRaidInfoProvider
         std::vector<RaidInfo> listRaids() const override;
         RaidInfo getInfoFor(const RaidId & ) const override;
 
-        QString raidDevice(const RaidId &) const override;
-        QList<RaidComponentInfo> blockDevices(const RaidId &) const override;
-        QString raidType(const RaidId &) const override;
+        const QString& raidDevice(const RaidId &) const override;
+        const QList<RaidComponentInfo>& blockDevices(const RaidId &) const override;
+        const QString& raidType(const RaidId &) const override;
 
         bool listComponents(const QString& raid_device,
                             QStringList& block_devices) const override;

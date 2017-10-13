@@ -47,8 +47,8 @@ bool RaidComponentInfo::operator<(const RaidComponentInfo& other) const
 
 
 RaidInfo::RaidInfo(const IRaidInfoProvider* data_provider, RaidId id):
-    m_provider(data_provider),
-    m_id(id)
+    m_id(id),
+    m_provider(data_provider)
 {
 }
 
@@ -71,19 +71,19 @@ bool RaidInfo::operator<(const RaidInfo& other) const
 }
 
 
-QString RaidInfo::device() const
+const QString& RaidInfo::device() const
 {
     return m_provider->raidDevice(m_id);
 }
 
 
-QString RaidInfo::type() const
+const QString& RaidInfo::type() const
 {
     return m_provider->raidType(m_id);
 }
 
 
-QList<RaidComponentInfo> RaidInfo::devices() const
+const QList<RaidComponentInfo>& RaidInfo::devices() const
 {
     return m_provider->blockDevices(m_id);
 }

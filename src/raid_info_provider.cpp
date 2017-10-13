@@ -61,19 +61,19 @@ RaidInfo RaidInfoProvider::getInfoFor(const RaidId& id) const
 }
 
 
-QString RaidInfoProvider::raidDevice(const RaidId& id) const
+const QString& RaidInfoProvider::raidDevice(const RaidId& id) const
 {
     return m_raidDevice.at(id);
 }
 
 
-QList<RaidComponentInfo> RaidInfoProvider::blockDevices(const RaidId& id) const
+const QList<RaidComponentInfo>& RaidInfoProvider::blockDevices(const RaidId& id) const
 {
     return m_raidComponents.at(id);
 }
 
 
-QString RaidInfoProvider::raidType(const RaidId& id) const
+const QString& RaidInfoProvider::raidType(const RaidId& id) const
 {
     return m_raidType.at(id);
 }

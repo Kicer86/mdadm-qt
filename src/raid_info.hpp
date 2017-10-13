@@ -73,9 +73,9 @@ struct RaidInfo
     bool operator!=(const RaidInfo&) const;
     bool operator<(const RaidInfo&) const;
 
-    QString device() const;
-    QString type() const;
-    QList<RaidComponentInfo> devices() const;
+    const QString& device() const;
+    const QString& type() const;
+    const QList<RaidComponentInfo>& devices() const;
 
     private:
         RaidId m_id;
