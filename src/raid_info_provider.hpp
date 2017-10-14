@@ -51,10 +51,14 @@ class RaidInfoProvider: public IRaidInfoProvider, public IRaidInfoDataProvider
                             QStringList& block_devices) const override;
 
     private:
-        mutable std::vector<RaidId> m_raids;
-        mutable std::map<RaidId, QString> m_raidType;
-        mutable std::map<RaidId, QString> m_raidDevice;
-        mutable std::map<RaidId, QList<RaidComponentInfo>> m_raidComponents;
+        struct RaidData
+        {
+            QString type;
+            QString device;
+            QList<RaidComponentInfo> components;
+        };
+
+        mutable std::map<RaidId, RaidData> m_raids;
         IFileSystem* m_fileSystem;
 
         // operations

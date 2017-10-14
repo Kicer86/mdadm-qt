@@ -27,9 +27,6 @@
 
 RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
     m_raids(),
-    m_raidType(),
-    m_raidDevice(),
-    m_raidComponents(),
     m_fileSystem(fileSystem)
 {
 }
@@ -46,8 +43,8 @@ std::vector<RaidInfo> RaidInfoProvider::listRaids() const
 
     std::vector<RaidInfo> raid_infos;
 
-    for(const RaidId& id: m_raids)
-        raid_infos.emplace_back(this, id);
+    for(const auto& raid: m_raids)
+        raid_infos.emplace_back(this, raid.first);
 
     return raid_infos;
 }
@@ -61,19 +58,19 @@ RaidInfo RaidInfoProvider::getInfoFor(const RaidId& id) const
 
 const QString& RaidInfoProvider::raidDevice(const RaidId& id) const
 {
-    return m_raidDevice.at(id);
+    return m_raids.at(id).device;
 }
 
 
 const QList<RaidComponentInfo>& RaidInfoProvider::blockDevices(const RaidId& id) const
 {
-    return m_raidComponents.at(id);
+    return m_raids.at(id).components;
 }
 
 
 const QString& RaidInfoProvider::raidType(const RaidId& id) const
 {
-    return m_raidType.at(id);
+    return m_raids.at(id).type;
 }
 
 
@@ -96,9 +93,6 @@ bool RaidInfoProvider::listComponents(const QString& raid_device,
 bool RaidInfoProvider::reCache() const
 {
     m_raids.clear();
-    m_raidDevice.clear();
-    m_raidType.clear();
-    m_raidComponents.clear();
 
     auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
                                                        QIODevice::Text);
@@ -154,10 +148,12 @@ bool RaidInfoProvider::reCache() const
 
                 const RaidId id(dev);
 
-                m_raids.push_back(id);
-                m_raidType[id] = type;
-                m_raidComponents[id] = devices_list;
-                m_raidDevice[id] = dev;
+                RaidData data;
+                data.device = dev;
+                data.components = devices_list;
+                data.type = type;
+
+                m_raids[id] = data;
 
                 results.push_back(getInfoFor(id));
             }
