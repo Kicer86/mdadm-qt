@@ -329,7 +329,7 @@ bool MainWindow::removeRaid(const QString& raidDevice)
 
 void MainWindow::refreshArraysList()
 {
-    m_raidsModel.load();
+    m_raidInfoProvider.refresh();
 }
 
 

@@ -37,6 +37,8 @@ class RaidInfoProvider: public IRaidInfoProvider, public IRaidInfoDataProvider
         RaidInfoProvider& operator=(const RaidInfoProvider &);
         RaidInfoProvider& operator=(RaidInfoProvider &&);
 
+        void refresh();
+
         // overrides
         // IRaidInfoProvider
         std::vector<RaidInfo> listRaids() const override;

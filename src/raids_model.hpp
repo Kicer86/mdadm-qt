@@ -46,41 +46,34 @@ class RaidsModel: public QObject
 
         RaidsModel& operator=(const RaidsModel &) = delete;
 
-        void load();
-
         ItemType getTypeFor(const QModelIndex &) const;
-        const RaidInfo& infoForRaid(const QModelIndex &) const;
+        RaidInfo infoForRaid(const QModelIndex &) const;
         const RaidComponentInfo& infoForComponent(const QModelIndex &) const;
         QAbstractItemModel* model();
 
     private:
-        typedef std::map<QStandardItem *, RaidInfo> RaidsMap;
+        typedef std::map<QStandardItem *, RaidId> RaidsMap;
         typedef std::map<QStandardItem *, RaidComponentInfo> ComponentsMap;
 
         QStandardItemModel m_model;
-        std::map<QStandardItem *, RaidInfo> m_infos;
+        std::map<QStandardItem *, RaidId> m_infos;
         std::map<QStandardItem *, RaidComponentInfo> m_componentInfos;
         const QMap<RaidComponentInfo::Type, QString> m_diskType;
-        IRaidInfoProvider* m_mdadmCtrl;
+        IRaidInfoProvider* m_raidInfoProvider;
 
-        RaidsMap::iterator itFor(const QString &);
-        RaidsMap::const_iterator itFor(const QString &) const;
+        RaidsMap::iterator itFor(const RaidId &);
+        RaidsMap::const_iterator itFor(const RaidId &) const;
 
-        const RaidInfo& infoFor(const QString &) const;
-        QStandardItem* itemFor(const QString &) const;
+        QStandardItem* itemFor(const RaidId &) const;
 
-        void appendRaid(const RaidInfo &);
-        void removeRaid(const QString &);
-        void updateRaid(const RaidInfo &);
+        void appendRaid(const RaidId &);
+        void removeRaid(const RaidId &);
+        void updateRaid(const RaidId &);
 
-        void removeComponentsOf(const QString &);
+        void removeComponentsOf(const RaidId &);
 
         void appendComponent(QStandardItem *, const RaidComponentInfo &);
         void removeComponent(const RaidComponentInfo &);
-
-        void eraseRemoved(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
-        void appendAdded(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
-        void refreshChanged(const std::set<RaidInfo> &, const std::set<RaidInfo> &);
 };
 
 #endif // RAIDSMODEL_HPP

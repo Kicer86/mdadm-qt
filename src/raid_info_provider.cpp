@@ -98,13 +98,18 @@ RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
 
 RaidInfoProvider::~RaidInfoProvider()
 {
+
+}
+
+
+void RaidInfoProvider::refresh()
+{
+    reCache();
 }
 
 
 std::vector<RaidInfo> RaidInfoProvider::listRaids() const
 {
-    reCache();
-
     std::vector<RaidInfo> raid_infos;
 
     for(const auto& raid: m_raids)
@@ -294,9 +299,9 @@ std::vector<RaidId> RaidInfoProvider::findChanged(const RaidsMap& oldRaids,
                                        key_map_iterator<RaidsMap>(newRaids.cend()));
 
     std::vector<RaidId> common;
-    std::set_union(newRaidsSet.cbegin(), newRaidsSet.cend(),
-                   oldRaidsSet.cbegin(), oldRaidsSet.cend(),
-                   std::back_inserter(common));
+    std::set_intersection(newRaidsSet.cbegin(), newRaidsSet.cend(),
+                          oldRaidsSet.cbegin(), oldRaidsSet.cend(),
+                          std::back_inserter(common));
 
     std::vector<RaidId> changed;
     for (const RaidId& id: common)
