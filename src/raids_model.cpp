@@ -207,10 +207,26 @@ void RaidsModel::updateRaid(const RaidId& raid_id)
 
 void RaidsModel::removeComponentsOf(const RaidId& raid_id)
 {
-    const RaidInfo raidInfo = m_raidInfoProvider->getInfoFor(raid_id);
+    QStandardItem* raidItem = itemFor(raid_id);
+    const QModelIndex raidIdx = m_model.indexFromItem(raidItem);
 
-    for(const RaidComponentInfo& component: raidInfo.devices())
-        removeComponent(component);
+    std::vector<QStandardItem *> toRemove;
+
+    for (QModelIndex componentIdx = raidIdx.child(0, 0);
+         componentIdx.isValid();
+         componentIdx = componentIdx.sibling(componentIdx.row() + 1, 0))
+    {
+        QStandardItem* componentItem = m_model.itemFromIndex(componentIdx);
+
+        toRemove.push_back(componentItem);
+    }
+
+    for(std::size_t i = 0; i < toRemove.size(); i++)
+    {
+        QStandardItem* componentItem = toRemove[i];
+        m_model.removeRow(componentItem->row(), raidIdx);
+        m_componentInfos.erase(componentItem);
+    }
 }
 
 
@@ -229,18 +245,4 @@ void RaidsModel::appendComponent(QStandardItem* raidItem, const RaidComponentInf
 
     m_componentInfos.emplace(component_item, blkdev);
     raidItem->appendRow(leaf);
-}
-
-
-void RaidsModel::removeComponent(const RaidComponentInfo& component)
-{
-    ComponentsMap::iterator it = std::find_if(m_componentInfos.begin(), m_componentInfos.end(),
-        [&component](const auto& item) { return item.second.name == component.name; }
-    );
-
-    assert(it != m_componentInfos.end());
-
-    const QModelIndex componentIndex = m_model.indexFromItem(it->first);
-    m_model.removeRow(componentIndex.row(), componentIndex.parent());
-    m_componentInfos.erase(it);
 }
