@@ -26,7 +26,7 @@
 
 struct IFileSystem;
 
-class RaidInfoProvider: public IRaidInfoProvider
+class RaidInfoProvider: public IRaidInfoProvider, private IRaidInfoDataProvider
 {
     public:
         RaidInfoProvider(IFileSystem *);
@@ -41,9 +41,11 @@ class RaidInfoProvider: public IRaidInfoProvider
         typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
 
         // overrides
+        // IRaidInfoProvider
         std::vector<RaidInfo> listRaids() const override;
         RaidInfo getInfoFor(const RaidId & ) const override;
 
+        // IRaidInfoDataProvider
         const QString& raidDevice(const RaidId &) const override;
         const QList<RaidComponentInfo>& blockDevices(const RaidId &) const override;
         const QString& raidType(const RaidId &) const override;

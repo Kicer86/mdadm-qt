@@ -18,8 +18,6 @@
 
 #include "raid_info.hpp"
 
-#include "iraid_info_provider.hpp"
-
 
 bool RaidComponentInfo::operator==(const RaidComponentInfo& other) const
 {
@@ -46,7 +44,7 @@ bool RaidComponentInfo::operator<(const RaidComponentInfo& other) const
 }
 
 
-RaidInfo::RaidInfo(const IRaidInfoProvider* data_provider, RaidId id):
+RaidInfo::RaidInfo(const IRaidInfoDataProvider* data_provider, RaidId id):
     m_id(id),
     m_provider(data_provider)
 {

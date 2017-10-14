@@ -24,8 +24,6 @@
 
 #include "objects_ids.hpp"
 
-struct IRaidInfoProvider;
-
 
 struct RaidComponentInfo
 {
@@ -59,9 +57,24 @@ struct RaidComponentInfo
 };
 
 
+struct IRaidInfoDataProvider
+{
+    virtual ~IRaidInfoDataProvider() = default;
+
+    /*
+     * device types in mdstat:
+     * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/md/md.c#n7711
+     */
+
+    virtual const QString& raidDevice(const RaidId &) const = 0;
+    virtual const QList<RaidComponentInfo>& blockDevices(const RaidId &) const = 0;
+    virtual const QString& raidType(const RaidId &) const = 0;
+};
+
+
 struct RaidInfo
 {
-    RaidInfo(const IRaidInfoProvider *, RaidId);
+    RaidInfo(const IRaidInfoDataProvider *, RaidId);
 
     RaidInfo(const RaidInfo &) = default;
     RaidInfo(RaidInfo &&) = default;
@@ -79,7 +92,7 @@ struct RaidInfo
 
     private:
         RaidId m_id;
-        const IRaidInfoProvider* m_provider;
+        const IRaidInfoDataProvider* m_provider;
 };
 
 #endif // RAIDINFO_HPP
