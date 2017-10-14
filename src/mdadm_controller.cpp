@@ -330,8 +330,10 @@ ScanInfo MDAdmController::getScanData(const QString& raid_device)
 
     auto sync_completed_file = m_fileSystem->openFile(sync_completed_path);
     QTextStream* sync_completed_stream = sync_completed_file->getStream();
-    const auto progress =
-            utils::readValueFromFile<QString>(*sync_completed_stream);
+    const auto progress = sync_completed_stream?
+            utils::readValueFromFile<QString>(*sync_completed_stream):
+            "none";
+
     if (progress == "none" || progress == "delayed")
         scan_info.progress = std::make_tuple(0, 0);
     else
