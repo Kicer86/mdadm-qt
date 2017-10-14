@@ -26,7 +26,7 @@
 
 struct IFileSystem;
 
-class RaidInfoProvider: public IRaidInfoProvider, private IRaidInfoDataProvider
+class RaidInfoProvider: public IRaidInfoProvider, public IRaidInfoDataProvider
 {
     public:
         RaidInfoProvider(IFileSystem *);
@@ -36,9 +36,6 @@ class RaidInfoProvider: public IRaidInfoProvider, private IRaidInfoDataProvider
 
         RaidInfoProvider& operator=(const RaidInfoProvider &);
         RaidInfoProvider& operator=(RaidInfoProvider &&);
-
-        // ListResult - callback function for listRaids
-        typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
 
         // overrides
         // IRaidInfoProvider
@@ -54,13 +51,14 @@ class RaidInfoProvider: public IRaidInfoProvider, private IRaidInfoDataProvider
                             QStringList& block_devices) const override;
 
     private:
+        mutable std::vector<RaidId> m_raids;
         mutable std::map<RaidId, QString> m_raidType;
         mutable std::map<RaidId, QString> m_raidDevice;
         mutable std::map<RaidId, QList<RaidComponentInfo>> m_raidComponents;
         IFileSystem* m_fileSystem;
 
         // operations
-        bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
+        bool reCache() const;
 };
 
 #endif // RAIDINFOPROVIDER_HPP

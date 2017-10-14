@@ -26,10 +26,11 @@
 
 
 RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
-    m_fileSystem(fileSystem),
+    m_raids(),
     m_raidType(),
     m_raidDevice(),
-    m_raidComponents()
+    m_raidComponents(),
+    m_fileSystem(fileSystem)
 {
 }
 
@@ -41,18 +42,12 @@ RaidInfoProvider::~RaidInfoProvider()
 
 std::vector<RaidInfo> RaidInfoProvider::listRaids() const
 {
-    // TODO: we are filling cache here.
-    //       Whole idea of caching and cache flush needs to be
-    //       prepared properly.
-    m_raidDevice.clear();
-    m_raidType.clear();
-    m_raidComponents.clear();
+    reCache();
+
     std::vector<RaidInfo> raid_infos;
 
-    listRaids([&raid_infos](const std::vector<RaidInfo>& infos)
-    {
-        raid_infos = infos;
-    });
+    for(const RaidId& id: m_raids)
+        raid_infos.emplace_back(this, id);
 
     return raid_infos;
 }
@@ -98,8 +93,13 @@ bool RaidInfoProvider::listComponents(const QString& raid_device,
 }
 
 
-bool RaidInfoProvider::listRaids(const ListResult& result) const
+bool RaidInfoProvider::reCache() const
 {
+    m_raids.clear();
+    m_raidDevice.clear();
+    m_raidType.clear();
+    m_raidComponents.clear();
+
     auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
                                                        QIODevice::Text);
 
@@ -154,6 +154,7 @@ bool RaidInfoProvider::listRaids(const ListResult& result) const
 
                 const RaidId id(dev);
 
+                m_raids.push_back(id);
                 m_raidType[id] = type;
                 m_raidComponents[id] = devices_list;
                 m_raidDevice[id] = dev;
@@ -161,8 +162,6 @@ bool RaidInfoProvider::listRaids(const ListResult& result) const
                 results.push_back(getInfoFor(id));
             }
         }
-
-        result(results);
     }
 
     return open_status;
