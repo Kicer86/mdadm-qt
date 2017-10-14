@@ -82,6 +82,22 @@ const QString& RaidInfoProvider::raidType(const RaidId& id) const
 }
 
 
+bool RaidInfoProvider::listComponents(const QString& raid_device,
+                                     QStringList& block_devices) const
+{
+    QString slaves_path = "/sys/block/" + raid_device + "/slaves";
+
+    const std::deque<QString> files =
+            m_fileSystem->listDir(slaves_path, "*",
+                                  QDir::Dirs | QDir::NoDotAndDotDot);
+
+    for (const QString& file: files)
+        block_devices << ("/dev/" + file);
+
+    return !block_devices.empty();
+}
+
+
 bool RaidInfoProvider::listRaids(const ListResult& result) const
 {
     auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
@@ -150,20 +166,4 @@ bool RaidInfoProvider::listRaids(const ListResult& result) const
     }
 
     return open_status;
-}
-
-
-bool RaidInfoProvider::listComponents(const QString& raid_device,
-                                     QStringList& block_devices) const
-{
-    QString slaves_path = "/sys/block/" + raid_device + "/slaves";
-
-    const std::deque<QString> files =
-            m_fileSystem->listDir(slaves_path, "*",
-                                  QDir::Dirs | QDir::NoDotAndDotDot);
-
-    for (const QString& file: files)
-        block_devices << ("/dev/" + file);
-
-    return !block_devices.empty();
 }

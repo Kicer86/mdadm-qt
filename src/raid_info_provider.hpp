@@ -53,15 +53,14 @@ class RaidInfoProvider: public IRaidInfoProvider, private IRaidInfoDataProvider
         bool listComponents(const QString& raid_device,
                             QStringList& block_devices) const override;
 
-        // operations
-        bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
-
     private:
         mutable std::map<RaidId, QString> m_raidType;
         mutable std::map<RaidId, QString> m_raidDevice;
         mutable std::map<RaidId, QList<RaidComponentInfo>> m_raidComponents;
         IFileSystem* m_fileSystem;
 
+        // operations
+        bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
 };
 
 #endif // RAIDINFOPROVIDER_HPP
