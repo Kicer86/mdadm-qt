@@ -19,10 +19,74 @@
 #include "raid_info_provider.hpp"
 
 #include <cassert>
+#include <set>
 
 #include <QTextStream>
 
 #include "ifilesystem.hpp"
+
+
+namespace
+{
+    // NOTE: taken from:
+    // https://github.com/Kicer86/photobroom/blob/master/src/core/iterator_wrapper.hpp
+    // https://github.com/Kicer86/photobroom/blob/master/src/core/map_iterator.hpp
+    // TODO: share it in a common library
+
+    template<typename R, typename B, typename T>
+    struct iterator_wrapper: B
+    {
+        iterator_wrapper(): B(), m_operation()
+        {
+
+        }
+
+        iterator_wrapper(const B& base): B(base), m_operation()
+        {
+
+        }
+
+        iterator_wrapper(const iterator_wrapper &) = default;
+
+        ~iterator_wrapper()
+        {
+        }
+
+        const R& operator*() const
+        {
+            return m_operation(*this);
+        }
+
+        private:
+            T m_operation;
+    };
+
+    template<typename T>
+    struct MapKeyAccessor
+    {
+        const typename T::value_type::first_type& operator()(const typename T::const_iterator& v) const
+        {
+            return v->first;
+        }
+    };
+
+    template<typename T>
+    struct MapValueAccessor
+    {
+        const typename T::value_type::second_type& operator()(const typename T::const_iterator& v) const
+        {
+            return v->second;
+        }
+    };
+
+
+    template<typename T>
+    using key_map_iterator = iterator_wrapper<typename T::value_type::first_type, typename T::const_iterator, MapKeyAccessor<T>>;
+
+    template<typename T>
+    using value_map_iterator = iterator_wrapper<typename T::value_type::second_type, typename T::const_iterator, MapValueAccessor<T>>;
+}
+
 
 
 RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
@@ -92,12 +156,28 @@ bool RaidInfoProvider::listComponents(const QString& raid_device,
 
 void RaidInfoProvider::reCache() const
 {
+    const std::map<RaidId, RaidData> oldRaidSet = m_raids;
     m_raids = readRaids();
+    const std::map<RaidId, RaidData>& newRaidSet = m_raids;
+
+    // generate diff
+    const std::vector<RaidId> raidsAdded = findAdded(oldRaidSet, newRaidSet);
+    const std::vector<RaidId> raidsRemoved = findRemoved(oldRaidSet, newRaidSet);
+    const std::vector<RaidId> raidsChanged = findChanged(oldRaidSet, newRaidSet);
+
+    for (const RaidId& id: raidsAdded)
+        emit raidAdded(id);
+
+    for (const RaidId& id: raidsRemoved)
+        emit raidRemoved(id);
+
+    for (const RaidId& id: raidsChanged)
+        emit raidChanged(id);
 }
 
-std::map<RaidId, RaidInfoProvider::RaidData> RaidInfoProvider::readRaids() const
+RaidInfoProvider::RaidsMap RaidInfoProvider::readRaids() const
 {
-    std::map<RaidId, RaidInfoProvider::RaidData> result;
+    RaidsMap result;
 
     auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
                                                        QIODevice::Text);
@@ -140,13 +220,13 @@ std::map<RaidId, RaidInfoProvider::RaidData> RaidInfoProvider::readRaids() const
                         QString device = device_info.cap(1);
                         int descr_nr = device_info.cap(2).toInt();
                         QString tmp = device_info.cap(3);
-                        RaidComponentInfo::Type type =
+                        const RaidComponentInfo::Type comp_type =
                                 (tmp.isEmpty() ?
                                      RaidComponentInfo::Type::Normal :
                                      static_cast<RaidComponentInfo::Type>(
                                          tmp.toStdString().c_str()[0]));
                         devices_list.append(
-                                    RaidComponentInfo(device, type, descr_nr)
+                                    RaidComponentInfo(device, comp_type, descr_nr)
                                     );
                     }
                 }
@@ -164,4 +244,69 @@ std::map<RaidId, RaidInfoProvider::RaidData> RaidInfoProvider::readRaids() const
     }
 
     return result;
+}
+
+
+
+std::vector<RaidId> RaidInfoProvider::findRemoved(const RaidsMap& oldRaids,
+                                                  const RaidsMap& newRaids) const
+{
+    const std::set<RaidId> oldRaidsSet(key_map_iterator<RaidsMap>(oldRaids.cbegin()),
+                                       key_map_iterator<RaidsMap>(oldRaids.cend()));
+
+    const std::set<RaidId> newRaidsSet(key_map_iterator<RaidsMap>(newRaids.cbegin()),
+                                       key_map_iterator<RaidsMap>(newRaids.cend()));
+
+    std::vector<RaidId> removed;
+    std::set_difference(oldRaidsSet.cbegin(), oldRaidsSet.cend(),
+                        newRaidsSet.cbegin(), newRaidsSet.cend(),
+                        std::back_inserter(removed));
+
+    return removed;
+}
+
+
+std::vector<RaidId> RaidInfoProvider::findAdded(const RaidsMap& oldRaids,
+                                                const RaidsMap& newRaids) const
+{
+    const std::set<RaidId> oldRaidsSet(key_map_iterator<RaidsMap>(oldRaids.cbegin()),
+                                       key_map_iterator<RaidsMap>(oldRaids.cend()));
+
+    const std::set<RaidId> newRaidsSet(key_map_iterator<RaidsMap>(newRaids.cbegin()),
+                                       key_map_iterator<RaidsMap>(newRaids.cend()));
+
+    std::vector<RaidId> added;
+    std::set_difference(newRaidsSet.cbegin(), newRaidsSet.cend(),
+                        oldRaidsSet.cbegin(), oldRaidsSet.cend(),
+                        std::back_inserter(added));
+
+    return added;
+}
+
+
+std::vector<RaidId> RaidInfoProvider::findChanged(const RaidsMap& oldRaids,
+                                                  const RaidsMap& newRaids) const
+{
+    const std::set<RaidId> oldRaidsSet(key_map_iterator<RaidsMap>(oldRaids.cbegin()),
+                                       key_map_iterator<RaidsMap>(oldRaids.cend()));
+
+    const std::set<RaidId> newRaidsSet(key_map_iterator<RaidsMap>(newRaids.cbegin()),
+                                       key_map_iterator<RaidsMap>(newRaids.cend()));
+
+    std::vector<RaidId> common;
+    std::set_union(newRaidsSet.cbegin(), newRaidsSet.cend(),
+                   oldRaidsSet.cbegin(), oldRaidsSet.cend(),
+                   std::back_inserter(common));
+
+    std::vector<RaidId> changed;
+    for (const RaidId& id: common)
+    {
+        const RaidsMap::const_iterator oldIt = oldRaids.find(id);
+        const RaidsMap::const_iterator newIt = newRaids.find(id);
+
+        if (oldIt->second != newIt->second)
+            changed.push_back(id);
+    }
+
+    return changed;
 }

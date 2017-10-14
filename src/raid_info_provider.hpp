@@ -56,13 +56,35 @@ class RaidInfoProvider: public IRaidInfoProvider, public IRaidInfoDataProvider
             QString type;
             QString device;
             QList<RaidComponentInfo> components;
+
+            RaidData(): type(), device(), components() {}
+
+            bool operator==(const RaidData& other) const
+            {
+                return type == other.type &&
+                       device == other.device &&
+                       components == other.components;
+            }
+
+            bool operator!=(const RaidData& other) const
+            {
+                   return type != other.type ||
+                          device != other.device ||
+                          components != other.components;
+            }
         };
 
-        mutable std::map<RaidId, RaidData> m_raids;
+        typedef std::map<RaidId, RaidData> RaidsMap;
+
+        mutable RaidsMap m_raids;
         IFileSystem* m_fileSystem;
 
         void reCache() const;
-        std::map<RaidId, RaidData> readRaids() const;
+        RaidsMap readRaids() const;
+
+        std::vector<RaidId> findRemoved(const RaidsMap &, const RaidsMap &) const;
+        std::vector<RaidId> findAdded(const RaidsMap &, const RaidsMap &) const;
+        std::vector<RaidId> findChanged(const RaidsMap &, const RaidsMap &) const;
 };
 
 #endif // RAIDINFOPROVIDER_HPP

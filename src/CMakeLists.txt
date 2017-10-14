@@ -45,7 +45,10 @@ set(SRCS
         disk.hpp
 )
 
-qt5_wrap_cpp(WRAPPED mdadm_controller.hpp)
+qt5_wrap_cpp(WRAPPED
+                mdadm_controller.hpp
+                iraid_info_provider.hpp
+)
 
 add_executable(mdadm-qt ${SRCS} ${WRAPPED})
 
