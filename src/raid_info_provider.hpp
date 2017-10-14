@@ -61,8 +61,8 @@ class RaidInfoProvider: public IRaidInfoProvider, public IRaidInfoDataProvider
         mutable std::map<RaidId, RaidData> m_raids;
         IFileSystem* m_fileSystem;
 
-        // operations
-        bool reCache() const;
+        void reCache() const;
+        std::map<RaidId, RaidData> readRaids() const;
 };
 
 #endif // RAIDINFOPROVIDER_HPP

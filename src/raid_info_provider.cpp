@@ -90,9 +90,14 @@ bool RaidInfoProvider::listComponents(const QString& raid_device,
 }
 
 
-bool RaidInfoProvider::reCache() const
+void RaidInfoProvider::reCache() const
 {
-    m_raids.clear();
+    m_raids = readRaids();
+}
+
+std::map<RaidId, RaidInfoProvider::RaidData> RaidInfoProvider::readRaids() const
+{
+    std::map<RaidId, RaidInfoProvider::RaidData> result;
 
     auto file = m_fileSystem->openFile("/proc/mdstat", QIODevice::ReadOnly |
                                                        QIODevice::Text);
@@ -153,12 +158,10 @@ bool RaidInfoProvider::reCache() const
                 data.components = devices_list;
                 data.type = type;
 
-                m_raids[id] = data;
-
-                results.push_back(getInfoFor(id));
+                result[id] = data;
             }
         }
     }
 
-    return open_status;
+    return result;
 }
