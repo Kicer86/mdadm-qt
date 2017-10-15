@@ -15,8 +15,27 @@ using testing::InvokeArgument;
 using testing::Return;
 using testing::SetArgReferee;
 
+// TODO: consider parametric tests here, it may work.
+
 namespace
 {
+    struct RaidDetails
+    {
+        QString type;
+        QString device;
+        QList<RaidComponentInfo> components;
+
+        RaidDetails(const QString& dev,
+                    const QList<RaidComponentInfo>& comps,
+                    const QString& t):
+            type(t),
+            device(dev),
+            components(comps)
+        {
+
+        }
+    };
+
     typedef std::unique_ptr<IFileSystemMock::IFileMock> FilePtr;
 
     void mockMdstatOutput(IFileSystemMock& filesystem, QTextStream* const outputStream)
@@ -36,16 +55,20 @@ namespace
     }
 
     void compareListOutput(IRaidInfoProvider* infoProvider,
-                        const std::vector<RaidInfo>& expected)
+                        const std::vector<RaidDetails>& expected)
     {
         const std::vector<RaidInfo> raids = infoProvider->listRaids();
 
         ASSERT_EQ(raids.size(), expected.size());
-        auto expectedIt = expected.cbegin();
-        for (const auto& element : raids)
+
+        for (std::size_t i = 0; i < raids.size(); i++)
         {
-            EXPECT_EQ(element, *expectedIt);
-            ++expectedIt;
+            const RaidInfo& element = raids[i];
+            const RaidDetails& expect = expected[i];
+
+            EXPECT_EQ(element.type(), expect.type);
+            EXPECT_EQ(element.device(), expect.device);
+            EXPECT_EQ(element.devices(), expect.components);
         }
     }
 }
@@ -71,9 +94,9 @@ TEST(RaidInfoProviderTests,
     {
         RaidComponentInfo("sdf", RaidComponentInfo::Type::Spare, 1)
     };
-    const std::vector<RaidInfo> expectedOutput =
+    const std::vector<RaidDetails> expectedOutput =
     {
-        RaidInfo("md1", components, "")
+        RaidDetails("md1", components, "")
     };
 
     compareListOutput(&infoProvider, expectedOutput);
@@ -103,9 +126,9 @@ TEST(RaidInfoProviderTests,
         RaidComponentInfo("sdc", RaidComponentInfo::Type::Normal, 3),
         RaidComponentInfo("sdd", RaidComponentInfo::Type::Normal, 0),
     };
-    const std::vector<RaidInfo> expectedOutput =
+    const std::vector<RaidDetails> expectedOutput =
     {
-        RaidInfo("md0", components, "raid5")
+        RaidDetails("md0", components, "raid5")
     };
 
     compareListOutput(&infoProvider, expectedOutput);
@@ -154,11 +177,11 @@ TEST(RaidInfoProviderTests,
         RaidComponentInfo("sdg", RaidComponentInfo::Type::Normal, 1),
         RaidComponentInfo("sdf", RaidComponentInfo::Type::Normal, 0),
     };
-    const std::vector<RaidInfo> expectedOutput =
+    const std::vector<RaidDetails> expectedOutput =
     {
-        RaidInfo("md11", components1, "raid0"),
-        RaidInfo("md8", components2, "raid6"),
-        RaidInfo("md3", components3, "raid1")
+        RaidDetails("md11", components1, "raid0"),
+        RaidDetails("md8", components2, "raid6"),
+        RaidDetails("md3", components3, "raid1")
     };
 
     compareListOutput(&infoProvider, expectedOutput);
@@ -180,7 +203,7 @@ TEST(RaidInfoProviderTests, listNoRaids)
 
     RaidInfoProvider infoProvider(&filesystem);
 
-    const std::vector<RaidInfo> expectedOutput;
+    const std::vector<RaidDetails> expectedOutput;
 
     compareListOutput(&infoProvider, expectedOutput);
 }
@@ -211,9 +234,9 @@ TEST(RaidInfoProviderTests, listDegradedRaid)
         RaidComponentInfo("sdj", RaidComponentInfo::Type::Normal, 2),
         RaidComponentInfo("sdh", RaidComponentInfo::Type::Normal, 0),
     };
-    const std::vector<RaidInfo> expectedOutput =
+    const std::vector<RaidDetails> expectedOutput =
     {
-        RaidInfo("md8", components, "raid6"),
+        RaidDetails("md8", components, "raid6"),
     };
 
     compareListOutput(&raidInfoProvider, expectedOutput);
