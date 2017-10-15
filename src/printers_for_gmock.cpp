@@ -34,23 +34,6 @@ void PrintTo(const QString& str, std::ostream* os)
     *os << str.toStdString();
 }
 
-void PrintTo(const RaidInfo& info, std::ostream* os)
-{
-    QString output;
-    QDebug debug(&output);
-    debug << info.device();
-    debug << info.type();
-    for (const auto& device : info.devices())
-    {
-        debug << device.name
-              << "[" << device.descriptor_index << "]"
-              << "(" << static_cast<int>(device.type) << ")";
-    }
-
-
-    *os << output.toStdString();
-}
-
 void PrintTo(const QModelIndex& idx, std::ostream* os)
 {
     QString output;
