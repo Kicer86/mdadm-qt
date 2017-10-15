@@ -93,6 +93,7 @@ RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
     m_raids(),
     m_fileSystem(fileSystem)
 {
+    reCache();
 }
 
 
