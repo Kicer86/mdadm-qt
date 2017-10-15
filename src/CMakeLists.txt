@@ -73,7 +73,10 @@ if(BUILD_TESTS)
 
         find_package(Threads REQUIRED)
 
-        qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
+        qt5_wrap_cpp(WRAPPED_FOR_TESTS
+                        mdadm_controller.hpp
+                        iraid_info_provider.hpp
+        )
 
         set(tests_sources
                 block_device.cpp
