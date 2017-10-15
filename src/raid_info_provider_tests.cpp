@@ -64,7 +64,18 @@ namespace
         for (std::size_t i = 0; i < raids.size(); i++)
         {
             const RaidInfo& element = raids[i];
-            const RaidDetails& expect = expected[i];
+            const QString& element_dev = element.device();
+
+            std::vector<RaidDetails>::const_iterator it =
+                std::find_if(expected.cbegin(), expected.cend(),
+                             [&element_dev](const RaidDetails& expect)
+                             {
+                                 return expect.device == element_dev;
+                             });
+
+            ASSERT_NE(it, expected.cend());
+
+            const RaidDetails& expect = *it;
 
             EXPECT_EQ(element.type(), expect.type);
             EXPECT_EQ(element.device(), expect.device);
