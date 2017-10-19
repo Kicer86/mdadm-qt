@@ -46,6 +46,10 @@ RaidsModel::RaidsModel(IRaidInfoProvider* raidInfoProvider):
 
     connect(raidInfoProvider, &IRaidInfoProvider::raidChanged,
             this, &RaidsModel::updateRaid);
+
+    const auto raids = m_raidInfoProvider->listRaids();
+    for(const RaidInfo& raid: raids)
+        append(raid);
 }
 
 
@@ -147,23 +151,7 @@ QStandardItem* RaidsModel::itemFor(const RaidId& name) const
 void RaidsModel::appendRaid(const RaidId& raid_id)
 {
     const RaidInfo raidInfo = m_raidInfoProvider->getInfoFor(raid_id);
-
-    QStandardItem* raid_device_item = new QStandardItem(raidInfo.device());
-    QStandardItem* raid_type_item = new QStandardItem(raidInfo.type());
-    QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
-
-    const QList<QStandardItem *> row =
-    {
-        raid_device_item,
-        raid_type_item,
-        raid_status,
-    };
-
-    for (const auto& blkdev : raidInfo.devices())
-        appendComponent(raid_device_item, blkdev);
-
-    m_infos.emplace(raid_device_item, raid_id);
-    m_model.appendRow(row);
+    append(raidInfo);
 }
 
 
@@ -202,6 +190,27 @@ void RaidsModel::updateRaid(const RaidId& raid_id)
 
     // TODO: prepare common code for update and appendRaid()
     typeItem->setText(raid.type());
+}
+
+
+void RaidsModel::append(const RaidInfo& raidInfo)
+{
+    QStandardItem* raid_device_item = new QStandardItem(raidInfo.device());
+    QStandardItem* raid_type_item = new QStandardItem(raidInfo.type());
+    QStandardItem* raid_status = new QStandardItem(tr("TO DO"));
+
+    const QList<QStandardItem *> row =
+    {
+        raid_device_item,
+        raid_type_item,
+        raid_status,
+    };
+
+    for (const auto& blkdev : raidInfo.devices())
+        appendComponent(raid_device_item, blkdev);
+
+    m_infos.emplace(raid_device_item, raidInfo.id());
+    m_model.appendRow(row);
 }
 
 

@@ -69,6 +69,7 @@ class RaidsModel: public QObject
         void appendRaid(const RaidId &);
         void removeRaid(const RaidId &);
         void updateRaid(const RaidId &);
+        void append(const RaidInfo &);
 
         void removeComponentsOf(const RaidId &);
 
