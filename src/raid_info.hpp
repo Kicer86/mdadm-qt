@@ -89,6 +89,7 @@ struct RaidInfo
     const QString& device() const;
     const QString& type() const;
     const QList<RaidComponentInfo>& devices() const;
+    const RaidId& id() const;
 
     private:
         RaidId m_id;

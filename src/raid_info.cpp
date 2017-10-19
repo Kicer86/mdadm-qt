@@ -85,3 +85,9 @@ const QList<RaidComponentInfo>& RaidInfo::devices() const
 {
     return m_provider->blockDevices(m_id);
 }
+
+
+const RaidId& RaidInfo::id() const
+{
+    return m_id;
+}
