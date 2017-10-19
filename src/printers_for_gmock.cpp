@@ -42,3 +42,12 @@ void PrintTo(const QModelIndex& idx, std::ostream* os)
 
     *os << output.toStdString();
 }
+
+void PrintTo(const RaidId& id, std::ostream* os)
+{
+    QString output;
+    QDebug debug(&output);
+    debug << id.value();
+
+    *os << output.toStdString();
+}
