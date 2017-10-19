@@ -345,3 +345,52 @@ TEST(RaidInfoProviderTests, reactsOnRaidRemoval)
     mdstatContent = oneRaidMdstat;
     raidInfoProvider.refresh();
 }
+
+
+
+TEST(RaidInfoProviderTests, reactsOnRaidDegradation)
+{
+    NiceMock<IFileSystemMock> filesystem;
+
+    QString threeRaidsMdstat("Personalities : [raid6] [raid5] [raid4] [raid0] "
+                             "[raid1] [raid10]\n"
+                             "md11 : active raid0 sdm[1] sdl[0]\n"
+                             "       260096 blocks super 1.2 512k chunks\n"
+                             "\n"
+                             "md8 : active raid6 sdk[3] sdj[2] sdi[1] sdh[0]\n"
+                             "      260096 blocks super 1.2 level 6, 512k chunk, "
+                             "algorithm 2 [4/4] [UUUU]\n"
+                             "\n"
+                             "md3 : active raid1 sdg[1] sdf[0]\n"
+                             "      130880 blocks super 1.2 [2/2] [UU]\n"
+                             "\n"
+                             "unused devices: <none>\n");
+
+    QString degradatedRaids("Personalities : [raid6] [raid5] [raid4] [raid0] "
+                            "[raid1] [raid10]\n"
+                            "md11 : active raid0 sdm[1] sdl[0]\n"
+                            "       260096 blocks super 1.2 512k chunks\n"
+                            "\n"
+                            "md8 : active raid6 sdk[3] sdi[1] sdh[0]\n"
+                            "      260096 blocks super 1.2 level 6, 512k chunk, "
+                            "algorithm 2 [4/4] [UU_U]\n"
+                            "\n"
+                            "md3 : active raid1 sdg[1] sdf[0]\n"
+                            "      130880 blocks super 1.2 [2/2] [UU]\n"
+                            "\n"
+                            "unused devices: <none>\n");
+
+    QString mdstatContent = threeRaidsMdstat;
+    QTextStream mdstatContentStream(&mdstatContent, QIODevice::ReadOnly);
+
+    mockMdstatOutput(filesystem, &mdstatContentStream);
+
+    RaidInfoProvider raidInfoProvider(&filesystem);
+    ProviderSignalWatcher watcher(&raidInfoProvider);
+
+    EXPECT_CALL(watcher, raidChanged(RaidId("md8")));
+
+    // replace mdstat's content and reload
+    mdstatContent = degradatedRaids;
+    raidInfoProvider.refresh();
+}
