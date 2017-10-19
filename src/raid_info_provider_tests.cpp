@@ -14,6 +14,7 @@ using testing::DoAll;
 using testing::InvokeArgument;
 using testing::Return;
 using testing::SetArgReferee;
+using testing::NiceMock;
 
 // TODO: consider parametric tests here, it may work.
 
@@ -40,18 +41,15 @@ namespace
 
     void mockMdstatOutput(IFileSystemMock& filesystem, QTextStream* const outputStream)
     {
-        EXPECT_CALL(filesystem, openFile(QString("/proc/mdstat"), QIODevice::ReadOnly |
-                                        QIODevice::Text))
-                .WillOnce(::testing::Invoke(
-                            [outputStream](const QString&,
-                                            QIODevice::OpenMode)
-                                            ->FilePtr
+        ON_CALL(filesystem, openFile(QString("/proc/mdstat"), QIODevice::ReadOnly |
+                                                              QIODevice::Text))
+                .WillByDefault(::testing::Invoke(
+                            [outputStream](const QString&, QIODevice::OpenMode)
         {
-            FilePtr ifile(new IFileSystemMock::IFileMock);
-            EXPECT_CALL(*ifile, getStream()).WillOnce(Return(outputStream));
+            FilePtr ifile(new NiceMock<IFileSystemMock::IFileMock>);
+            ON_CALL(*ifile, getStream()).WillByDefault(Return(outputStream));
             return ifile;
         }));
-
     }
 
     void compareListOutput(IRaidInfoProvider* infoProvider,
@@ -82,13 +80,34 @@ namespace
             EXPECT_EQ(element.devices(), expect.components);
         }
     }
+
+
+    struct ProviderSignalWatcher: QObject
+    {
+        ProviderSignalWatcher(IRaidInfoProvider* provider)
+        {
+            connect(provider, &IRaidInfoProvider::raidRemoved,
+                    this, &ProviderSignalWatcher::raidRemoved);
+
+            connect(provider, &IRaidInfoProvider::raidAdded,
+                    this, &ProviderSignalWatcher::raidAdded);
+
+            connect(provider, &IRaidInfoProvider::raidChanged,
+                    this, &ProviderSignalWatcher::raidChanged);
+        }
+
+        MOCK_METHOD1(raidRemoved, void(const RaidId &));
+        MOCK_METHOD1(raidAdded, void(const RaidId &));
+        MOCK_METHOD1(raidChanged, void(const RaidId &));
+    };
+
 }
 
 
 TEST(RaidInfoProviderTests,
      listInactiveRaid0)
 {
-    IFileSystemMock filesystem;
+    NiceMock<IFileSystemMock> filesystem;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md1 : inactive sdf[1](S)\n"
@@ -117,7 +136,7 @@ TEST(RaidInfoProviderTests,
 TEST(RaidInfoProviderTests,
      listActiveRaid5)
 {
-    IFileSystemMock filesystem;
+    NiceMock<IFileSystemMock> filesystem;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md0 : active raid5 sdb[1] sdc[3] sdd[0]\n"
@@ -149,7 +168,7 @@ TEST(RaidInfoProviderTests,
 TEST(RaidInfoProviderTests,
      listActiveRaid0Raid1Raid6)
 {
-    IFileSystemMock filesystem;
+    NiceMock<IFileSystemMock> filesystem;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -201,7 +220,7 @@ TEST(RaidInfoProviderTests,
 
 TEST(RaidInfoProviderTests, listNoRaids)
 {
-    IFileSystemMock filesystem;
+    NiceMock<IFileSystemMock> filesystem;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -222,7 +241,7 @@ TEST(RaidInfoProviderTests, listNoRaids)
 
 TEST(RaidInfoProviderTests, listDegradedRaid)
 {
-    IFileSystemMock filesystem;
+    NiceMock<IFileSystemMock> filesystem;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -251,4 +270,34 @@ TEST(RaidInfoProviderTests, listDegradedRaid)
     };
 
     compareListOutput(&raidInfoProvider, expectedOutput);
+}
+
+
+TEST(RaidInfoProviderTests, reactsOnNewRaid)
+{
+    NiceMock<IFileSystemMock> filesystem;
+
+    QString emptyMdstat;
+    QString oneRaidMdstat("Personalities : [raid6] [raid5] [raid4] [raid0] "
+                          "[raid1] [raid10]\n"
+                          "md8 : active (auto-read-only) raid6 sdk[3] sdj[2] "
+                          "sdh[0]\n"
+                          "      260096 blocks super 1.2 level 6, 512k chunk, "
+                          "algorithm 2 [4/3] [U_UU]\n"
+                          "\n"
+                          "unused devices: <none>\n");
+
+    QString mdstatContent = emptyMdstat;
+    QTextStream mdstatContentStream(&mdstatContent, QIODevice::ReadOnly);
+
+    mockMdstatOutput(filesystem, &mdstatContentStream);
+
+    RaidInfoProvider raidInfoProvider(&filesystem);
+    ProviderSignalWatcher watcher(&raidInfoProvider);
+
+    EXPECT_CALL(watcher, raidAdded(RaidId("md8")));
+
+    // replace mdstat's content and reload
+    mdstatContent = oneRaidMdstat;
+    raidInfoProvider.refresh();
 }
