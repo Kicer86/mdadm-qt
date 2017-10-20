@@ -26,28 +26,67 @@
 
 struct IFileSystem;
 
-class RaidInfoProvider: public IRaidInfoProvider
+class RaidInfoProvider: public IRaidInfoProvider, public IRaidInfoDataProvider
 {
     public:
         RaidInfoProvider(IFileSystem *);
+        RaidInfoProvider(const RaidInfoProvider &);
+        RaidInfoProvider(RaidInfoProvider &&);
         virtual ~RaidInfoProvider();
 
-        // ListResult - callback function for listRaids
-        typedef std::function<void(const std::vector<RaidInfo> &)> ListResult;
+        RaidInfoProvider& operator=(const RaidInfoProvider &);
+        RaidInfoProvider& operator=(RaidInfoProvider &&);
+
+        void refresh();
 
         // overrides
+        // IRaidInfoProvider
         std::vector<RaidInfo> listRaids() const override;
-        RaidInfo getInfoFor(const IRaidInfoProvider::RaidId & ) const override;
+        RaidInfo getInfoFor(const RaidId & ) const override;
+
+        // IRaidInfoDataProvider
+        const QString& raidDevice(const RaidId &) const override;
+        const QList<RaidComponentInfo>& blockDevices(const RaidId &) const override;
+        const QString& raidType(const RaidId &) const override;
+
         bool listComponents(const QString& raid_device,
                             QStringList& block_devices) const override;
 
-        // operations
-        bool listRaids(const ListResult &) const;       // list raids asynchronicaly, call ListResult when done
-
     private:
-        mutable std::map<RaidId, RaidInfo> m_infoCache;
+        struct RaidData
+        {
+            QString type;
+            QString device;
+            QList<RaidComponentInfo> components;
+
+            RaidData(): type(), device(), components() {}
+
+            bool operator==(const RaidData& other) const
+            {
+                return type == other.type &&
+                       device == other.device &&
+                       components == other.components;
+            }
+
+            bool operator!=(const RaidData& other) const
+            {
+                   return type != other.type ||
+                          device != other.device ||
+                          components != other.components;
+            }
+        };
+
+        typedef std::map<RaidId, RaidData> RaidsMap;
+
+        mutable RaidsMap m_raids;
         IFileSystem* m_fileSystem;
 
+        void reCache() const;
+        RaidsMap readRaids() const;
+
+        std::vector<RaidId> findRemoved(const RaidsMap &, const RaidsMap &) const;
+        std::vector<RaidId> findAdded(const RaidsMap &, const RaidsMap &) const;
+        std::vector<RaidId> findChanged(const RaidsMap &, const RaidsMap &) const;
 };
 
 #endif // RAIDINFOPROVIDER_HPP

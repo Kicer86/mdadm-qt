@@ -22,6 +22,8 @@
 #include <QString>
 #include <QList>
 
+#include "objects_ids.hpp"
+
 
 struct RaidComponentInfo
 {
@@ -55,24 +57,24 @@ struct RaidComponentInfo
 };
 
 
-struct RaidInfo
+struct IRaidInfoDataProvider
 {
+    virtual ~IRaidInfoDataProvider() = default;
+
     /*
      * device types in mdstat:
      * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/md/md.c#n7711
      */
 
-    QString raid_device;
-    QList<RaidComponentInfo> block_devices;
-    QString raid_type;
+    virtual const QString& raidDevice(const RaidId &) const = 0;
+    virtual const QList<RaidComponentInfo>& blockDevices(const RaidId &) const = 0;
+    virtual const QString& raidType(const RaidId &) const = 0;
+};
 
-    RaidInfo (const QString& _raid_device,
-              const QList<RaidComponentInfo>& _block_devices,
-              const QString& _type):
-        raid_device(_raid_device),
-        block_devices(_block_devices),
-        raid_type(_type)
-    {}
+
+struct RaidInfo
+{
+    RaidInfo(const IRaidInfoDataProvider *, RaidId);
 
     RaidInfo(const RaidInfo &) = default;
     RaidInfo(RaidInfo &&) = default;
@@ -83,6 +85,15 @@ struct RaidInfo
     bool operator==(const RaidInfo&) const;
     bool operator!=(const RaidInfo&) const;
     bool operator<(const RaidInfo&) const;
+
+    const QString& device() const;
+    const QString& type() const;
+    const QList<RaidComponentInfo>& devices() const;
+    const RaidId& id() const;
+
+    private:
+        RaidId m_id;
+        const IRaidInfoDataProvider* m_provider;
 };
 
 #endif // RAIDINFO_HPP

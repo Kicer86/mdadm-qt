@@ -49,19 +49,19 @@ namespace
     const RaidComponentInfo dev7("dev7", RaidComponentInfo::Type::Normal, 134);
     const RaidComponentInfo dev8("dev8", RaidComponentInfo::Type::Normal, 135);
 
-    const RaidInfo raid1("md1", { dev1, dev2 }, "type 0");
-    const RaidInfo raid2("md2", { dev3, dev4, dev5, dev6 }, "type 1");
-    const RaidInfo raid3("md1", { dev7, dev8 }, "type 2");
-    const RaidInfo raid4("md1", { dev1, dev2 }, "type 2");
+    const RaidInfo raid1(nullptr, RaidId("md1"));
+    const RaidInfo raid2(nullptr, RaidId("md2"));
+    const RaidInfo raid3(nullptr, RaidId("md3"));
+    const RaidInfo raid4(nullptr, RaidId("md0"));
 }
 
 
 INSTANTIATE_TEST_CASE_P(RaidsSet,
                         RaidInfoOperatorTest,
                         ::testing::Values(
-                            std::make_pair(raid1, raid2),        // different device
-                            std::make_pair(raid1, raid3),        // defferent type
-                            std::make_pair(raid4, raid3)         // different components
+                            std::make_pair(raid1, raid2),
+                            std::make_pair(raid1, raid3),
+                            std::make_pair(raid4, raid3)
                         )
 );
 

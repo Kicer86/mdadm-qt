@@ -15,6 +15,7 @@ set(SRCS
         mdadm_debug_layer.hpp
         mdadm_process.cpp
         mdadm_process.hpp
+        objects_ids.hpp
         utils.hpp
         disk_controller.cpp
         disk_controller.hpp
@@ -44,7 +45,10 @@ set(SRCS
         disk.hpp
 )
 
-qt5_wrap_cpp(WRAPPED mdadm_controller.hpp)
+qt5_wrap_cpp(WRAPPED
+                mdadm_controller.hpp
+                iraid_info_provider.hpp
+)
 
 add_executable(mdadm-qt ${SRCS} ${WRAPPED})
 
@@ -69,7 +73,10 @@ if(BUILD_TESTS)
 
         find_package(Threads REQUIRED)
 
-        qt5_wrap_cpp(WRAPPED_FOR_TESTS mdadm_controller.hpp)
+        qt5_wrap_cpp(WRAPPED_FOR_TESTS
+                        mdadm_controller.hpp
+                        iraid_info_provider.hpp
+        )
 
         set(tests_sources
                 block_device.cpp
