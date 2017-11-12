@@ -365,9 +365,9 @@ TEST(MDAdmControllerTest,
             .WillOnce(DoAll(InvokeArgument<1>(QByteArray("done"), true, 0), Return(true)));
 
     MDAdmController controller(&mdadm_process, nullptr, nullptr);
-    EXPECT_TRUE(controller.zeroSuperblock(QStringList { "/dev/sdb",
-                                            "/dev/sdc",
-                                            "/dev/sde"}));
+
+    const QStringList devices = { "/dev/sdb", "/dev/sdc", "/dev/sde"};
+    EXPECT_TRUE(controller.zeroSuperblock(devices));
 }
 
 
@@ -524,9 +524,7 @@ TEST(MDAdmControllerTest, usesRightParameterForIntegrityCheck)
     MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Check));
-
-    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
-                ScanInfo::ScanType::Check);
+    EXPECT_TRUE(controller.getScanData("md2").sync_action == ScanInfo::ScanType::Check);
 }
 
 
@@ -541,9 +539,7 @@ TEST(MDAdmControllerTest, usesRightParameterForRepair)
     MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Repair));
-
-    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
-                ScanInfo::ScanType::Repair);
+    EXPECT_TRUE(controller.getScanData("md2").sync_action == ScanInfo::ScanType::Repair);
 }
 
 
@@ -558,9 +554,7 @@ TEST(MDAdmControllerTest, usesRightParameterForResync)
     MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Resync));
-
-    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
-                ScanInfo::ScanType::Resync);
+    EXPECT_TRUE(controller.getScanData("md2").sync_action == ScanInfo::ScanType::Resync);
 }
 
 
@@ -577,9 +571,7 @@ TEST(MDAdmControllerTest, usesRightParameterForStopScan)
     MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.stopScan("md2"));
-
-    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
-                ScanInfo::ScanType::Idle);
+    EXPECT_TRUE(controller.getScanData("md2").sync_action == ScanInfo::ScanType::Idle);
     EXPECT_TRUE(std::get<0>(controller.getScanData("md2").scan_limits) == 0);
 }
 
@@ -594,8 +586,7 @@ TEST(MDAdmControllerTest, getsCorrectRecoveryScanType)
 
     MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
-    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
-                ScanInfo::ScanType::Recovery);
+    EXPECT_TRUE(controller.getScanData("md2").sync_action == ScanInfo::ScanType::Recovery);
 }
 
 
@@ -610,9 +601,7 @@ TEST(MDAdmControllerTest, usesRightParameterForReshape)
     MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Reshape));
-
-    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
-                ScanInfo::ScanType::Reshape);
+    EXPECT_TRUE(controller.getScanData("md2").sync_action == ScanInfo::ScanType::Reshape);
 }
 
 
@@ -627,9 +616,7 @@ TEST(MDAdmControllerTest, usesRightParameterForFreeze)
     MDAdmController controller(&mdadm_process, nullptr, fs.getFileSystem());
 
     EXPECT_TRUE(controller.runScan("md2", ScanInfo::ScanType::Frozen));
-
-    EXPECT_TRUE(controller.getScanData("md2").sync_action ==
-                ScanInfo::ScanType::Frozen);
+    EXPECT_TRUE(controller.getScanData("md2").sync_action == ScanInfo::ScanType::Frozen);
 }
 
 
@@ -647,8 +634,7 @@ TEST(MDAdmControllerTest, usesRightParameterForPause)
     EXPECT_TRUE(controller.pauseScan("md2"));
 
     const ScanInfo si = controller.getScanData("md2");
-    EXPECT_TRUE(si.sync_action ==
-                ScanInfo::ScanType::Frozen);
+    EXPECT_TRUE(si.sync_action == ScanInfo::ScanType::Frozen);
     EXPECT_TRUE(std::get<0>(si.scan_limits) == 512);
 }
 
@@ -668,8 +654,7 @@ TEST(MDAdmControllerTest, usesRightParameterForResume)
     EXPECT_TRUE(controller.resumeScan("md2"));
 
     ScanInfo scan_info = controller.getScanData("md2");
-    EXPECT_TRUE(scan_info.sync_action ==
-                ScanInfo::ScanType::Check);
+    EXPECT_TRUE(scan_info.sync_action == ScanInfo::ScanType::Check);
     EXPECT_TRUE(std::get<0>(scan_info.scan_limits) == 512);
 
 }
@@ -691,8 +676,7 @@ TEST(MDAdmControllerTest, resumeOfActiveScanShouldFail)
     EXPECT_FALSE(controller.resumeScan("md2"));
 
     ScanInfo scan_info = controller.getScanData("md2");
-    EXPECT_TRUE(scan_info.sync_action ==
-                ScanInfo::ScanType::Repair);
-    EXPECT_TRUE(std::get<0>(scan_info.scan_limits) == 512);
 
+    EXPECT_TRUE(scan_info.sync_action == ScanInfo::ScanType::Repair);
+    EXPECT_TRUE(std::get<0>(scan_info.scan_limits) == 512);
 }
