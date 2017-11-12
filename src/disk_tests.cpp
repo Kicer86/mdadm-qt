@@ -9,6 +9,16 @@ using testing::_;
 using testing::Return;
 
 
+TEST(DiskTest, defaultCosntructor)
+{
+    Disk disk;
+
+    EXPECT_EQ(disk.serial(), "");
+    EXPECT_EQ(disk.model(), "");
+    EXPECT_EQ(disk.name(), "");
+}
+
+
 TEST(DiskTest, simpleConstruction)
 {
     FakeFileSystem fs;
