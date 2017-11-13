@@ -114,7 +114,7 @@ std::vector<RaidInfo> RaidInfoProvider::listRaids() const
     std::vector<RaidInfo> raid_infos;
 
     for(const auto& raid: m_raids)
-        raid_infos.emplace_back(this, raid.first);
+        raid_infos.push_back(RaidInfo(this, raid.first));
 
     return raid_infos;
 }

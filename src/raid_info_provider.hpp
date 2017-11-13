@@ -26,7 +26,7 @@
 
 struct IFileSystem;
 
-class RaidInfoProvider: public IRaidInfoProvider, public IRaidInfoDataProvider
+class RaidInfoProvider: public IRaidInfoProvider, IRaidInfoDataProvider
 {
     public:
         RaidInfoProvider(IFileSystem *);
