@@ -187,7 +187,7 @@ TEST_F(RaidsModelTests, modelItemsHaveExpectedTypes)
     EXPECT_EQ(RaidsModel::Component, model.getTypeFor(raid3CompIdx));
 }
 
-/*
+
 TEST_F(RaidsModelTests, gettingRaidsInfo)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
@@ -196,8 +196,16 @@ TEST_F(RaidsModelTests, gettingRaidsInfo)
     ON_CALL(raidInfoProvider, listRaids())
         .WillByDefault(Return(raids));
 
+    ON_CALL(raidInfoProvider, getInfoFor(RaidId("md1")))
+        .WillByDefault(Return(raid1));
+
+    ON_CALL(raidInfoProvider, getInfoFor(RaidId("md2")))
+        .WillByDefault(Return(raid2));
+
+    ON_CALL(raidInfoProvider, getInfoFor(RaidId("md3")))
+        .WillByDefault(Return(raid3));
+
     RaidsModel model(&raidInfoProvider);
-    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -220,7 +228,6 @@ TEST_F(RaidsModelTests, gettingComponentsInfo)
         .WillByDefault(Return(raids));
 
     RaidsModel model(&raidInfoProvider);
-    model.load();
 
     QAbstractItemModel* qt_model = model.model();
 
@@ -237,7 +244,7 @@ TEST_F(RaidsModelTests, gettingComponentsInfo)
     EXPECT_EQ(dev6, model.infoForComponent(raid1Comp4Idx));
 }
 
-
+/*
 TEST_F(RaidsModelTests, removingRaidsFromModel)
 {
     const std::vector<RaidInfo> raids = {raid1, raid2, raid3};
