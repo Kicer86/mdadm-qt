@@ -22,6 +22,7 @@
 #include <set>
 
 #include <QTextStream>
+#include <QFileSystemWatcher>
 
 #include "ifilesystem.hpp"
 
@@ -93,6 +94,13 @@ RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
     m_raids(),
     m_fileSystem(fileSystem)
 {
+    QFileSystemWatcher* watcher = new QFileSystemWatcher(this);
+    connect(watcher, &QFileSystemWatcher::fileChanged,
+            this, &RaidInfoProvider::reCache);
+
+    watcher->addPath("/proc/mdstat");
+
+    // initial load
     reCache();
 }
 
