@@ -22,9 +22,10 @@
 #include <set>
 
 #include <QTextStream>
-#include <QFileSystemWatcher>
+#include <QThread>
 
 #include "ifilesystem.hpp"
+#include "proc_watcher.hpp"
 
 
 namespace
@@ -92,22 +93,30 @@ namespace
 
 RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
     m_raids(),
-    m_fileSystem(fileSystem)
+    m_watcher(new ProcWatcher("/proc/mdstat")),
+    m_fileSystem(fileSystem),
+    m_thread(new QThread(this))
 {
-    QFileSystemWatcher* watcher = new QFileSystemWatcher(this);
-    connect(watcher, &QFileSystemWatcher::fileChanged,
+    m_watcher->moveToThread(m_thread);
+
+    connect(m_watcher.get(), &ProcWatcher::changed,
             this, &RaidInfoProvider::reCache);
 
-    watcher->addPath("/proc/mdstat");
+    connect(m_watcher.get(), &ProcWatcher::watching,
+            this, &RaidInfoProvider::reCache);
 
-    // initial load
-    reCache();
+    connect(m_thread, &QThread::started,
+            m_watcher.get(), &ProcWatcher::watch);
+
+    m_thread->start();
 }
 
 
 RaidInfoProvider::~RaidInfoProvider()
 {
-
+    m_watcher->stop_watching();
+    m_thread->quit();
+    m_thread->wait();
 }
 
 

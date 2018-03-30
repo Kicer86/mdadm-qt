@@ -21,9 +21,15 @@
 
 #include <functional>
 #include <map>
+#include <memory>
+
+#include <QThread>
 
 #include "iraid_info_provider.hpp"
 
+class QThread;
+
+class ProcWatcher;
 struct IFileSystem;
 
 class RaidInfoProvider: public IRaidInfoProvider, IRaidInfoDataProvider
@@ -79,7 +85,9 @@ class RaidInfoProvider: public IRaidInfoProvider, IRaidInfoDataProvider
         typedef std::map<RaidId, RaidData> RaidsMap;
 
         mutable RaidsMap m_raids;
+        std::unique_ptr<ProcWatcher> m_watcher;
         IFileSystem* m_fileSystem;
+        QThread* m_thread;
 
         void reCache() const;
         RaidsMap readRaids() const;

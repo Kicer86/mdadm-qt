@@ -355,6 +355,7 @@ void MainWindow::refreshDisksList()
 
 void MainWindow::refreshAll()
 {
+    // TODO: remove this function. Arrays are already being refreshed automaticly
     refreshArraysList();
     refreshDisksList();
 }
