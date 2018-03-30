@@ -62,7 +62,7 @@ class MainWindow: public QMainWindow
 
         void contextMenu(const QPoint&);
         bool removeRaid(const QString&);
-        void refreshArraysList();
+        [[deprecated]] void refreshArraysList();
         void refreshDisksList();
         [[deprecated]] void refreshAll();
         void createRaid();
