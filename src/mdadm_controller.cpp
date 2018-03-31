@@ -107,13 +107,7 @@ bool MDAdmController::createRaid(const QString& raid_device,
     }
 
     m_mdadmProcess->execute(mdadm_args,
-                            [this](const QByteArray& output,
-                                               bool success,
-                                               int exitCode)
-                            {
-                                if (success)
-                                    emit raidCreated();
-                            },
+                            nullResultCallback,
                             [callback](const QByteArray& output)->QString
                             {
                                 return callback?
@@ -137,13 +131,7 @@ bool MDAdmController::removeRaid(const QString& raid_device)
         mdadm_args << "--zero-superblock" << components;
     }
 
-    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray& output,
-                                               bool success,
-                                               int exitCode)
-    {
-        if (success)
-            emit raidRemoved();
-    });
+    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
 
     return true;
 }
@@ -180,15 +168,7 @@ bool MDAdmController::markAsFaulty(const QString& raid_device,
 
     mdadm_args << raid_device << "--fail" << component;
 
-    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray &,
-                                               bool success,
-                                               int)
-    {
-        if (success)
-            emit componentStateUpdated();
-    });
-
-    emit componentStateUpdated();
+    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
 
     return true;
 }
@@ -200,13 +180,7 @@ bool MDAdmController::reAdd(const QString& raid_device,
 
     mdadm_args << raid_device << "--re-add" << component;
 
-    m_mdadmProcess->execute(mdadm_args, [this](const QByteArray &,
-                                               bool success,
-                                               int)
-    {
-        if (success)
-            emit componentStateUpdated();
-    });
+    m_mdadmProcess->execute(mdadm_args, nullResultCallback);
 
     return true;
 }

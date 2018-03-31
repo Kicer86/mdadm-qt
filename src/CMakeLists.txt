@@ -48,7 +48,6 @@ set(SRCS
 )
 
 qt5_wrap_cpp(WRAPPED
-                mdadm_controller.hpp
                 iraid_info_provider.hpp
                 proc_watcher.hpp
 )
