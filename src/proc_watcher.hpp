@@ -19,6 +19,9 @@
 #ifndef PROCWATCHER_HPP
 #define PROCWATCHER_HPP
 
+#include <mutex>
+#include <sys/poll.h>
+
 #include <QThread>
 
 #include "iproc_watcher.hpp"
@@ -36,8 +39,12 @@ class ProcWatcher final: public IProcWatcher
 
     private:
         QThread m_thread;
+        mutable std::mutex m_fds_mutex;
         std::map<int, QString> m_fds;
         int m_pipefd[2];
+
+        std::vector<pollfd> make_pollfds() const;
+        void read_file(int) const;
 };
 
 #endif // PROCWATCHER_HPP

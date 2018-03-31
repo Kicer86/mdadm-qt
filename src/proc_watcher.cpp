@@ -58,6 +58,8 @@ ProcWatcher::~ProcWatcher()
 
 void ProcWatcher::watch(const char* path)
 {
+    std::lock_guard<std::mutex> l(m_fds_mutex);
+
     const int fd = open(path, O_RDONLY);
     m_fds[fd] = path;
 
@@ -70,21 +72,7 @@ void ProcWatcher::start_watching()
 {
     while (true)
     {
-        std::vector<pollfd> pfds;
-
-        // all watched files + pipe
-        pfds.reserve(m_fds.size() + 1);
-
-        // communication pipe
-        const pollfd pipe_pfd = { m_pipefd[0], POLLIN, 0 };
-        pfds.push_back(pipe_pfd);
-
-        // watched files
-        for (const auto& i: m_fds)
-        {
-            const pollfd file_pfd = { i.first, POLLPRI, 0 };
-            pfds.push_back(file_pfd);
-        }
+        std::vector<pollfd> pfds = make_pollfds();
 
         // wait for change
         const int status = poll(pfds.data(), pfds.size(), -1);
@@ -117,16 +105,7 @@ void ProcWatcher::start_watching()
                 emit changed(it->second);
 
                 // Here we read file to clear POLLPRI flag. TODO: Not nice.
-                bool c = true;
-                lseek(pfd.fd, 0, SEEK_SET);
-
-                while(c)
-                {
-                    int buf;
-                    const int g = read(pfd.fd, &buf, sizeof(buf));
-
-                    c = g == sizeof(buf);
-                }
+                read_file(pfd.fd);
             }
         }
     }
@@ -137,4 +116,43 @@ void ProcWatcher::stop_watching()
 {
     const char data = 'Q';
     write(m_pipefd[1], &data, sizeof(data));
+}
+
+
+std::vector<pollfd> ProcWatcher::make_pollfds() const
+{
+    std::lock_guard<std::mutex> l(m_fds_mutex);
+
+    std::vector<pollfd> pfds;
+
+    // all watched files + pipe
+    pfds.reserve(m_fds.size() + 1);
+
+    // communication pipe
+    const pollfd pipe_pfd = { m_pipefd[0], POLLIN, 0 };
+    pfds.push_back(pipe_pfd);
+
+    // watched files
+    for (const auto& i: m_fds)
+    {
+        const pollfd file_pfd = { i.first, POLLPRI, 0 };
+        pfds.push_back(file_pfd);
+    }
+
+    return pfds;
+}
+
+
+void ProcWatcher::read_file(int fd) const
+{
+    bool c = true;
+    lseek(fd, 0, SEEK_SET);
+
+    while(c)
+    {
+        int buf;
+        const int g = read(fd, &buf, sizeof(buf));
+
+        c = g == sizeof(buf);
+    }
 }
