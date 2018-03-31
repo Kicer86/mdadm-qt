@@ -81,6 +81,8 @@ if(BUILD_TESTS)
         )
 
         set(tests_sources
+
+                # unit tests build dependencies
                 block_device.cpp
                 disk.cpp
                 disk_controller.cpp
@@ -99,8 +101,10 @@ if(BUILD_TESTS)
                 raids_model.cpp
                 ${WRAPPED_FOR_TESTS}
 
+                # unit tests utils
                 printers_for_gmock.cpp
 
+                # unit tests
                 disk_tests.cpp
                 disk_controller_tests.cpp
                 filters_tests.cpp
