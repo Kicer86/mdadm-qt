@@ -71,17 +71,22 @@ void ProcWatcher::start_watching()
     while (true)
     {
         std::vector<pollfd> pfds;
-        pfds.reserve(m_fds.size() + 1);           // all watched files + pipe
 
+        // all watched files + pipe
+        pfds.reserve(m_fds.size() + 1);
+
+        // communication pipe
         const pollfd pipe_pfd = { m_pipefd[0], POLLIN, 0 };
-        pfds.push_back(pipe_pfd);   // communication pipe
+        pfds.push_back(pipe_pfd);
 
+        // watched files
         for (const auto& i: m_fds)
         {
             const pollfd file_pfd = { i.first, POLLPRI, 0 };
-            pfds.push_back(file_pfd); // watched files
+            pfds.push_back(file_pfd);
         }
 
+        // wait for change
         const int status = poll(pfds.data(), pfds.size(), -1);
         assert(status);
 
