@@ -76,8 +76,8 @@ if(BUILD_TESTS)
         find_package(Threads REQUIRED)
 
         qt5_wrap_cpp(WRAPPED_FOR_TESTS
-                        mdadm_controller.hpp
                         iraid_info_provider.hpp
+                        proc_watcher.hpp
         )
 
         set(tests_sources
@@ -92,6 +92,7 @@ if(BUILD_TESTS)
                 imdadm_process_mock.hpp
                 iraid_info_provider_mock.hpp
                 mdadm_controller.cpp
+                proc_watcher.cpp
                 raid_info.cpp
                 raid_info.hpp
                 raid_info_provider.cpp
@@ -161,8 +162,8 @@ if(BUILD_TESTS)
         # run unit tests after all build steps
         if(RUN_UNIT_TESTS)
             add_custom_command(TARGET mdadm_unit_tests POST_BUILD
-                            COMMAND ctest
-                            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+                               COMMAND ctest
+                               WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             )
         endif()
 
