@@ -27,6 +27,9 @@ class IRaidInfoProvider: public QObject
         void raidAdded(const RaidId &) const;
         void raidRemoved(const RaidId &) const;
         void raidChanged(const RaidId &) const;
+
+        // signal emited at any modification in /proc/mdstat (together with signals above)
+        void raidsModified() const;
 };
 
 

@@ -196,6 +196,13 @@ void RaidInfoProvider::reCache() const
 
     for (const RaidId& id: raidsChanged)
         emit raidChanged(id);
+
+    if (raidsAdded.empty() == false ||
+        raidsRemoved.empty() == false ||
+        raidsChanged.empty() == false)
+    {
+        emit raidsModified();
+    }
 }
 
 RaidInfoProvider::RaidsMap RaidInfoProvider::readRaids() const

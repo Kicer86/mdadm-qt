@@ -153,6 +153,10 @@ MainWindow::MainWindow():
 
     connect(m_raidsView, &QTableView::customContextMenuRequested,
             this, &MainWindow::contextMenu);
+
+    // refresh disks list after any raid change
+    connect(&m_raidInfoProvider, &RaidInfoProvider::raidsModified,
+            this, &MainWindow::refreshDisksList);
 }
 
 
