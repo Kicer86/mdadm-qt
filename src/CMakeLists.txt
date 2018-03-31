@@ -49,7 +49,7 @@ set(SRCS
 
 qt5_wrap_cpp(WRAPPED
                 iraid_info_provider.hpp
-                proc_watcher.hpp
+                iproc_watcher.hpp
 )
 
 add_executable(mdadm-qt ${SRCS} ${WRAPPED})
@@ -77,7 +77,7 @@ if(BUILD_TESTS)
 
         qt5_wrap_cpp(WRAPPED_FOR_TESTS
                         iraid_info_provider.hpp
-                        proc_watcher.hpp
+                        iproc_watcher.hpp
         )
 
         set(tests_sources

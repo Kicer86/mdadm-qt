@@ -22,7 +22,6 @@
 #include <set>
 
 #include <QTextStream>
-#include <QThread>
 
 #include "ifilesystem.hpp"
 #include "proc_watcher.hpp"
@@ -91,32 +90,23 @@ namespace
 
 
 
-RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
+RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem, IProcWatcher* procWatcher):
     m_raids(),
-    m_watcher(new ProcWatcher("/proc/mdstat")),
-    m_fileSystem(fileSystem),
-    m_thread(new QThread(this))
+    m_fileSystem(fileSystem)
 {
-    m_watcher->moveToThread(m_thread);
+    procWatcher->watch("/proc/mdstat");
 
-    connect(m_watcher.get(), &ProcWatcher::changed,
-            this, &RaidInfoProvider::reCache);
+    connect(procWatcher, &ProcWatcher::changed,
+            this, &RaidInfoProvider::procChange);
 
-    connect(m_watcher.get(), &ProcWatcher::watching,
-            this, &RaidInfoProvider::reCache);
-
-    connect(m_thread, &QThread::started,
-            m_watcher.get(), &ProcWatcher::watch);
-
-    m_thread->start();
+    // initial load
+    reCache();
 }
 
 
 RaidInfoProvider::~RaidInfoProvider()
 {
-    m_watcher->stop_watching();
-    m_thread->quit();
-    m_thread->wait();
+
 }
 
 
@@ -174,6 +164,12 @@ bool RaidInfoProvider::listComponents(const QString& raid_device,
         block_devices << ("/dev/" + file);
 
     return !block_devices.empty();
+}
+
+void RaidInfoProvider::procChange(const QString& path) const
+{
+    if (path == "/proc/mdstat")
+        reCache();
 }
 
 

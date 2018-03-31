@@ -19,27 +19,25 @@
 #ifndef PROCWATCHER_HPP
 #define PROCWATCHER_HPP
 
-#include <QObject>
+#include <QThread>
 
-class ProcWatcher final: public QObject
+#include "iproc_watcher.hpp"
+
+class ProcWatcher final: public IProcWatcher
 {
-        Q_OBJECT
-
     public:
-        ProcWatcher(const char* path, QObject * = nullptr);
+        ProcWatcher();
         ~ProcWatcher();
 
-        void watch();           // blocking
-        void stop_watching();   // return from watch()
+        void watch(const char* path) override;
 
-    signals:
-        void changed();
-        void watching();
+        void start_watching();  // blocking
+        void stop_watching();   // return from start_watching()
 
     private:
-        int m_fd;
+        QThread m_thread;
+        std::map<int, QString> m_fds;
         int m_pipefd[2];
-        bool m_listen;
 };
 
 #endif // PROCWATCHER_HPP

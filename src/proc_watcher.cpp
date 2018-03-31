@@ -24,21 +24,29 @@
 #include <unistd.h>
 
 
-ProcWatcher::ProcWatcher(const char* path, QObject* p):
-    QObject(p),
-    m_fd(-1),
-    m_pipefd{-1, -1},
-    m_listen(true)
+ProcWatcher::ProcWatcher():
+    m_thread(),
+    m_fds(),
+    m_pipefd{-1, -1}
 {
-    m_fd = open(path, O_RDONLY);
     pipe(m_pipefd);
+
+    connect(&m_thread, &QThread::started,
+            this, &ProcWatcher::start_watching,
+            Qt::DirectConnection);
+
+    m_thread.start();
 }
 
 
 ProcWatcher::~ProcWatcher()
 {
-    if (m_fd != -1)
-        close(m_fd);
+    stop_watching();
+    m_thread.quit();
+    m_thread.wait();
+
+    for(const auto& i: m_fds)
+        close(i.first);
 
     if (m_pipefd[0] != -1)
         close(m_pipefd[0]);
@@ -48,49 +56,80 @@ ProcWatcher::~ProcWatcher()
 }
 
 
-void ProcWatcher::watch()
+void ProcWatcher::watch(const char* path)
 {
-    emit watching();
+    const int fd = open(path, O_RDONLY);
+    m_fds[fd] = path;
 
-    struct pollfd pfds[2] = { {0, 0, 0}, {0, 0, 0} };
+    const char data = 'R';
+    write(m_pipefd[1], &data, sizeof(data));
+}
 
-    pfds[0].fd = m_fd;
-    pfds[0].events = POLLPRI;
-    pfds[1].fd = m_pipefd[0];
-    pfds[1].events = POLLIN;
 
-    while (m_listen)
+void ProcWatcher::start_watching()
+{
+    while (true)
     {
-        const int status = poll(pfds, 2, -1);
-        assert(status);
+        std::vector<pollfd> pfds;
+        pfds.reserve(m_fds.size() + 1);           // all watched files + pipe
 
-        if (pfds[0].revents & POLLPRI)
+        const pollfd pipe_pfd = { m_pipefd[0], POLLIN, 0 };
+        pfds.push_back(pipe_pfd);   // communication pipe
+
+        for (const auto& i: m_fds)
         {
-            emit changed();
-
-            // Here we read file to clear POLLPRI flag. TODO: Not nice.
-            bool c = true;
-            lseek(m_fd, 0, SEEK_SET);
-
-            while(c)
-            {
-                int buf;
-                const int g = read(m_fd, &buf, sizeof(buf));
-
-                c = g == sizeof(buf);
-            }
+            const pollfd file_pfd = { i.first, POLLPRI, 0 };
+            pfds.push_back(file_pfd); // watched files
         }
 
-        if (pfds[1].revents & POLLIN)
-            break;
+        const int status = poll(pfds.data(), pfds.size(), -1);
+        assert(status);
+
+        // check if pipe
+        if (pfds[0].revents & POLLIN)
+        {
+            char d;
+            read(pfds[0].fd, &d, sizeof(d));
+
+            if (d == 'Q')
+                break;               // finish the loop
+            else if (d == 'R')
+                continue;            // refresh files to be polled
+            else
+                assert(!"unknown command");
+        };
+
+        // check files
+        for (int i = 1; i < pfds.size(); i++)
+        {
+            const pollfd& pfd = pfds[i];
+
+            if (pfd.revents & POLLPRI)
+            {
+                const auto it = m_fds.find(pfd.fd);
+                assert(it != m_fds.end());
+
+                emit changed(it->second);
+
+                // Here we read file to clear POLLPRI flag. TODO: Not nice.
+                bool c = true;
+                lseek(pfd.fd, 0, SEEK_SET);
+
+                while(c)
+                {
+                    int buf;
+                    const int g = read(pfd.fd, &buf, sizeof(buf));
+
+                    c = g == sizeof(buf);
+                }
+            }
+        }
     }
 }
 
 
 void ProcWatcher::stop_watching()
 {
-    m_listen = false;
-
-    const int data = 0;
+    const char data = 'Q';
     write(m_pipefd[1], &data, sizeof(data));
 }

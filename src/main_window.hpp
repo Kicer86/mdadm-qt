@@ -26,6 +26,7 @@
 #include "mdadm_controller.hpp"
 #include "mdadm_debug_layer.hpp"
 #include "mdadm_process.hpp"
+#include "proc_watcher.hpp"
 #include "raid_info_provider.hpp"
 #include "raids_model.hpp"
 
@@ -48,6 +49,7 @@ class MainWindow: public QMainWindow
         bool operator==(const MainWindow &) const = delete;
 
     private:
+        ProcWatcher m_procWatcher;
         FileSystem m_fileSystem;
         MDAdmProcess m_mdadmProcess;
         MDAdmDebugLayer m_mdadmDebug;
