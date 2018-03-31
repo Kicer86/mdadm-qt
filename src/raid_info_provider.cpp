@@ -22,8 +22,10 @@
 #include <set>
 
 #include <QTextStream>
+#include <QThread>
 
 #include "ifilesystem.hpp"
+#include "proc_watcher.hpp"
 
 
 namespace
@@ -91,15 +93,30 @@ namespace
 
 RaidInfoProvider::RaidInfoProvider(IFileSystem* fileSystem):
     m_raids(),
-    m_fileSystem(fileSystem)
+    m_watcher(new ProcWatcher("/proc/mdstat")),
+    m_fileSystem(fileSystem),
+    m_thread(new QThread(this))
 {
-    reCache();
+    m_watcher->moveToThread(m_thread);
+
+    connect(m_watcher.get(), &ProcWatcher::changed,
+            this, &RaidInfoProvider::reCache);
+
+    connect(m_watcher.get(), &ProcWatcher::watching,
+            this, &RaidInfoProvider::reCache);
+
+    connect(m_thread, &QThread::started,
+            m_watcher.get(), &ProcWatcher::watch);
+
+    m_thread->start();
 }
 
 
 RaidInfoProvider::~RaidInfoProvider()
 {
-
+    m_watcher->stop_watching();
+    m_thread->quit();
+    m_thread->wait();
 }
 
 
@@ -179,6 +196,13 @@ void RaidInfoProvider::reCache() const
 
     for (const RaidId& id: raidsChanged)
         emit raidChanged(id);
+
+    if (raidsAdded.empty() == false ||
+        raidsRemoved.empty() == false ||
+        raidsChanged.empty() == false)
+    {
+        emit raidsModified();
+    }
 }
 
 RaidInfoProvider::RaidsMap RaidInfoProvider::readRaids() const

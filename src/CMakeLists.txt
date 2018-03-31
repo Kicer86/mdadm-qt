@@ -27,6 +27,8 @@ set(SRCS
         empty_filter.hpp
         filesystem.cpp
         filesystem.hpp
+        proc_watcher.cpp
+        proc_watcher.hpp
         raid_info.cpp
         raid_info.hpp
         raid_info_provider.cpp
@@ -46,8 +48,8 @@ set(SRCS
 )
 
 qt5_wrap_cpp(WRAPPED
-                mdadm_controller.hpp
                 iraid_info_provider.hpp
+                proc_watcher.hpp
 )
 
 add_executable(mdadm-qt ${SRCS} ${WRAPPED})

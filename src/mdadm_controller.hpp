@@ -89,8 +89,6 @@ struct ScanInfo
 
 class MDAdmController: public QObject
 {
-        Q_OBJECT
-
     public:
         // OutputParser - callback function for process read channel
         typedef std::function<QString(const QString &)> OutputParser;
@@ -138,11 +136,6 @@ class MDAdmController: public QObject
                 const ScanInfo::ReshapeDirection) const;
         ScanInfo::ReshapeDirection stringToReshapeDirection(
                 const QString &) const;
-
-    signals:
-        void raidCreated();
-        void raidRemoved();
-        void componentStateUpdated();
 };
 
 #endif // MDADMCONTROLLER_HPP

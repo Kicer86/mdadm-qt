@@ -151,14 +151,12 @@ MainWindow::MainWindow():
 
     loadSettings();
 
-    connect(&m_mdadmController, &MDAdmController::raidCreated,
-            this, &MainWindow::refreshAll);
-    connect(&m_mdadmController, &MDAdmController::raidRemoved,
-            this, &MainWindow::refreshAll);
-    connect(&m_mdadmController, &MDAdmController::componentStateUpdated,
-            this, &MainWindow::refreshAll);
     connect(m_raidsView, &QTableView::customContextMenuRequested,
             this, &MainWindow::contextMenu);
+
+    // refresh disks list after any raid change
+    connect(&m_raidInfoProvider, &RaidInfoProvider::raidsModified,
+            this, &MainWindow::refreshDisksList);
 }
 
 
