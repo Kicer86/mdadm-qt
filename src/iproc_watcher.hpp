@@ -4,7 +4,7 @@
 
 #include <QObject>
 
-struct IProcWatcher: public QObject
+struct IProcWatcher: QObject
 {
         Q_OBJECT
 
