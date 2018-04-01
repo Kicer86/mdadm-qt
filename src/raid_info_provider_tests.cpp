@@ -307,7 +307,7 @@ TEST(RaidInfoProviderTests, reactsOnNewRaid)
 
     // replace mdstat's content and reload
     mdstatContent = oneRaidMdstat;
-    raidInfoProvider.refresh();
+    emit procWatcher.changed("/proc/mdstat");
 }
 
 
@@ -351,9 +351,8 @@ TEST(RaidInfoProviderTests, reactsOnRaidRemoval)
 
     // replace mdstat's content and reload
     mdstatContent = oneRaidMdstat;
-    raidInfoProvider.refresh();
+    emit procWatcher.changed("/proc/mdstat");
 }
-
 
 
 TEST(RaidInfoProviderTests, reactsOnRaidDegradation)
@@ -401,5 +400,5 @@ TEST(RaidInfoProviderTests, reactsOnRaidDegradation)
 
     // replace mdstat's content and reload
     mdstatContent = degradatedRaids;
-    raidInfoProvider.refresh();
+    emit procWatcher.changed("/proc/mdstat");
 }
