@@ -77,10 +77,11 @@ namespace
 
 MainWindow::MainWindow():
     QMainWindow(),
+    m_procWatcher(),
     m_fileSystem(),
     m_mdadmProcess(),
     m_mdadmDebug(&m_mdadmProcess),
-    m_raidInfoProvider(&m_fileSystem),
+    m_raidInfoProvider(&m_fileSystem, &m_procWatcher),
     m_mdadmController(&m_mdadmDebug, &m_raidInfoProvider, &m_fileSystem),
     m_raidsModel(&m_raidInfoProvider),
     m_disksModel(),

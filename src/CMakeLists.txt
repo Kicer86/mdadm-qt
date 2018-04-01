@@ -49,7 +49,7 @@ set(SRCS
 
 qt5_wrap_cpp(WRAPPED
                 iraid_info_provider.hpp
-                proc_watcher.hpp
+                iproc_watcher.hpp
 )
 
 add_executable(mdadm-qt ${SRCS} ${WRAPPED})
@@ -77,10 +77,12 @@ if(BUILD_TESTS)
 
         qt5_wrap_cpp(WRAPPED_FOR_TESTS
                         iraid_info_provider.hpp
-                        proc_watcher.hpp
+                        iproc_watcher.hpp
         )
 
         set(tests_sources
+
+                # unit tests build dependencies
                 block_device.cpp
                 disk.cpp
                 disk_controller.cpp
@@ -90,6 +92,7 @@ if(BUILD_TESTS)
                 ifilesystem_mock.cpp
                 ifilesystem_mock.hpp
                 imdadm_process_mock.hpp
+                iproc_watcher_mock.hpp
                 iraid_info_provider_mock.hpp
                 mdadm_controller.cpp
                 proc_watcher.cpp
@@ -99,8 +102,10 @@ if(BUILD_TESTS)
                 raids_model.cpp
                 ${WRAPPED_FOR_TESTS}
 
+                # unit tests utils
                 printers_for_gmock.cpp
 
+                # unit tests
                 disk_tests.cpp
                 disk_controller_tests.cpp
                 filters_tests.cpp

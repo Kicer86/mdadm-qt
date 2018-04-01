@@ -19,27 +19,32 @@
 #ifndef PROCWATCHER_HPP
 #define PROCWATCHER_HPP
 
-#include <QObject>
+#include <mutex>
+#include <sys/poll.h>
 
-class ProcWatcher final: public QObject
+#include <QThread>
+
+#include "iproc_watcher.hpp"
+
+class ProcWatcher final: public IProcWatcher
 {
-        Q_OBJECT
-
     public:
-        ProcWatcher(const char* path, QObject * = nullptr);
+        ProcWatcher();
         ~ProcWatcher();
 
-        void watch();           // blocking
-        void stop_watching();   // return from watch()
+        void watch(const char* path) override;
 
-    signals:
-        void changed();
-        void watching();
+        void start_watching();  // blocking
+        void stop_watching();   // return from start_watching()
 
     private:
-        int m_fd;
+        QThread m_thread;
+        mutable std::mutex m_fds_mutex;
+        std::map<int, QString> m_fds;
         int m_pipefd[2];
-        bool m_listen;
+
+        std::vector<pollfd> make_pollfds() const;
+        void read_file(int) const;
 };
 
 #endif // PROCWATCHER_HPP

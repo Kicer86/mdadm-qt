@@ -27,15 +27,14 @@
 
 #include "iraid_info_provider.hpp"
 
-class QThread;
-
 class ProcWatcher;
 struct IFileSystem;
+struct IProcWatcher;
 
 class RaidInfoProvider: public IRaidInfoProvider, IRaidInfoDataProvider
 {
     public:
-        RaidInfoProvider(IFileSystem *);
+        RaidInfoProvider(IFileSystem *, IProcWatcher *);
         RaidInfoProvider(const RaidInfoProvider &);
         RaidInfoProvider(RaidInfoProvider &&);
         virtual ~RaidInfoProvider();
@@ -85,10 +84,9 @@ class RaidInfoProvider: public IRaidInfoProvider, IRaidInfoDataProvider
         typedef std::map<RaidId, RaidData> RaidsMap;
 
         mutable RaidsMap m_raids;
-        std::unique_ptr<ProcWatcher> m_watcher;
         IFileSystem* m_fileSystem;
-        QThread* m_thread;
 
+        void procChange(const QString &) const;
         void reCache() const;
         RaidsMap readRaids() const;
 
