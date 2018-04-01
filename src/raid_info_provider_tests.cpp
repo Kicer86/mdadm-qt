@@ -6,6 +6,7 @@
 #include "mdadm_controller.hpp"
 #include "ifilesystem_mock.hpp"
 #include "imdadm_process_mock.hpp"
+#include "iproc_watcher_mock.hpp"
 #include "printers_for_gmock.hpp"
 #include "raid_info_provider.hpp"
 
@@ -109,6 +110,7 @@ TEST(RaidInfoProviderTests,
      listInactiveRaid0)
 {
     NiceMock<IFileSystemMock> filesystem;
+    IProcWatcherMock procWatcher;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md1 : inactive sdf[1](S)\n"
@@ -119,7 +121,7 @@ TEST(RaidInfoProviderTests,
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    RaidInfoProvider infoProvider(&filesystem);
+    RaidInfoProvider infoProvider(&filesystem, &procWatcher);
 
     const QList<RaidComponentInfo> components =
     {
@@ -138,6 +140,7 @@ TEST(RaidInfoProviderTests,
      listActiveRaid5)
 {
     NiceMock<IFileSystemMock> filesystem;
+    IProcWatcherMock procWatcher;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4]\n"
                          "md0 : active raid5 sdb[1] sdc[3] sdd[0]\n"
@@ -149,7 +152,7 @@ TEST(RaidInfoProviderTests,
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    RaidInfoProvider infoProvider(&filesystem);
+    RaidInfoProvider infoProvider(&filesystem, &procWatcher);
 
     const QList<RaidComponentInfo> components =
     {
@@ -170,6 +173,7 @@ TEST(RaidInfoProviderTests,
      listActiveRaid0Raid1Raid6)
 {
     NiceMock<IFileSystemMock> filesystem;
+    IProcWatcherMock procWatcher;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -189,7 +193,7 @@ TEST(RaidInfoProviderTests,
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    RaidInfoProvider infoProvider(&filesystem);
+    RaidInfoProvider infoProvider(&filesystem, &procWatcher);
 
     const QList<RaidComponentInfo> components1 =
     {
@@ -222,6 +226,7 @@ TEST(RaidInfoProviderTests,
 TEST(RaidInfoProviderTests, listNoRaids)
 {
     NiceMock<IFileSystemMock> filesystem;
+    IProcWatcherMock procWatcher;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -232,7 +237,7 @@ TEST(RaidInfoProviderTests, listNoRaids)
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    RaidInfoProvider infoProvider(&filesystem);
+    RaidInfoProvider infoProvider(&filesystem, &procWatcher);
 
     const std::vector<RaidDetails> expectedOutput;
 
@@ -243,6 +248,7 @@ TEST(RaidInfoProviderTests, listNoRaids)
 TEST(RaidInfoProviderTests, listDegradedRaid)
 {
     NiceMock<IFileSystemMock> filesystem;
+    IProcWatcherMock procWatcher;
 
     QString mdstatOutput("Personalities : [raid6] [raid5] [raid4] [raid0] "
                          "[raid1] [raid10]\n"
@@ -257,7 +263,7 @@ TEST(RaidInfoProviderTests, listDegradedRaid)
 
     mockMdstatOutput(filesystem, &outputStream);
 
-    RaidInfoProvider raidInfoProvider(&filesystem);
+    RaidInfoProvider raidInfoProvider(&filesystem, &procWatcher);
 
     const QList<RaidComponentInfo> components =
     {
@@ -277,6 +283,7 @@ TEST(RaidInfoProviderTests, listDegradedRaid)
 TEST(RaidInfoProviderTests, reactsOnNewRaid)
 {
     NiceMock<IFileSystemMock> filesystem;
+    IProcWatcherMock procWatcher;
 
     QString emptyMdstat;
     QString oneRaidMdstat("Personalities : [raid6] [raid5] [raid4] [raid0] "
@@ -293,7 +300,7 @@ TEST(RaidInfoProviderTests, reactsOnNewRaid)
 
     mockMdstatOutput(filesystem, &mdstatContentStream);
 
-    RaidInfoProvider raidInfoProvider(&filesystem);
+    RaidInfoProvider raidInfoProvider(&filesystem, &procWatcher);
     ProviderSignalWatcher watcher(&raidInfoProvider);
 
     EXPECT_CALL(watcher, raidAdded(RaidId("md8")));
@@ -307,6 +314,7 @@ TEST(RaidInfoProviderTests, reactsOnNewRaid)
 TEST(RaidInfoProviderTests, reactsOnRaidRemoval)
 {
     NiceMock<IFileSystemMock> filesystem;
+    IProcWatcherMock procWatcher;
 
     QString threeRaidsMdstat("Personalities : [raid6] [raid5] [raid4] [raid0] "
                              "[raid1] [raid10]\n"
@@ -335,7 +343,7 @@ TEST(RaidInfoProviderTests, reactsOnRaidRemoval)
 
     mockMdstatOutput(filesystem, &mdstatContentStream);
 
-    RaidInfoProvider raidInfoProvider(&filesystem);
+    RaidInfoProvider raidInfoProvider(&filesystem, &procWatcher);
     ProviderSignalWatcher watcher(&raidInfoProvider);
 
     EXPECT_CALL(watcher, raidRemoved(RaidId("md11")));
@@ -351,6 +359,7 @@ TEST(RaidInfoProviderTests, reactsOnRaidRemoval)
 TEST(RaidInfoProviderTests, reactsOnRaidDegradation)
 {
     NiceMock<IFileSystemMock> filesystem;
+    IProcWatcherMock procWatcher;
 
     QString threeRaidsMdstat("Personalities : [raid6] [raid5] [raid4] [raid0] "
                              "[raid1] [raid10]\n"
@@ -385,7 +394,7 @@ TEST(RaidInfoProviderTests, reactsOnRaidDegradation)
 
     mockMdstatOutput(filesystem, &mdstatContentStream);
 
-    RaidInfoProvider raidInfoProvider(&filesystem);
+    RaidInfoProvider raidInfoProvider(&filesystem, &procWatcher);
     ProviderSignalWatcher watcher(&raidInfoProvider);
 
     EXPECT_CALL(watcher, raidChanged(RaidId("md8")));
